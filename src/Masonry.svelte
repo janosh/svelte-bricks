@@ -1,11 +1,13 @@
 <script>
   export let items = []
-  export let colMinWidth = 250
-  let width
-  $: nCols = Math.floor(width / colMinWidth) || 1
+  export let minColWidth = 330
+  export let maxColWidth = 500
+  export let gap = `1em`
+  export let width, height
+  $: nCols = Math.floor(width / minColWidth) || 1
   $: itemsToCols = items.reduce(
-    (cols, el, idx) => {
-      cols[idx % cols.length].push(el)
+    (cols, item, idx) => {
+      cols[idx % cols.length].push({ ...item, idx })
       return cols
     },
     Array(nCols)
@@ -14,9 +16,13 @@
   )
 </script>
 
-<div class="masonry" bind:clientWidth={width}>
+<div
+  class="masonry"
+  bind:clientWidth={width}
+  bind:clientHeight={height}
+  style="gap: {gap}px;">
   {#each itemsToCols as col}
-    <div class="col">
+    <div class="col" style="max-width: {maxColWidth}px; gap: {gap}px;">
       {#each col as item}
         <slot {item} />
       {/each}
@@ -28,10 +34,11 @@
   .masonry {
     display: grid;
     grid-auto-flow: column;
-    gap: 1em;
+    grid-auto-columns: 1fr;
+    margin: auto;
   }
   .col {
     display: grid;
-    gap: 1em;
+    height: max-content;
   }
 </style>

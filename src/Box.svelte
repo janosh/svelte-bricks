@@ -5,6 +5,7 @@
 
 <div
   style="min-height: {height}px; background: linear-gradient(45deg, #{randColor()}, #{randColor()})">
+  h =
   {Math.floor(height)}px
 </div>
 
