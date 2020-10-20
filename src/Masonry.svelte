@@ -3,19 +3,18 @@
   export let minColWidth = 330
   export let maxColWidth = 500
   export let gap = `1em`
-  export let width, height
+  let width, height
   $: nCols = Math.floor(width / minColWidth) || 1
-  $: itemsToCols = items.reduce(
-    (cols, item, idx) => {
-      cols[idx % cols.length].push({ ...item, idx })
-      return cols
-    },
-    Array(nCols)
-      .fill(null)
-      .map(() => [])
-  )
+  $: emptyCols = Array(nCols)
+    .fill(null)
+    .map(() => [])
+  $: itemsToCols = items.reduce((cols, item, idx) => {
+    cols[idx % cols.length].push({ ...item, idx })
+    return cols
+  }, emptyCols)
 </script>
 
+<p>masonry size: {width}px &times; {height}px (w &times; h)</p>
 <div
   class="masonry"
   bind:clientWidth={width}
