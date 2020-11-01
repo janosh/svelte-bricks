@@ -1,4 +1,5 @@
 <script>
+  export let item
   const height = 100 + 200 * Math.random()
   const randColor = () => Math.random().toString(16).substr(-6)
   const bg = `linear-gradient(45deg, #${randColor()}, #${randColor()})`
@@ -9,7 +10,7 @@
   style="min-height: {height}px; background: {bg};"
   on:click={() => (flipped = !flipped)}
   class:flipped>
-  <p>h = {Math.floor(height)}px</p>
+  <p>h<sub>{item}</sub> = {Math.floor(height)}px</p>
   <p style="transform: rotateY(180deg);">{bg}</p>
 </div>
 

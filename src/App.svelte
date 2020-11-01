@@ -4,7 +4,9 @@
   import Box from './Box.svelte'
 
   let nItems = 30
-  $: items = Array(nItems).fill(null)
+  $: items = Array(nItems)
+    .fill(null)
+    .map((_, idx) => idx + 1)
   let [minColWidth, maxColWidth] = [330, 500]
   let gap = 20
 </script>
@@ -26,8 +28,8 @@
   <Slider label="gap" bind:value={gap} min="0" max="50" />
 </div>
 
-<Masonry {items} {minColWidth} {maxColWidth} {gap}>
-  <Box />
+<Masonry {items} {minColWidth} {maxColWidth} {gap} let:item>
+  <Box {item} />
 </Masonry>
 
 <style>
