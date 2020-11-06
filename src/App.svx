@@ -1,7 +1,8 @@
 <script>
-  import Masonry from './Masonry.svelte'
-  import Slider from './Slider.svelte'
-  import Box from './Box.svelte'
+  import Masonry from './components/Masonry.svelte'
+  import Slider from './components/Slider.svelte'
+  import Box from './components/Box.svelte'
+  import Collapsible from './components/Collapsible.svelte'
 
   let nItems = 30
   $: items = Array(nItems)
@@ -12,14 +13,57 @@
   let width, height
 </script>
 
+<main>
+
 # Svelte Masonry
 
-This is a naive masonry implementation without column balancing. Source code on
+Naive implementation without column balancing. Source code on
 [GitHub](https://github.com/janosh/svelte-masonry).
+
+<Collapsible title={['Click for docs', 'Close docs']}>
 
 <small>
 Balanced columns can be achieved even with this simple version if the items are allowed to stretch to the column height.
 </small>
+
+## Installation
+
+Either clone the repo and start the dev server
+
+```sh
+git clone https://github.com/janosh/svelte-masonry
+cd svelte-masonry
+yarn
+yarn dev
+```
+
+or just copy and paste the code from [`Masonry.svelte`](https://github.com/janosh/svelte-masonry/blob/master/src/components/Masonry.svelte) into your project.
+
+## Usage
+
+The kitchen sink for this component looks something like this:
+
+```svx
+<script>
+  import Masonry from './Masonry.svelte'
+
+  let nItems = 30
+  $: items = Array(nItems).fill(null).map((_, idx) => idx + 1)
+
+  let [minColWidth, maxColWidth, gap] = [200, 800, 20]
+  let width, height
+</script>
+
+Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; h)
+
+<Masonry {items} {minColWidth} {maxColWidth} {gap} let:item bind:width bind:height>
+  <Some {item} />
+</Masonry>
+```
+
+`Masonry.svelte` has 5 props (plus a slot), 4 of which are optional. It expects an array of `items` as well as a slot component used to render each of the items. The array can contain whatever data (objects, strings, numbers, other arrays, etc.) as long as the slot component knows how to handle it. The optional props are `minColWidth = 330`, `maxColWidth = 500`, `gap = 20` (all in `px`).
+
+</Collapsible>
 
 <div class="controls">
   <Slider label="nItems" bind:value={nItems} min="1" max="100" />
@@ -29,6 +73,8 @@ Balanced columns can be achieved even with this simple version if the items are 
 </div>
 
 Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; h)
+
+</main>
 
 <Masonry {items} {minColWidth} {maxColWidth} {gap} let:item bind:width bind:height>
 <Box {item} />
@@ -42,6 +88,13 @@ Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; 
     color: white;
     text-align: center;
     font-size: 3ex;
+    max-width: 65em;
+    margin: auto;
+  }
+  main {
+    max-width: 45em;
+    margin: auto;
+    margin-bottom: 3em;
   }
   :global(a) {
     color: #0075ff;
