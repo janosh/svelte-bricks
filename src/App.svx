@@ -67,7 +67,7 @@ Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; 
 
 <div class="controls">
   <Slider label="nItems" bind:value={nItems} min="1" max="100" />
-  <Slider label="minColWidth" bind:value={minColWidth} min="10" max={maxColWidth} />
+  <Slider label="minColWidth" bind:value={minColWidth} min="120" max={maxColWidth} />
   <Slider label="maxColWidth" bind:value={maxColWidth} min={minColWidth} max="800" />
   <Slider label="gap" bind:value={gap} min="0" max="50" />
 </div>
