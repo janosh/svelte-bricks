@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="public/favicon.svg" alt="Svelte Masonry" height=150>
+  <img src="static/favicon.svg" alt="Svelte Masonry" height=150>
 </p>
 
-# Svelte Masonry
+# Svelte Masonry [![Netlify Status](https://api.netlify.com/api/v1/badges/c3213069-e3cc-45ef-a446-b2358b9a35fb/deploy-status)](https://app.netlify.com/sites/svelte-masonry/deploys)
 
 This is a naive masonry implementation in Svelte without column balancing. [Live demo](https://svelte-masonry.netlify.app).
 
@@ -40,13 +40,13 @@ Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; 
    yarn
    ```
 
-2. Start [Rollup](https://rollupjs.org):
+2. Start the dev server:
 
    ```sh
    yarn dev
    ```
 
-Navigate to <http://localhost:5000>. You should see this app running. Edit a component file in `src`, save it, and reload the page to see your changes.
+Navigate to <http://localhost:3000>. You should see this app running. Edit a component file in `src`, save it, and reload the page to see your changes.
 
 ## Building and running in production mode
 
@@ -61,7 +61,7 @@ yarn serve
 Install `netlify` if you haven't already:
 
 ```sh
-yarn global add netlify
+yarn global add netlify-cli
 ```
 
 Then, from within this project's folder:

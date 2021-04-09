@@ -1,3 +1,7 @@
 [build]
-  command = "rollup -c"
-  publish = "public"
+command = "svelte-kit build"
+publish = "build"
+
+[build.environment]
+NODE_VERSION = "16.0.0"
+YARN_VERSION = "1.22.10"

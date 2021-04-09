@@ -2,7 +2,8 @@
 node_modules
 
 # production build
-public/build
+.svelte-kit
+build
 
 # deploy config
 .netlify

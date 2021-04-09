@@ -1,8 +1,8 @@
 <script>
-  import Masonry from './components/Masonry.svelte'
-  import Slider from './components/Slider.svelte'
-  import Box from './components/Box.svelte'
-  import Collapsible from './components/Collapsible.svelte'
+  import Masonry from '../components/Masonry.svelte'
+  import Slider from '../components/Slider.svelte'
+  import Box from '../components/Box.svelte'
+  import Collapsible from '../components/Collapsible.svelte'
 
   let nItems = 30
   $: items = Array(nItems)
@@ -17,7 +17,7 @@
 
 # Svelte Masonry
 
-Naive implementation without column balancing. Source code on
+Naive implementation without column balancing. Code on
 [GitHub](https://github.com/janosh/svelte-masonry).
 
 <Collapsible title={['Click for docs', 'Close docs']}>
