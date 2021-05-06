@@ -37,7 +37,7 @@ yarn
 yarn dev
 ```
 
-or just copy and paste the code from [`Masonry.svelte`](https://github.com/janosh/svelte-masonry/blob/master/src/components/Masonry.svelte) into your project.
+or just copy and paste the code from [`Masonry.svelte`](https://github.com/janosh/svelte-masonry/blob/main/src/components/Masonry.svelte) into your project.
 
 ## Usage
 
@@ -81,28 +81,6 @@ Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; 
 </Masonry>
 
 <style>
-  :global(body) {
-    background: #090019;
-    padding: 2em;
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
-    color: white;
-    text-align: center;
-    font-size: 3ex;
-    max-width: 65em;
-    margin: auto;
-  }
-  main {
-    max-width: 45em;
-    margin: auto;
-    margin-bottom: 3em;
-  }
-  :global(a) {
-    color: #0075ff;
-    text-decoration: none;
-  }
-  :global(a):hover {
-    color: orange;
-  }
   h1 {
     font-size: calc(1em + 3vw);
   }

@@ -1,0 +1,23 @@
+body {
+  background: #090019;
+  padding: 2em;
+  font-family: -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue',
+    sans-serif;
+  color: white;
+  text-align: center;
+  font-size: 3ex;
+  max-width: 65em;
+  margin: auto;
+}
+main {
+  max-width: 45em;
+  margin: auto;
+  margin-bottom: 3em;
+}
+a {
+  color: #0075ff;
+  text-decoration: none;
+}
+a:hover {
+  color: orange;
+}
