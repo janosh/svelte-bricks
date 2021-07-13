@@ -37,12 +37,13 @@ Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; 
 </Masonry>
 ```
 
+**Note**: On non-primitive types, i.e. if `items` is an array of objects, this component requires that each object have a key named `'id'` that contains a unique primitive value. This value is used to identify each item in the keyed `{#each}` block that renders the masonry layout. Without this, Svelte could not avoid duplicates when new items are added nor maintain order when existing ones are rearranged. [See the docs for details](https://svelte.dev/tutorial/keyed-each-blocks).
+
 `Masonry.svelte` has 8 props (plus a slot), 7 of which are optional. It expects an array of `items` as well as a slot component used to render each of the items. The array can contain whatever data (objects, strings, numbers) as long as the slot component knows how to handle it. The optional props are:
 
 - `minColWidth: number = 330` (in `px`)
 - `maxColWidth: number = 500` (in `px`)
 - `gap: number = 20` (in `px`)
-- `id: string = 'id'`: If `items` are objects, this specifies a key that can be used to uniquely identify each of them to the keyed `{#each}` block used to render the masonry layout. [See the docs for details](https://svelte.dev/tutorial/keyed-each-blocks).
 - `masonryWidth: number = 0`: Bound to the masonry `div`s width (in `px`).
 - `masonryHeight: number = 0`: Bound to the masonry `div`s height (in `px`).
 - `animate: boolean = true`: Whether to [FLIP-animate](https://svelte.dev/tutorial/animate) masonry items when viewport resizing or other events cause `items` to rearrange.
