@@ -1,15 +1,23 @@
-<script>
+<script lang="ts">
   import { crossfade } from 'svelte/transition'
   import { flip } from 'svelte/animate'
 
-  export let items = []
+  export let items: Item[]
   export let minColWidth = 330
   export let maxColWidth = 500
   export let gap = 20
   export let id = `id` // https://svelte.dev/tutorial/keyed-each-blocks
-  export let width = 0
-  export let height = 0
+  export let masonryWidth = 0
+  export let masonryHeight = 0
   export let animate = true
+
+  type Item =
+    | string
+    | number
+    | {
+        id: string
+        [key: string]: unknown
+      }
 
   const [send, receive] = crossfade({
     duration: (d) => Math.sqrt(d * 200),
@@ -27,34 +35,34 @@
     },
   })
 
-  $: nCols = Math.min(items.length, Math.floor(width / (minColWidth + gap)) || 1)
+  $: nCols = Math.min(items.length, Math.floor(masonryWidth / (minColWidth + gap)) || 1)
   $: itemsToCols = items.reduce(
-    (cols, item, idx) => {
+    (cols: [Item, number][][], item, idx) => {
       cols[idx % cols.length].push([item, idx])
       return cols
     },
     Array(nCols)
-      .fill()
+      .fill(null)
       .map(() => [])
   )
-  function getId(item) {
-    if (typeof item === `object`) return item[id]
+  function getId(item: Item) {
     if ([`string`, `number`].includes(typeof item)) return item
+    if (typeof item === `object` && id in item) return item[id]
   }
 </script>
 
 <div
   class="masonry"
-  bind:clientWidth={width}
-  bind:clientHeight={height}
+  bind:clientWidth={masonryWidth}
+  bind:clientHeight={masonryHeight}
   style="gap: {gap}px;">
   {#each itemsToCols as col}
     <div class="col" style="gap: {gap}px; max-width: {maxColWidth}px;">
       {#if animate}
         {#each col as [item, idx] (getId(item) ?? idx)}
           <div
-            in:receive={{ key: item[id] ?? idx }}
-            out:send={{ key: item[id] ?? idx }}
+            in:receive={{ key: getId(id) ?? idx }}
+            out:send={{ key: getId(id) ?? idx }}
             animate:flip={{ duration: 200 }}>
             <slot {idx} {item} />
           </div>

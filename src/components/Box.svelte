@@ -1,8 +1,11 @@
-<script>
-  export let item
+<script lang="ts">
+  export let index: number
+
   const height = 100 + 200 * Math.random()
+
   const randColor = () => Math.random().toString(16).substr(-6)
   const bg = `linear-gradient(45deg, #${randColor()}, #${randColor()})`
+
   let flipped = false
 </script>
 
@@ -10,7 +13,7 @@
   style="min-height: {height}px; background: {bg};"
   on:click={() => (flipped = !flipped)}
   class:flipped>
-  <p>h<sub>{item}</sub> = {Math.floor(height)}px</p>
+  <p>h<sub>{index}</sub> = {Math.floor(height)}px</p>
   <p style="transform: rotateY(180deg);">{bg}</p>
 </div>
 

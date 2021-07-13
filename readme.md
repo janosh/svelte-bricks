@@ -1,10 +1,19 @@
 <p align="center">
-  <img src="static/favicon.svg" alt="Svelte Masonry" height=150>
+  <img src="static/favicon.svg" alt="Svelte Bricks" height=150>
 </p>
 
-# Svelte Masonry [![Netlify Status](https://api.netlify.com/api/v1/badges/c3213069-e3cc-45ef-a446-b2358b9a35fb/deploy-status)](https://app.netlify.com/sites/svelte-masonry/deploys)
+# Svelte Bricks
 
-This is a naive masonry implementation in Svelte without column balancing. [Live demo](https://svelte-masonry.netlify.app).
+[![NPM version](https://img.shields.io/npm/v/svelte-bricks?color=blue&logo=NPM)](https://npmjs.com/package/svelte-bricks)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/c3213069-e3cc-45ef-a446-b2358b9a35fb/deploy-status)](https://app.netlify.com/sites/svelte-bricks/deploys)
+
+This is a naive masonry implementation in Svelte without column balancing. [Live demo](https://svelte-bricks.netlify.app).
+
+## Installation
+
+```sh
+yarn add -D svelte-bricks
+```
 
 ## Usage
 
@@ -12,7 +21,7 @@ The kitchen sink for this component looks something like this:
 
 ```svx
 <script>
-  import Masonry from './Masonry.svelte'
+  import Masonry from 'svelte-bricks'
 
   let nItems = 30
   $: items = Array(nItems).fill(null).map((_, idx) => idx + 1)
@@ -28,61 +37,12 @@ Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; 
 </Masonry>
 ```
 
-`Masonry.svelte` has 5 props (plus a slot), 4 of which are optional. It expects an array of `items` as well as a slot component used to render each of the items. The array can contain whatever data (objects, strings, numbers, other arrays, etc.) as long as the slot component knows how to handle it. The optional props are `minColWidth = 330`, `maxColWidth = 500`, `gap = 20` (all in `px`).
+`Masonry.svelte` has 8 props (plus a slot), 7 of which are optional. It expects an array of `items` as well as a slot component used to render each of the items. The array can contain whatever data (objects, strings, numbers) as long as the slot component knows how to handle it. The optional props are:
 
-## Get started
-
-1. Clone and install dependencies:
-
-   ```sh
-   git clone https://github.com/janosh/svelte-masonry
-   cd svelte-masonry
-   yarn
-   ```
-
-2. Start the dev server:
-
-   ```sh
-   yarn dev
-   ```
-
-Navigate to <http://localhost:3000>. You should see this app running. Edit a component file in `src`, save it, and reload the page to see your changes.
-
-## Building and running in production mode
-
-To build and serve an optimized version of the app, run
-
-```sh
-yarn serve
-```
-
-## Deploying to Netlify
-
-Install `netlify` if you haven't already:
-
-```sh
-yarn global add netlify-cli
-```
-
-Then, from within this project's folder:
-
-```sh
-netlify deploy --prod
-```
-
-## Formatting
-
-When using VS Code, install the [official Svelte extension](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) and add the following to your `settings.json` to enable autoformating Svelte files on save:
-
-```json
-"[svelte]": {
-  "editor.formatOnSave": true,
-  "editor.defaultFormatter": "svelte.svelte-vscode"
-}
-```
-
-To get ESLint validation, also add
-
-```json
-"eslint.validate": ["svelte"]
-```
+- `minColWidth: number = 330` (in `px`)
+- `maxColWidth: number = 500` (in `px`)
+- `gap: number = 20` (in `px`)
+- `id: string = 'id'`: If `items` are objects, this specifies a key that can be used to uniquely identify each of them to the keyed `{#each}` block used to render the masonry layout. [See the docs for details](https://svelte.dev/tutorial/keyed-each-blocks).
+- `masonryWidth: number = 0`: Bound to the masonry `div`s width (in `px`).
+- `masonryHeight: number = 0`: Bound to the masonry `div`s height (in `px`).
+- `animate: boolean = true`: Whether to [FLIP-animate](https://svelte.dev/tutorial/animate) masonry items when viewport resizing or other events cause `items` to rearrange.

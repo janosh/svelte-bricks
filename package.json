@@ -1,27 +1,49 @@
 {
-  "name": "svelte-masonry",
+  "name": "svelte-bricks",
   "description": "Simple masonry implementation without column balancing",
   "author": "Janosh Riebesell <janosh.riebesell@gmail.com>",
-  "homepage": "https://github.com/janosh/svelte-masonry#readme",
-  "repository": "https://github.com/janosh/svelte-masonry",
+  "homepage": "https://github.com/janosh/svelte-bricks#readme",
+  "repository": "https://github.com/janosh/svelte-bricks",
   "license": "MIT",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "type": "module",
+  "svelte": "Masonry.svelte",
+  "bugs": {
+    "url": "https://github.com/janosh/svelte-bricks/issues"
+  },
   "scripts": {
     "dev": "svelte-kit dev",
     "build": "svelte-kit build",
     "preview": "svelte-kit preview",
-    "serve": "yarn build && yarn preview"
+    "package": "svelte-kit package",
+    "serve": "yarn build && yarn preview",
+    "release": "yarn version && yarn package && yarn publish package",
+    "check": "svelte-check --workspace src --tsconfig tsconfig.json"
   },
   "devDependencies": {
-    "@sveltejs/adapter-static": "^1.0.0-next.8",
-    "@sveltejs/kit": "^1.0.0-next.99",
-    "eslint": "^7.25.0",
+    "@sveltejs/adapter-static": "^1.0.0-next.13",
+    "@sveltejs/kit": "^1.0.0-next.125",
+    "@typescript-eslint/eslint-plugin": "^4.28.3",
+    "@typescript-eslint/parser": "^4.28.3",
+    "eslint": "^7.30.0",
     "eslint-plugin-svelte3": "^3.2.0",
-    "mdsvex": "^0.9.3",
-    "prettier": "^2.2.1",
-    "prettier-plugin-svelte": "^2.2.0",
-    "svelte": "^3.38.2",
-    "vite": "^2.2.4"
+    "mdsvex": "^0.9.8",
+    "prettier": "^2.3.2",
+    "prettier-plugin-svelte": "^2.3.1",
+    "svelte": "^3.38.3",
+    "svelte-check": "^2.2.2",
+    "svelte-preprocess": "^4.7.4",
+    "svelte2tsx": "^0.4.1",
+    "typescript": "^4.3.5",
+    "vite": "^2.4.2"
+  },
+  "keywords": [
+    "svelte",
+    "masonry",
+    "pinterest-layout",
+    "component"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

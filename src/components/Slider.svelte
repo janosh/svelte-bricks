@@ -1,5 +1,5 @@
-<script>
-  export let value, label, min, max
+<script lang="ts">
+  export let value: number, label: string, min: number, max: number
 </script>
 
 <label>

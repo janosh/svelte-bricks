@@ -1,24 +1,28 @@
-<script>
-  import Masonry from '../components/Masonry.svelte'
+<script lang="ts">
+  import Masonry from '../lib/Masonry.svelte'
   import Slider from '../components/Slider.svelte'
   import Box from '../components/Box.svelte'
   import Collapsible from '../components/Collapsible.svelte'
 
   let nItems = 30
-  $: items = Array(nItems)
+  $: indices = Array(nItems)
     .fill(null)
     .map((_, idx) => idx + 1)
+
   let [minColWidth, maxColWidth] = [330, 500]
   let gap = 20
-  let width, height
+  let masonryWidth, masonryHeight
 </script>
 
 <main>
 
-# Svelte Masonry
+# Svelte Bricks
+
+[![NPM version](https://img.shields.io/npm/v/svelte-bricks?color=blue&logo=NPM)](https://npmjs.com/package/svelte-bricks)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/c3213069-e3cc-45ef-a446-b2358b9a35fb/deploy-status)](https://app.netlify.com/sites/svelte-bricks/deploys)
 
 Naive implementation without column balancing. Code on
-[GitHub](https://github.com/janosh/svelte-masonry).
+[GitHub](https://github.com/janosh/svelte-bricks).
 
 <Collapsible title={['Click for docs', 'Close docs']}>
 
@@ -28,16 +32,9 @@ Balanced columns can be achieved even with this simple version if the items are 
 
 ## Installation
 
-Either clone the repo and start the dev server
-
 ```sh
-git clone https://github.com/janosh/svelte-masonry
-cd svelte-masonry
-yarn
-yarn dev
+yarn add -D svelte-bricks
 ```
-
-or just copy and paste the code from [`Masonry.svelte`](https://github.com/janosh/svelte-masonry/blob/main/src/components/Masonry.svelte) into your project.
 
 ## Usage
 
@@ -45,7 +42,7 @@ The kitchen sink for this component looks something like this:
 
 ```svx
 <script>
-  import Masonry from './Masonry.svelte'
+  import Masonry from 'svelte-bricks'
 
   let nItems = 30
   $: items = Array(nItems).fill(null).map((_, idx) => idx + 1)
@@ -56,12 +53,20 @@ The kitchen sink for this component looks something like this:
 
 Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; h)
 
-<Masonry {items} {minColWidth} {maxColWidth} {gap} let:item bind:width bind:height>
-  <Some {item} />
+<Masonry items={indices} {minColWidth} {maxColWidth} {gap} let:index bind:width bind:height>
+  <SomeComponent index={item} />
 </Masonry>
 ```
 
-`Masonry.svelte` has 5 props (plus a slot), 4 of which are optional. It expects an array of `items` as well as a slot component used to render each of the items. The array can contain whatever data (objects, strings, numbers, other arrays, etc.) as long as the slot component knows how to handle it. The optional props are `minColWidth = 330`, `maxColWidth = 500`, `gap = 20` (all in `px`).
+`Masonry.svelte` has 8 props (plus a slot), 7 of which are optional. It expects an array of `items` as well as a slot component used to render each of the items. The array can contain whatever data (objects, strings, numbers) as long as the slot component knows how to handle it. The optional props are:
+
+- `minColWidth: number = 330` (in `px`)
+- `maxColWidth: number = 500` (in `px`)
+- `gap: number = 20` (in `px`)
+- `id: string = 'id'`: If `items` are objects, this specifies a key that can be used to uniquely identify each of them to the keyed `{#each}` block used to render the masonry layout. [See the docs for details](https://svelte.dev/tutorial/keyed-each-blocks).
+- `masonryWidth: number = 0`: Bound to the masonry `div`s width (in `px`).
+- `masonryHeight: number = 0`: Bound to the masonry `div`s height (in `px`).
+- `animate: boolean = true`: Whether to [FLIP-animate](https://svelte.dev/tutorial/animate) masonry items when viewport resizing or other events cause `items` to rearrange.
 
 </Collapsible>
 
@@ -72,12 +77,12 @@ Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; 
   <Slider label="gap" bind:value={gap} min="0" max="50" />
 </div>
 
-Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; h)
+Masonry size: <span>{masonryWidth}px</span> &times; <span>{masonryHeight}px</span> (w &times; h)
 
 </main>
 
-<Masonry {items} {minColWidth} {maxColWidth} {gap} let:item bind:width bind:height>
-<Box {item} />
+<Masonry items={indices} {minColWidth} {maxColWidth} {gap} let:item bind:masonryWidth bind:masonryHeight>
+  <Box index={item} />
 </Masonry>
 
 <style>
