@@ -6,18 +6,18 @@
   export let minColWidth = 330
   export let maxColWidth = 500
   export let gap = 20
-  export let id = `id` // https://svelte.dev/tutorial/keyed-each-blocks
   export let masonryWidth = 0
   export let masonryHeight = 0
   export let animate = true
 
-  type Item =
-    | string
-    | number
-    | {
-        id: string
-        [key: string]: unknown
-      }
+  type WithKey<K extends string | number | symbol> = {
+    [key in K]: string | number
+  }
+
+  // on non-primitive types, we need a property to tell them apart
+  // this component hard-codes the name of this property to 'id'
+  // https://svelte.dev/tutorial/keyed-each-blocks
+  type Item = string | number | WithKey<`id`>
 
   const [send, receive] = crossfade({
     duration: (d) => Math.sqrt(d * 200),
@@ -45,9 +45,10 @@
       .fill(null)
       .map(() => [])
   )
-  function getId(item: Item) {
-    if ([`string`, `number`].includes(typeof item)) return item
-    if (typeof item === `object` && id in item) return item[id]
+  function getId(item: Item): string | number | undefined {
+    if (typeof item === `string`) return item
+    if (typeof item === `number`) return item
+    return item.id
   }
 </script>
 
@@ -59,16 +60,16 @@
   {#each itemsToCols as col}
     <div class="col" style="gap: {gap}px; max-width: {maxColWidth}px;">
       {#if animate}
-        {#each col as [item, idx] (getId(item) ?? idx)}
+        {#each col as [item, idx] (getId(item) || idx)}
           <div
-            in:receive={{ key: getId(id) ?? idx }}
-            out:send={{ key: getId(id) ?? idx }}
+            in:receive={{ key: getId(item) || idx }}
+            out:send={{ key: getId(item) || idx }}
             animate:flip={{ duration: 200 }}>
             <slot {idx} {item} />
           </div>
         {/each}
       {:else}
-        {#each col as [item, idx] (getId(item) ?? idx)}
+        {#each col as [item, idx] (getId(item) || idx)}
           <slot {idx} {item} />
         {/each}
       {/if}

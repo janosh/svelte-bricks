@@ -2,10 +2,10 @@
   "name": "svelte-bricks",
   "description": "Simple masonry implementation without column balancing",
   "author": "Janosh Riebesell <janosh.riebesell@gmail.com>",
-  "homepage": "https://github.com/janosh/svelte-bricks#readme",
+  "homepage": "https://svelte-bricks.netlify.app",
   "repository": "https://github.com/janosh/svelte-bricks",
   "license": "MIT",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "svelte": "Masonry.svelte",
   "bugs": {
@@ -17,7 +17,7 @@
     "preview": "svelte-kit preview",
     "package": "svelte-kit package",
     "serve": "yarn build && yarn preview",
-    "release": "yarn version && yarn package && yarn publish package",
+    "release": "yarn version && svelte-kit package && yarn publish package",
     "check": "svelte-check --workspace src --tsconfig tsconfig.json"
   },
   "devDependencies": {
