@@ -7,7 +7,9 @@
 [![NPM version](https://img.shields.io/npm/v/svelte-bricks?color=blue&logo=NPM)](https://npmjs.com/package/svelte-bricks)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/c3213069-e3cc-45ef-a446-b2358b9a35fb/deploy-status)](https://app.netlify.com/sites/svelte-bricks/deploys)
 
-This is a naive masonry implementation in Svelte without column balancing. [Live demo](https://svelte-bricks.netlify.app).
+This is a naive masonry implementation in Svelte without column balancing.
+
+**[Live demo](https://svelte-bricks.netlify.app)**
 
 ## Installation
 
@@ -19,12 +21,12 @@ yarn add -D svelte-bricks
 
 The kitchen sink for this component looks something like this:
 
-```svx
+```svelte
 <script>
   import Masonry from 'svelte-bricks'
 
   let nItems = 30
-  $: items = Array(nItems).fill(null).map((_, idx) => idx + 1)
+  $: items = [...Array(nItems).keys()]
 
   let [minColWidth, maxColWidth, gap] = [200, 800, 20]
   let width, height
@@ -37,7 +39,7 @@ Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; 
 </Masonry>
 ```
 
-**Note**: On non-primitive types, i.e. if `items` is an array of objects, this component requires that each object have a key named `'id'` that contains a unique primitive value. This value is used to identify each item in the keyed `{#each}` block that renders the masonry layout. Without this, Svelte could not avoid duplicates when new items are added nor maintain order when existing ones are rearranged. [See the docs for details](https://svelte.dev/tutorial/keyed-each-blocks).
+**Note**: On non-primitive types, i.e. if `items` is an array of objects, this component requires that each object have a key named `'id'` that contains a unique primitive value. This value is used to identify each item in the keyed `{#each}` block that renders the masonry layout. Without this, Svelte could not avoid duplicates when new items are added nor maintain order when existing ones are rearranged. Read the [Svelte docs](https://svelte.dev/tutorial/keyed-each-blocks) for details.
 
 `Masonry.svelte` has 8 props (plus a slot), 7 of which are optional. It expects an array of `items` as well as a slot component used to render each of the items. The array can contain whatever data (objects, strings, numbers) as long as the slot component knows how to handle it. The optional props are:
 
