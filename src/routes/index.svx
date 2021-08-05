@@ -3,6 +3,7 @@
   import Slider from '../components/Slider.svelte'
   import Box from '../components/Box.svelte'
   import Collapsible from '../components/Collapsible.svelte'
+  import Toggle from '../components/Toggle.svelte'
 
   let nItems = 30
   $: indices = [...Array(nItems).keys()]
@@ -10,6 +11,8 @@
   let [minColWidth, maxColWidth] = [330, 500]
   let gap = 20
   let masonryWidth, masonryHeight
+
+  let slideFlip = false
 </script>
 
 <main>
@@ -81,8 +84,11 @@ Masonry size: <span>{masonryWidth}px</span> &times; <span>{masonryHeight}px</spa
 </main>
 
 <Masonry items={indices} {minColWidth} {maxColWidth} {gap} let:item bind:masonryWidth bind:masonryHeight>
-  <Box index={item} />
+  <Box index={item} {slideFlip} />
 </Masonry>
+
+<p>Sliding card flip?<Toggle name="Slide flip" bind:checked={slideFlip} /></p>
+
 
 <style>
   h1 {
