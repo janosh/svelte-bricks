@@ -16,10 +16,13 @@
   on:click={() => (flipped = !flipped)}
   class:flipped
   class:slideFlip>
+  <!-- background: {bg} must be applied to the p tags, not the div as backface-visibility: hidden would hide text on backface -->
   <p style="background: {bg};">
     <span>h<sub>{index}</sub> = {Math.floor(height)}px</span>
   </p>
-  <p style="transform: rotateY(-180deg); background: {bg};"><span>{bg}</span></p>
+  <p style="transform: rotateY(-180deg); background: {bg};">
+    <span>{bg}</span>
+  </p>
 </div>
 
 <style>
@@ -45,6 +48,9 @@
   }
   div:hover.flipped {
     transform: rotateY(-180deg) scale(1.03);
+  }
+  div.slideFlip {
+    transition: 1s;
   }
   div.flipped.slideFlip {
     transform-origin: center right;

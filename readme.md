@@ -41,7 +41,11 @@ Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; 
 
 **Note**: On non-primitive types, i.e. if `items` is an array of objects, this component requires that each object have a key named `'id'` that contains a unique primitive value. This value is used to identify each item in the keyed `{#each}` block that renders the masonry layout. Without this, Svelte could not avoid duplicates when new items are added nor maintain order when existing ones are rearranged. Read the [Svelte docs](https://svelte.dev/tutorial/keyed-each-blocks) for details.
 
-`Masonry.svelte` has 8 props (plus a slot), 7 of which are optional. It expects an array of `items` as well as a slot component used to render each of the items. The array can contain whatever data (objects, strings, numbers) as long as the slot component knows how to handle it. The optional props are:
+## Props
+
+`Masonry.svelte` expects an array of `items` as well as a `<slot />` component used to render each of the `items`. The array can contain whatever data (objects, strings, numbers) as long as the slot component knows how to handle it.
+
+Additional optional props are:
 
 - `minColWidth: number = 330` (in `px`)
 - `maxColWidth: number = 500` (in `px`)
