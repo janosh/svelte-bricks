@@ -6,6 +6,7 @@
 
 [![NPM version](https://img.shields.io/npm/v/svelte-bricks?color=blue&logo=NPM)](https://npmjs.com/package/svelte-bricks)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/c3213069-e3cc-45ef-a446-b2358b9a35fb/deploy-status)](https://app.netlify.com/sites/svelte-bricks/deploys)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/janosh/svelte-bricks/main.svg)](https://results.pre-commit.ci/latest/github/janosh/svelte-bricks/main)
 
 This is a naive masonry implementation in Svelte without column balancing.
 
@@ -32,9 +33,17 @@ The kitchen sink for this component looks something like this:
   let width, height
 </script>
 
-Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; h)
+Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times;
+h)
 
-<Masonry {items} {minColWidth} {maxColWidth} {gap} let:item bind:width bind:height>
+<Masonry
+  {items}
+  {minColWidth}
+  {maxColWidth}
+  {gap}
+  let:item
+  bind:width
+  bind:height>
   <Some {item} />
 </Masonry>
 ```
