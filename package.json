@@ -15,6 +15,8 @@
     "dev": "svelte-kit dev",
     "build": "svelte-kit build",
     "preview": "svelte-kit preview",
+    "predev": "yarn prebuild",
+    "prebuild": "cp readme.md src/docs.svx && sed -i.bak '1,/^<!-- remove above in docs -->$/d' src/docs.svx && rm src/docs.svx.bak",
     "package": "svelte-kit package",
     "serve": "yarn build && yarn preview",
     "check": "svelte-check --ignore package"

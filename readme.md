@@ -12,6 +12,8 @@ This is a naive masonry implementation in Svelte without column balancing.
 
 **[Live demo](https://svelte-bricks.netlify.app)**
 
+<!-- remove above in docs -->
+
 ## Installation
 
 ```sh

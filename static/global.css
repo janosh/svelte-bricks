@@ -21,3 +21,20 @@ a {
 a:hover {
   color: orange;
 }
+
+code {
+  padding: 0 4pt;
+  border-radius: 4pt;
+  font-size: 1.2em;
+  background-color: #004040;
+}
+pre code {
+  background-color: transparent;
+}
+pre {
+  border-radius: 1ex;
+  font-size: 0.75em;
+}
+a code {
+  color: white;
+}

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { slide } from 'svelte/transition'
   import { tweened } from 'svelte/motion'
+  import { slide } from 'svelte/transition'
 
   export let title: string
 
