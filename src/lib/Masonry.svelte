@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { crossfade } from 'svelte/transition'
   import { flip } from 'svelte/animate'
+  import { crossfade } from 'svelte/transition'
 
   export let items: Item[]
   export let minColWidth = 330
@@ -9,14 +9,14 @@
   export let masonryWidth = 0
   export let masonryHeight = 0
   export let animate = true
+  export let style = ``
 
   type WithKey<K extends string | number | symbol> = {
     [key in K]: string | number
   }
 
-  // on non-primitive types, we need a property to tell them apart
-  // this component hard-codes the name of this property to 'id'
-  // https://svelte.dev/tutorial/keyed-each-blocks
+  // On non-primitive types, we need a property to tell masonry items apart. This component
+  // hard-codes the name of this property to 'id'. See https://svelte.dev/tutorial/keyed-each-blocks.
   type Item = string | number | WithKey<`id`>
 
   const [send, receive] = crossfade({
@@ -56,7 +56,7 @@
   class="masonry"
   bind:clientWidth={masonryWidth}
   bind:clientHeight={masonryHeight}
-  style="gap: {gap}px;">
+  style="gap: {gap}px; {style}">
   {#each itemsToCols as col}
     <div class="col" style="gap: {gap}px; max-width: {maxColWidth}px;">
       {#if animate}
@@ -78,13 +78,13 @@
 </div>
 
 <style>
-  .masonry {
+  :where(div.masonry) {
     display: flex;
     justify-content: center;
     overflow-wrap: anywhere;
     box-sizing: border-box;
   }
-  .col {
+  :where(div.masonry div.col) {
     display: grid;
     height: max-content;
     width: 100%;

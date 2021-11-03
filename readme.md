@@ -62,3 +62,17 @@ Additional optional props are:
 - `masonryWidth: number = 0`: Bound to the masonry `div`s width (in `px`).
 - `masonryHeight: number = 0`: Bound to the masonry `div`s height (in `px`).
 - `animate: boolean = true`: Whether to [FLIP-animate](https://svelte.dev/tutorial/animate) masonry items when viewport resizing or other events cause `items` to rearrange.
+- `style: string = ''`: Inline styles that will be applied to the top-level `div.masonry`.
+
+## Styling
+
+Besides the inline CSS you can apply through the `style` prop, the following `:global()` CSS selectors can be used for fine-grained control of how this component looks:
+
+```css
+:global(div.masonry) {
+  /* top-level wrapper div */
+}
+:global(div.masonry div.col) {
+  /* each column in the masonry layout */
+}
+```
