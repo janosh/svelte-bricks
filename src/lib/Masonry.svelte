@@ -56,7 +56,8 @@
   class="masonry"
   bind:clientWidth={masonryWidth}
   bind:clientHeight={masonryHeight}
-  style="gap: {gap}px; {style}">
+  style="gap: {gap}px; {style}"
+>
   {#each itemsToCols as col}
     <div class="col" style="gap: {gap}px; max-width: {maxColWidth}px;">
       {#if animate}
@@ -64,7 +65,8 @@
           <div
             in:receive={{ key: getId(item) || idx }}
             out:send={{ key: getId(item) || idx }}
-            animate:flip={{ duration: 200 }}>
+            animate:flip={{ duration: 200 }}
+          >
             <slot {idx} {item} />
           </div>
         {/each}

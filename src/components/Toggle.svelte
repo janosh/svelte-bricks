@@ -18,7 +18,8 @@
     {name}
     bind:checked
     {required}
-    on:keydown={handleKeydown} />
+    on:keydown={handleKeydown}
+  />
   <span />
 </label>
 

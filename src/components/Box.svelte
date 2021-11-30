@@ -15,7 +15,8 @@
   style="min-height: {height}px;"
   on:click={() => (flipped = !flipped)}
   class:flipped
-  class:slideFlip>
+  class:slideFlip
+>
   <!-- background: {bg} must be applied to the p tags, not the div as backface-visibility: hidden would hide text on backface -->
   <p style="background: {bg};">
     <span>h<sub>{index}</sub> = {Math.floor(height)}px</span>

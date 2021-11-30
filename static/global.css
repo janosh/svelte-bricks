@@ -5,7 +5,6 @@ body {
     sans-serif;
   color: white;
   text-align: center;
-  font-size: 3ex;
   max-width: 65em;
   margin: auto;
 }
@@ -23,9 +22,9 @@ a:hover {
 }
 
 code {
+  overflow-wrap: break-word;
   padding: 0 4pt;
   border-radius: 4pt;
-  font-size: 1.2em;
   background-color: #004040;
 }
 pre code {

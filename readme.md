@@ -45,7 +45,8 @@ h)
   {gap}
   let:item
   bind:width
-  bind:height>
+  bind:height
+>
   <Some {item} />
 </Masonry>
 ```
