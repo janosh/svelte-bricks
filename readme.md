@@ -69,7 +69,7 @@ Additional optional props are:
 
 ## Styling
 
-Besides the inline CSS you can apply through the `style` prop, the following `:global()` CSS selectors can be used for fine-grained control of how this component looks:
+Besides inline CSS which you can apply through the `style` prop, the following `:global()` CSS selectors can be used for fine-grained control of wrapper and column styles:
 
 ```css
 :global(div.masonry) {

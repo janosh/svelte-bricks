@@ -1,32 +1,27 @@
 <script lang="ts">
-  import Masonry from '../lib/Masonry.svelte'
-  import Slider from '../components/Slider.svelte'
-  import Box from '../components/Box.svelte'
   import Collapsible from '../components/Collapsible.svelte'
-  import Toggle from '../components/Toggle.svelte'
+  import Example from '../components/Example.svelte'
+  import GitHubCorner from 'svelte-github-corner'
   import Docs from '../docs.svx'
-
-  let nItems = 30
-  $: indices = [...Array(nItems).keys()]
-
-  let [minColWidth, maxColWidth] = [330, 500]
-  let gap = 20
-  let masonryWidth, masonryHeight
-
-  let slideFlip = false
 </script>
 
 <main>
 
-# Svelte Bricks
+<GitHubCorner
+  href="https://github.com/janosh/svelte-bricks"
+  --ghc-color="var(--bodyBg)"
+  --ghc-bg="white"
+/>
+
+# ![Logo](/favicon.svg) &nbsp; Svelte Bricks
 
 [![NPM version](https://img.shields.io/npm/v/svelte-bricks?color=blue&logo=NPM)](https://npmjs.com/package/svelte-bricks)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/c3213069-e3cc-45ef-a446-b2358b9a35fb/deploy-status)](https://app.netlify.com/sites/svelte-bricks/deploys)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/janosh/svelte-bricks/main.svg)](https://results.pre-commit.ci/latest/github/janosh/svelte-bricks/main)
 
-Naive implementation without column balancing. Code on [GitHub](https://github.com/janosh/svelte-bricks).
+Naive implementation without column balancing.
 
-<Collapsible title={['Click for docs', 'Close docs']}>
+<Collapsible title={[`Click for docs`, `Close docs`]}>
 
 <small>
 Balanced columns can be achieved even with this simple version if the items are allowed to stretch to the column height.
@@ -36,39 +31,24 @@ Balanced columns can be achieved even with this simple version if the items are 
 
 </Collapsible>
 
-<div class="controls">
-  <Slider label="nItems" bind:value={nItems} min="1" max="100" />
-  <Slider label="minColWidth" bind:value={minColWidth} min="120" max={maxColWidth} />
-  <Slider label="maxColWidth" bind:value={maxColWidth} min={minColWidth} max="800" />
-  <Slider label="gap" bind:value={gap} min="0" max="50" />
-</div>
-
-Masonry size: <span>{masonryWidth}px</span> &times; <span>{masonryHeight}px</span> (w &times; h)
-
 </main>
 
-<Masonry items={indices} {minColWidth} {maxColWidth} {gap} let:item bind:masonryWidth bind:masonryHeight>
-  <Box index={item} {slideFlip} />
-</Masonry>
-
-<p>Sliding card flip?<Toggle name="Slide flip" bind:checked={slideFlip} /></p>
-
+<Example />
 
 <style>
   h1 {
-    font-size: calc(1em + 3vw);
-  }
-  .controls {
+    font-size: clamp(2rem, 2rem + 2vw, 4rem);
     display: flex;
-    flex-wrap: wrap;
-    margin: 3em auto;
-    gap: 1em;
+    place-items: center;
     place-content: center;
   }
-  span {
-    padding: 1pt 5pt;
-    border-radius: 4pt;
-    vertical-align: middle;
-    background: #0075ff;
+  @media (max-width: 400px) {
+    h1 {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  }
+  h1 img {
+    width: 50px;
   }
 </style>
