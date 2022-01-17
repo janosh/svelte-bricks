@@ -1,18 +1,23 @@
-<p align="center">
-  <img src="static/favicon.svg" alt="Svelte Bricks" height=150>
-</p>
+<div class="hide-in-docs">
 
-# Svelte Bricks
+<h1 align="center">
+  <img src="https://raw.githubusercontent.com/janosh/svelte-bricks/main/static/favicon.svg" alt="Svelte Bricks" height=60>
+  <br>&ensp;Svelte Bricks
+</h1>
+
+<h4 align="center">
 
 [![NPM version](https://img.shields.io/npm/v/svelte-bricks?color=blue&logo=NPM)](https://npmjs.com/package/svelte-bricks)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/c3213069-e3cc-45ef-a446-b2358b9a35fb/deploy-status)](https://app.netlify.com/sites/svelte-bricks/deploys)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/janosh/svelte-bricks/main.svg)](https://results.pre-commit.ci/latest/github/janosh/svelte-bricks/main)
 
-This is a naive masonry implementation in Svelte without column balancing.
+</h4>
+
+Naive implementation in Svelte without column balancing.
 
 **[Live demo](https://svelte-bricks.netlify.app)**
 
-<!-- remove above in docs -->
+</div>
 
 ## Installation
 
@@ -52,6 +57,8 @@ h)
 ```
 
 **Note**: On non-primitive types, i.e. if `items` is an array of objects, this component requires that each object have a key named `'id'` that contains a unique primitive value. This value is used to identify each item in the keyed `{#each}` block that renders the masonry layout. Without this, Svelte could not avoid duplicates when new items are added nor maintain order when existing ones are rearranged. Read the [Svelte docs](https://svelte.dev/tutorial/keyed-each-blocks) for details.
+
+**Hint**: Balanced columns can be achieved even with this simple implementation if masonry items are allowed to stretch to the column height.
 
 ## Props
 
