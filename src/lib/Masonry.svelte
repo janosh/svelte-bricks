@@ -63,8 +63,8 @@
       {#if animate}
         {#each col as [item, idx] (getId(item) || idx)}
           <div
-            in:receive={{ key: getId(item) || idx }}
-            out:send={{ key: getId(item) || idx }}
+            in:receive|local={{ key: getId(item) || idx }}
+            out:send|local={{ key: getId(item) || idx }}
             animate:flip={{ duration: 200 }}
           >
             <slot {idx} {item} />
