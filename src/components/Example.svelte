@@ -22,8 +22,8 @@
 </div>
 
 <p>
-  Masonry size: <span>{masonryWidth}px</span> &times; <span>{masonryHeight}px</span> (w &times;
-  h)
+  Masonry size: <span>{masonryWidth}px</span> &times; <span>{masonryHeight}px</span>
+  (w &times; h)
 </p>
 
 <Masonry

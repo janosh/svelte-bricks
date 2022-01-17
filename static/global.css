@@ -4,17 +4,11 @@
 body {
   background: var(--bodyBg);
   padding: 2em;
-  font-family: -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue',
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
   color: white;
   text-align: center;
-  max-width: 65em;
-  margin: auto;
-}
-main {
-  max-width: 45em;
-  margin: auto;
-  margin-bottom: 3em;
+  max-width: 70em;
+  margin: 0 auto 3em;
 }
 a {
   color: cornflowerblue;

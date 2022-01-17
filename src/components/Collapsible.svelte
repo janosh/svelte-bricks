@@ -15,10 +15,10 @@
   }
 </script>
 
-<h2 on:click={toggle}>
+<h3 on:click={toggle}>
   {#if Array.isArray(title)}{isOpen ? title[1] : title[0]}{:else}{title}{/if}
   <span style="display:inline-block; transform: rotate({$angle}deg);">👆</span>
-</h2>
+</h3>
 {#if isOpen}
   <div transition:slide={{ duration }}>
     <slot />
@@ -26,16 +26,16 @@
 {/if}
 
 <style>
-  h2 {
+  h3 {
     cursor: pointer;
     background: rgba(255, 255, 255, 0.3);
     border-radius: 4pt;
     width: max-content;
     padding: 4pt 1ex;
-    margin: 1em auto;
+    margin: 2em auto;
     transition: 0.3s;
   }
-  h2:hover {
+  h3:hover {
     transform: scale(1.01);
     background: rgba(255, 255, 255, 0.4);
   }
