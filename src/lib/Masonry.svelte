@@ -1,6 +1,6 @@
 <script lang="ts">
   import { flip } from 'svelte/animate'
-  import { crossfade } from 'svelte/transition'
+  import { fade } from 'svelte/transition'
 
   export let items: Item[]
   export let minColWidth = 330
@@ -10,6 +10,7 @@
   export let masonryHeight = 0
   export let animate = true
   export let style = ``
+  export let duration = 200
 
   type WithKey<K extends string | number | symbol> = {
     [key in K]: string | number
@@ -18,22 +19,6 @@
   // On non-primitive types, we need a property to tell masonry items apart. This component
   // hard-codes the name of this property to 'id'. See https://svelte.dev/tutorial/keyed-each-blocks.
   type Item = string | number | WithKey<`id`>
-
-  const [send, receive] = crossfade({
-    duration: (d) => Math.sqrt(d * 200),
-    fallback(node) {
-      const style = getComputedStyle(node)
-      const transform = style.transform === `none` ? `` : style.transform
-
-      return {
-        duration: 500,
-        css: (t) => `
-					transform: ${transform} scale(${t});
-					opacity: ${t}
-				`,
-      }
-    },
-  })
 
   $: nCols = Math.min(items.length, Math.floor(masonryWidth / (minColWidth + gap)) || 1)
   $: itemsToCols = items.reduce(
@@ -63,9 +48,9 @@
       {#if animate}
         {#each col as [item, idx] (getId(item) || idx)}
           <div
-            in:receive|local={{ key: getId(item) || idx }}
-            out:send|local={{ key: getId(item) || idx }}
-            animate:flip={{ duration: 200 }}
+            in:fade|local={{ delay: 100, duration }}
+            out:fade|local={{ delay: 0, duration }}
+            animate:flip={{ duration }}
           >
             <slot {idx} {item} />
           </div>
