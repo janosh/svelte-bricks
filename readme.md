@@ -66,6 +66,7 @@ h)
 
 Additional optional props are:
 
+- `items: any[]`: required
 - `minColWidth: number = 330` (in `px`)
 - `maxColWidth: number = 500` (in `px`)
 - `gap: number = 20` (in `px`)
@@ -73,6 +74,7 @@ Additional optional props are:
 - `masonryHeight: number = 0`: Bound to the masonry `div`s height (in `px`).
 - `animate: boolean = true`: Whether to [FLIP-animate](https://svelte.dev/tutorial/animate) masonry items when viewport resizing or other events cause `items` to rearrange.
 - `style: string = ''`: Inline styles that will be applied to the top-level `div.masonry`.
+- `duration: number = 200`: Transition duration in milli seconds when masonry items are rearranged or added/removed. Set to 0 to disable transitions.
 
 ## Styling
 
