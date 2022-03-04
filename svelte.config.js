@@ -13,9 +13,6 @@ export default {
   kit: {
     adapter: adapter(),
 
-    // hydrate the <div/> with id 'svelte' in src/app.html
-    target: `#svelte`,
-
     vite: {
       server: {
         fs: { allow: [`..`] }, // needed to import readme.md
