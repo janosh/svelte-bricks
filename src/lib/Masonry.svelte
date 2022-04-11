@@ -12,6 +12,11 @@
   export let style = ``
   export let duration = 200
 
+  export { className as class }
+  export let columnClass = ``
+
+  let className = ``
+
   type WithKey<K extends string | number | symbol> = {
     [key in K]: string | number
   }
@@ -38,13 +43,13 @@
 </script>
 
 <div
-  class="masonry"
+  class="masonry {className}"
   bind:clientWidth={masonryWidth}
   bind:clientHeight={masonryHeight}
   style="gap: {gap}px; {style}"
 >
   {#each itemsToCols as col}
-    <div class="col" style="gap: {gap}px; max-width: {maxColWidth}px;">
+    <div class="col {columnClass}" style="gap: {gap}px; max-width: {maxColWidth}px;">
       {#if animate}
         {#each col as [item, idx] (getId(item) || idx)}
           <div
