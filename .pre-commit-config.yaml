@@ -3,6 +3,8 @@ ci:
 
 default_stages: [commit]
 
+default_install_hook_types: [pre-commit, commit-msg]
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.1.0
@@ -16,7 +18,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.5.1
+    rev: v2.6.2
     hooks:
       - id: prettier
         args: [--write] # edit files in-place
@@ -33,12 +35,11 @@ repos:
         exclude: yarn.lock
 
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v8.6.0
+    rev: v8.12.0
     hooks:
       - id: eslint
         types: [file]
-        files: \.(svelte|js)$
-        args: [--plugin, eslint-plugin-svelte3]
+        files: \.(svelte|js|ts)$
         additional_dependencies:
           - eslint
           - svelte
