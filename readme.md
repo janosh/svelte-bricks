@@ -76,6 +76,8 @@ Additional optional props are:
 - `animate: boolean = true`: Whether to [FLIP-animate](https://svelte.dev/tutorial/animate) masonry items when viewport resizing or other events cause `items` to rearrange.
 - `style: string = ''`: Inline styles that will be applied to the top-level `div.masonry`.
 - `duration: number = 200`: Transition duration in milli seconds when masonry items are rearranged or added/removed. Set to 0 to disable transitions.
+- `class: string = ''`: Applies to the outer `div` wrapping all masonry columns. For use with CSS frameworks like Tailwind.
+- `columnClass: string = ''`: Applies to each column `div`.
 
 ## Styling
 

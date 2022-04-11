@@ -4,6 +4,7 @@
   import Collapsible from '../components/Collapsible.svelte'
   import Example from '../components/Example.svelte'
   import Header from '../components/Header.svx'
+  import '../app.css'
 </script>
 
 <GitHubCorner
