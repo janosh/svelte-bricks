@@ -13,6 +13,8 @@ export default {
   kit: {
     adapter: adapter(),
 
+    prerender: { default: true },
+
     vite: {
       server: {
         fs: { allow: [`..`] }, // needed to import readme.md

@@ -2,8 +2,8 @@
 {
   "compilerOptions": {
     "strict": true,
-    "module": "es2020",
-    "target": "es2020",
+    "module": "esnext",
+    "target": "esnext",
     "moduleResolution": "node",
 
     // Svelte Preprocess cannot figure out whether you have a value or a type, so tell TypeScript
