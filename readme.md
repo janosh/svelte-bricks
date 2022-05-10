@@ -57,7 +57,7 @@ h)
 </Masonry>
 ```
 
-**Note**: On non-primitive items, i.e. if `items` is an array of objects, this component by default tries to access a key named `'id'` on each item. This value is used to tell items apart in the keyed `{#each}` block that renders the masonry layout. Without it, Svelte could not avoid duplicates when new items are added or existing ones rearranged. Read the [Svelte docs](https://svelte.dev/tutorial/keyed-each-blocks) for details. To change the name of the identifier key, use the `idKey` prop. You can also pass in a custom function as `getId` that should map items to unique IDs.
+**Note**: On non-primitive items, i.e. if `items` is an array of objects, this component by default tries to access a key named `'id'` on each item. This value is used to tell items apart in the keyed `{#each}` block that renders the masonry layout. Without it, Svelte could not avoid duplicates when new items are added or existing ones rearranged. Read the [Svelte docs](https://svelte.dev/tutorial/keyed-each-blocks) for details. To change the name of the identifier key, use the `idKey` prop. Pass in a function or string as `id` to locate unique identifiers.
 
 **Hint**: Balanced columns can be achieved even with this simple implementation if masonry items are allowed to stretch to the column height.
 
@@ -74,7 +74,7 @@ Additional optional props are:
 - `masonryWidth: number = 0`: Bound to the masonry `div`s width (in `px`).
 - `masonryHeight: number = 0`: Bound to the masonry `div`s height (in `px`).
 - `idKey: string = 'id'`: Name of the attribute to use as identifier if items are objects.
-- `getId: (item) => string | number`: Custom function that maps masonry items to unique IDs.
+- `id: (item) => string | Function`: Custom function that maps masonry items to unique IDs.
 - `animate: boolean = true`: Whether to [FLIP-animate](https://svelte.dev/tutorial/animate) masonry items when viewport resizing or other events cause `items` to rearrange.
 - `style: string = ''`: Inline styles that will be applied to the top-level `div.masonry`.
 - `duration: number = 200`: Transition duration in milli seconds when masonry items are rearranged or added/removed. Set to 0 to disable transitions.

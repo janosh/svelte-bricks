@@ -3,28 +3,30 @@
   import { fade } from 'svelte/transition'
 
   export let items: Item[]
-  export let minColWidth = 330
-  export let maxColWidth = 500
-  export let gap = 20
-  export let masonryWidth = 0
-  export let masonryHeight = 0
-  export let animate = true
-  export let style = ``
-  export let duration = 200
+  export let minColWidth: number = 330
+  export let maxColWidth: number = 500
+  export let gap: number = 20
+  export let masonryWidth: number = 0
+  export let masonryHeight: number = 0
+  export let animate: boolean = true
+  export let style: string = ``
+  export let duration: number = 200
 
   export { className as class }
-  export let columnClass = ``
+  export let columnClass: string = ``
+
   // On non-primitive types, we need a property to tell masonry items apart. This component
   // hard-codes the name of this property to 'id'. See https://svelte.dev/tutorial/keyed-each-blocks.
-  export let idKey = `id`
-  export let getId = (item: Item) => {
+  export let id: string | Function = (item: Item) => {
     if (typeof item === `string`) return item
     if (typeof item === `number`) return item
-    return (item as Record<string, unknown>)[idKey]
+    return (item as Record<string, unknown>).id
   }
 
   type Item = $$Generic
-  let className = ``
+  let className: string = ``
+
+  const isIterator: boolean = typeof id === `function`
 
   $: nCols = Math.min(items.length, Math.floor(masonryWidth / (minColWidth + gap)) || 1)
   $: itemsToCols = items.reduce(
@@ -45,7 +47,7 @@
   {#each itemsToCols as col}
     <div class="col {columnClass}" style="gap: {gap}px; max-width: {maxColWidth}px;">
       {#if animate}
-        {#each col as [item, idx] (getId(item))}
+        {#each col as [item, idx] (isIterator ? id(item) : item[id])}
           <div
             in:fade|local={{ delay: 100, duration }}
             out:fade|local={{ delay: 0, duration }}
@@ -55,7 +57,7 @@
           </div>
         {/each}
       {:else}
-        {#each col as [item, idx] (getId(item))}
+        {#each col as [item, idx] (isIterator ? id(item) : item[id])}
           <slot {idx} {item} />
         {/each}
       {/if}
