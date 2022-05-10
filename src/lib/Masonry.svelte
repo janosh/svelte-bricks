@@ -14,16 +14,17 @@
 
   export { className as class }
   export let columnClass = ``
-
-  let className = ``
-
-  type WithKey<K extends string | number | symbol> = {
-    [key in K]: string | number
-  }
-
   // On non-primitive types, we need a property to tell masonry items apart. This component
   // hard-codes the name of this property to 'id'. See https://svelte.dev/tutorial/keyed-each-blocks.
-  type Item = string | number | WithKey<`id`>
+  export let idKey = `id`
+  export let getId = (item: Item) => {
+    if (typeof item === `string`) return item
+    if (typeof item === `number`) return item
+    return (item as Record<string, unknown>)[idKey]
+  }
+
+  type Item = $$Generic
+  let className = ``
 
   $: nCols = Math.min(items.length, Math.floor(masonryWidth / (minColWidth + gap)) || 1)
   $: itemsToCols = items.reduce(
@@ -31,15 +32,8 @@
       cols[idx % cols.length].push([item, idx])
       return cols
     },
-    Array(nCols)
-      .fill(null)
-      .map(() => [])
+    Array(nCols).fill(null).map(() => []) // prettier-ignore
   )
-  function getId(item: Item): string | number | undefined {
-    if (typeof item === `string`) return item
-    if (typeof item === `number`) return item
-    return item.id
-  }
 </script>
 
 <div
@@ -51,7 +45,7 @@
   {#each itemsToCols as col}
     <div class="col {columnClass}" style="gap: {gap}px; max-width: {maxColWidth}px;">
       {#if animate}
-        {#each col as [item, idx] (getId(item) || idx)}
+        {#each col as [item, idx] (getId(item))}
           <div
             in:fade|local={{ delay: 100, duration }}
             out:fade|local={{ delay: 0, duration }}
@@ -61,7 +55,7 @@
           </div>
         {/each}
       {:else}
-        {#each col as [item, idx] (getId(item) || idx)}
+        {#each col as [item, idx] (getId(item))}
           <slot {idx} {item} />
         {/each}
       {/if}
