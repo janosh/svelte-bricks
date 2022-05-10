@@ -73,7 +73,6 @@ Additional optional props are:
 - `gap: number = 20` (in `px`)
 - `masonryWidth: number = 0`: Bound to the masonry `div`s width (in `px`).
 - `masonryHeight: number = 0`: Bound to the masonry `div`s height (in `px`).
-- `idKey: string = 'id'`: Name of the attribute to use as identifier if items are objects.
 - `id: (item) => string | Function`: Custom function that maps masonry items to unique IDs.
 - `animate: boolean = true`: Whether to [FLIP-animate](https://svelte.dev/tutorial/animate) masonry items when viewport resizing or other events cause `items` to rearrange.
 - `style: string = ''`: Inline styles that will be applied to the top-level `div.masonry`.
