@@ -29,12 +29,13 @@
   const isIterator: boolean = typeof id === `function`
 
   $: nCols = Math.min(items.length, Math.floor(masonryWidth / (minColWidth + gap)) || 1)
+
   $: itemsToCols = items.reduce(
     (cols: [Item, number][][], item, idx) => {
       cols[idx % cols.length].push([item, idx])
       return cols
     },
-    Array(nCols).fill(null).map(() => []) // prettier-ignore
+    Array.from({ length: nCols }, () => [])
   )
 </script>
 
