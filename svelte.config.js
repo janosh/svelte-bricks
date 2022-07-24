@@ -14,11 +14,5 @@ export default {
     adapter: adapter(),
 
     prerender: { default: true },
-
-    vite: {
-      server: {
-        fs: { allow: [`..`] }, // needed to import readme.md
-      },
-    },
   },
 }

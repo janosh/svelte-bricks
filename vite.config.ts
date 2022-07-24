@@ -1,8 +1,12 @@
-import { svelte } from '@sveltejs/vite-plugin-svelte'
+import { sveltekit } from '@sveltejs/kit/vite'
 
 export default {
-  plugins: [svelte({ hot: !process.env.VITEST })],
+  plugins: [sveltekit()],
   test: {
     environment: `jsdom`,
+  },
+
+  server: {
+    fs: { allow: [`..`] }, // needed to import readme.md
   },
 }
