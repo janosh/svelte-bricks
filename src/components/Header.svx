@@ -11,5 +11,3 @@
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/janosh/svelte-bricks/main.svg)](https://results.pre-commit.ci/latest/github/janosh/svelte-bricks/main)
 
 </h4>
-
-Naive implementation in Svelte without column balancing.
