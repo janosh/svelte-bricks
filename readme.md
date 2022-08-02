@@ -23,6 +23,7 @@ Naive implementation in Svelte without column balancing.
 ## Installation
 
 ```sh
+npm install -D svelte-bricks
 yarn add -D svelte-bricks
 ```
 
