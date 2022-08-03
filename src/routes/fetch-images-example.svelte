@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Masonry from '../lib'
+  import Masonry, { repo_url } from '../lib'
 
   type File = {
     name: string
@@ -21,12 +21,12 @@
       throw `failed to fetch GitHub data`
     }
   }
+
+  const example_code_url = `${repo_url}/blob/main/src/routes/fetch-images-example.svelte`
 </script>
 
 <p>
-  See <a href="https://github.com/janosh/svelte-bricks/blob/main/src/routes/index.svelte">
-    the code
-  </a> powering this example.
+  See <a href={example_code_url}> the code </a> powering this example.
 </p>
 
 <br />
@@ -42,7 +42,7 @@
   <Masonry items={files} let:item idKey="name" minColWidth={100}>
     {@const { name, download_url } = item}
     <li>
-      <strong>{name.replace(`.svg`, ``).replaceAll(`_`, ` `)}</strong>
+      <span>{name.replace(`.svg`, ``).replaceAll(`_`, ` `)}</span>
       <img src={download_url} alt={name} width="100" />
     </li>
   </Masonry>
@@ -51,6 +51,12 @@
 <style>
   li {
     list-style: none;
-    width: min-content;
+    text-transform: capitalize;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 6pt 6pt 0;
+    border-radius: 3pt;
+  }
+  li span {
+    font-weight: lighter;
   }
 </style>

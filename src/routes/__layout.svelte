@@ -1,14 +1,16 @@
 <script lang="ts">
+  import { page } from '$app/stores'
   import GitHubCorner from 'svelte-github-corner'
   import '../app.css'
   import Header from '../components/Header.svx'
+  import { repo_url } from '../lib'
 </script>
 
-<GitHubCorner
-  href="https://github.com/janosh/svelte-bricks"
-  --ghc-color="var(--bodyBg)"
-  --ghc-bg="white"
-/>
+<GitHubCorner href={repo_url} --ghc-color="var(--bodyBg)" --ghc-bg="white" />
+
+{#if $page.url.pathname !== `/`}
+  <a href="/" sveltekit:prefetch aria-label="Back to index page">&laquo; back</a>
+{/if}
 
 <Header />
 
@@ -32,7 +34,17 @@
       line-height: 1.1em;
     }
   }
-  :global(.hide-in-docs) {
-    display: none; /* needed to hide part of readme on deployed site */
+  a[href='/'] {
+    font-size: 16pt;
+    position: absolute;
+    top: 2em;
+    left: 2em;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 1pt 5pt;
+    border-radius: 3pt;
+    transition: 0.2s;
+  }
+  a[href='/']:hover {
+    background-color: rgba(255, 255, 255, 0.2);
   }
 </style>
