@@ -11,12 +11,11 @@
 [![NPM version](https://img.shields.io/npm/v/svelte-bricks?color=blue&logo=NPM)](https://npmjs.com/package/svelte-bricks)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/c3213069-e3cc-45ef-a446-b2358b9a35fb/deploy-status)](https://app.netlify.com/sites/svelte-bricks/deploys)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/janosh/svelte-bricks/main.svg)](https://results.pre-commit.ci/latest/github/janosh/svelte-bricks/main)
+[![Open in StackBlitz](https://img.shields.io/badge/Open%20in-StackBlitz-darkblue?logo=pytorchlightning)](https://stackblitz.com/github/janosh/svelte-bricks)
 
 </h4>
 
-Naive implementation in Svelte without column balancing.
-
-**[Live demo](https://svelte-bricks.netlify.app)**
+Naive implementation in Svelte without column balancing. **[Live demo](https://svelte-bricks.netlify.app)**
 
 </div>
 

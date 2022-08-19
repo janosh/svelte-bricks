@@ -1,9 +1,9 @@
 <script lang="ts">
   import { page } from '$app/stores'
+  import { repo_url } from '$lib'
   import GitHubCorner from 'svelte-github-corner'
   import '../app.css'
   import Header from '../components/Header.svx'
-  import { repo_url } from '../lib'
 </script>
 
 <GitHubCorner href={repo_url} --ghc-color="var(--bodyBg)" --ghc-bg="white" />

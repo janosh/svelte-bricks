@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Masonry from '../lib/Masonry.svelte'
+  import Masonry from '$lib/Masonry.svelte'
   import Box from './Box.svelte'
   import Slider from './Slider.svelte'
   import Toggle from './Toggle.svelte'
