@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Masonry, { repo_url } from '../lib'
+  import Masonry, { repo_url } from '$lib'
 
   type File = {
     name: string
