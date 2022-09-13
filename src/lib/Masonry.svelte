@@ -2,26 +2,25 @@
   import { flip } from 'svelte/animate'
   import { fade } from 'svelte/transition'
 
-  export let items: Item[]
-  export let minColWidth = 330
-  export let maxColWidth = 500
-  export let gap = 20
-  export let masonryWidth = 0
-  export let masonryHeight = 0
   export let animate = true
-  export let style = ``
-  export let duration = 200
-
   export { className as class }
   export let columnClass = ``
+  export let duration = 200
+  export let gap = 20
   // On non-primitive types, we need a property to tell masonry items apart. This component
   // hard-codes the name of this property to 'id'. See https://svelte.dev/tutorial/keyed-each-blocks.
-  export let idKey = `id`
   export let getId = (item: Item) => {
-    if (typeof item === `string`) return item
     if (typeof item === `number`) return item
+    if (typeof item === `string`) return item
     return (item as Record<string, unknown>)[idKey]
   }
+  export let idKey = `id`
+  export let items: Item[]
+  export let masonryHeight = 0
+  export let masonryWidth = 0
+  export let maxColWidth = 500
+  export let minColWidth = 330
+  export let style = ``
 
   type Item = $$Generic
   let className = ``

@@ -11,7 +11,7 @@
 [![NPM version](https://img.shields.io/npm/v/svelte-bricks?color=blue&logo=NPM)](https://npmjs.com/package/svelte-bricks)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/c3213069-e3cc-45ef-a446-b2358b9a35fb/deploy-status)](https://app.netlify.com/sites/svelte-bricks/deploys)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/janosh/svelte-bricks/main.svg)](https://results.pre-commit.ci/latest/github/janosh/svelte-bricks/main)
-[![Open in StackBlitz](https://img.shields.io/badge/Open%20in-StackBlitz-darkblue?logo=pytorchlightning)](https://stackblitz.com/github/janosh/svelte-bricks)
+[![Open in StackBlitz](https://img.shields.io/badge/Open%20in-StackBlitz-darkblue?logo=stackblitz)](https://stackblitz.com/github/janosh/svelte-bricks)
 
 </h4>
 
@@ -67,19 +67,87 @@ h)
 
 Additional optional props are:
 
-- `items: (string | number | object)[]`: required
-- `minColWidth: number = 330` (in `px`)
-- `maxColWidth: number = 500` (in `px`)
-- `gap: number = 20` (in `px`)
-- `masonryWidth: number = 0`: Bound to the masonry `div`s width (in `px`).
-- `masonryHeight: number = 0`: Bound to the masonry `div`s height (in `px`).
-- `idKey: string = 'id'`: Name of the attribute to use as identifier if items are objects.
-- `getId: (item) => string | number`: Custom function that maps masonry items to unique IDs.
-- `animate: boolean = true`: Whether to [FLIP-animate](https://svelte.dev/tutorial/animate) masonry items when viewport resizing or other events cause `items` to rearrange.
-- `style: string = ''`: Inline styles that will be applied to the top-level `div.masonry`.
-- `duration: number = 200`: Transition duration in milli seconds when masonry items are rearranged or added/removed. Set to 0 to disable transitions.
-- `class: string = ''`: Applies to the outer `div` wrapping all masonry columns. For use with CSS frameworks like Tailwind.
-- `columnClass: string = ''`: Applies to each column `div`.
+1. ```ts
+   animate: boolean = true
+   ```
+
+   Whether to [FLIP-animate](https://svelte.dev/tutorial/animate) masonry items when viewport resizing or other events cause `items` to rearrange.
+
+1. ```ts
+   class: string = ''
+   ```
+
+   Applies to the outer `div` wrapping all masonry columns. For use with CSS frameworks like Tailwind.
+
+1. ```ts
+   columnClass: string = ''
+   ```
+
+   Applies to each column `div`.
+
+1. ```ts
+   duration: number = 200
+   ```
+
+   Transition duration in milli seconds when masonry items are rearranged or added/removed. Set to 0 to disable transitions.
+
+1. ```ts
+   gap: number = 20
+   ```
+
+   Gap between columns and items within each column in `px`.
+
+1. ```ts
+   getId: (Item) => string | number = (item: Item) => {
+     if (typeof item === `number`) return item
+     if (typeof item === `string`) return item
+     return (item as Record<string, unknown>)[idKey]
+   }
+   ```
+
+   Custom function that maps masonry items to unique IDs of type `string` or `number`.
+
+1. ```ts
+   idKey: string = 'id'
+   ```
+
+   Name of the attribute to use as identifier if items are objects.
+
+1. ```ts
+   items: (string | number | object)[]
+   ```
+
+   required
+
+1. ```ts
+   masonryHeight: number = 0
+   ```
+
+   The masonry `div`s height in `px`.
+
+1. ```ts
+   masonryWidth: number = 0
+   ```
+
+   The masonry `div`s width in `px`.
+
+1. ```ts
+   maxColWidth: number = 500
+   ```
+
+   Maximum column width in `px`.
+
+1. ```ts
+   minColWidth: number = 330
+   ```
+
+   Minimum column width in `px`.
+
+1. ```ts
+   style: string = ''
+   ```
+
+   Inline styles that will be applied to the top-level `div.masonry`.
 
 ## Styling
 
