@@ -1,28 +1,18 @@
-import Masonry from '$lib'
 import { readFileSync } from 'fs'
-import { expect, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 
 const readme = readFileSync(`readme.md`, `utf8`)
+const masonry_src = readFileSync(`src/lib/Masonry.svelte`, `utf8`)
 
-test(`readme documents all props and their correct types and defaults`, () => {
-  const instance = new Masonry({
-    target: document.body,
-    props: { items: [] },
-  })
-  const { props, ctx } = instance.$$
+describe(`readme`, () => {
+  test(`documents all props and their correct types and defaults`, () => {
+    for (let line of masonry_src.split(`\n`)) {
+      if (line.trim().startsWith(`export let `)) {
+        line = line.replace(`export let `, ``).split(` //`)[0].trim()
+        line = `1. \`\`\`ts\n   ${line}`
 
-  for (const [prop, ctx_idx] of Object.entries(props)) {
-    let default_val = ctx[ctx_idx as number]
-    const type: string = typeof default_val
-
-    if (type === `string`) default_val = `'${default_val}'`
-
-    if ([`string`, `number`, `boolean`].includes(type)) {
-      const expected = `1. \`\`\`ts\n   ${prop}: ${type} = ${default_val}\n   \`\`\``
-
-      expect(readme).to.contain(expected)
-    } else {
-      expect(readme).to.contain(`1. \`\`\`ts\n   ${prop}: `)
+        expect(readme, `${line} not in readme.md`).to.contain(line)
+      }
     }
-  }
+  })
 })

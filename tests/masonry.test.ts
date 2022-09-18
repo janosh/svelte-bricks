@@ -1,8 +1,12 @@
-import { describe, expect, test } from 'vitest'
-import Masonry from '../src/lib'
+import Masonry from '$lib'
+import { beforeEach, describe, expect, test } from 'vitest'
 
 const n_items = 30
 const indices = [...Array(n_items).keys()]
+
+beforeEach(() => {
+  document.body.innerHTML = ``
+})
 
 describe(`Masonry`, () => {
   test(`renders items`, async () => {

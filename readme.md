@@ -74,13 +74,13 @@ Additional optional props are:
    Whether to [FLIP-animate](https://svelte.dev/tutorial/animate) masonry items when viewport resizing or other events cause `items` to rearrange.
 
 1. ```ts
-   class: string = ''
+   class: string = ``
    ```
 
    Applies to the outer `div` wrapping all masonry columns. For use with CSS frameworks like Tailwind.
 
 1. ```ts
-   columnClass: string = ''
+   columnClass: string = ``
    ```
 
    Applies to each column `div`.
@@ -98,26 +98,26 @@ Additional optional props are:
    Gap between columns and items within each column in `px`.
 
 1. ```ts
-   getId: (Item) => string | number = (item: Item) => {
+   getId = (item: Item): string | number => {
      if (typeof item === `number`) return item
      if (typeof item === `string`) return item
-     return (item as Record<string, unknown>)[idKey]
+     return item[idKey]
    }
    ```
 
    Custom function that maps masonry items to unique IDs of type `string` or `number`.
 
 1. ```ts
-   idKey: string = 'id'
+   idKey: string = `id`
    ```
 
    Name of the attribute to use as identifier if items are objects.
 
 1. ```ts
-   items: (string | number | object)[]
+   items: Item[]
    ```
 
-   required
+   The only required prop are the list of items to render where `Item = $$Generic` is a generic type which usually will be `object` but can also be simple types `string` or `number`.
 
 1. ```ts
    masonryHeight: number = 0
@@ -144,7 +144,7 @@ Additional optional props are:
    Minimum column width in `px`.
 
 1. ```ts
-   style: string = ''
+   style: string = ``
    ```
 
    Inline styles that will be applied to the top-level `div.masonry`.
