@@ -36,7 +36,7 @@ describe(`Masonry`, () => {
   })
 
   // style not being applied in test DOM for unknown reason, skipping for now
-  test.skip(`applies style prop correctly`, async () => {
+  test(`applies style prop correctly`, async () => {
     const bg_color = `background-color: darkblue;`
     new Masonry({
       target: document.body,
@@ -49,7 +49,7 @@ describe(`Masonry`, () => {
   })
 
   // same as above
-  test.skip(`sets maxColWidth and gap correctly as style attribute`, async () => {
+  test(`sets maxColWidth and gap correctly as style attribute`, async () => {
     const [maxColWidth, gap] = [100, 10]
     new Masonry({
       target: document.body,
