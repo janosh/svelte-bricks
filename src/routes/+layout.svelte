@@ -9,7 +9,7 @@
 <GitHubCorner href={repo_url} --ghc-color="var(--bodyBg)" --ghc-bg="white" />
 
 {#if $page.url.pathname !== `/`}
-  <a href="/" data-sveltekit-prefetch aria-label="Back to index page">&laquo; back</a>
+  <a href="/" aria-label="Back to index page">&laquo; back</a>
 {/if}
 
 <Header />
