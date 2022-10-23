@@ -6,6 +6,7 @@ specifiers:
   '@sveltejs/package': ^1.0.0-next.5
   '@typescript-eslint/eslint-plugin': ^5.40.1
   '@typescript-eslint/parser': ^5.40.1
+  devalue: ^4.0.1
   eslint: ^8.25.0
   eslint-plugin-svelte3: ^4.0.0
   jsdom: ^20.0.1
@@ -27,6 +28,7 @@ devDependencies:
   '@sveltejs/package': 1.0.0-next.5_besnmoibwkhwtentvwuriss7pa
   '@typescript-eslint/eslint-plugin': 5.40.1_ukgdydjtebaxmxfqp5v5ulh64y
   '@typescript-eslint/parser': 5.40.1_z4bbprzjrhnsfa24uvmcbu7f5q
+  devalue: 4.0.1
   eslint: 8.25.0
   eslint-plugin-svelte3: 4.0.0_2h6d4ngklmojchucosx7yvuw7m
   jsdom: 20.0.1
