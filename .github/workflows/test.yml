@@ -24,6 +24,7 @@ jobs:
       - name: Set up node
         uses: actions/setup-node@v3
         with:
+          node-version: 18
           cache: pnpm
 
       - name: Install dependencies
@@ -39,4 +40,4 @@ jobs:
           pnpm package
           npm publish ./package
         env:
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
