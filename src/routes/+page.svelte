@@ -2,7 +2,10 @@
   import Readme from '../../readme.md'
   import Collapsible from '../components/Collapsible.svelte'
   import Example from '../components/Example.svelte'
+  import Header from '../components/Header.svx'
 </script>
+
+<Header />
 
 <p>Naive implementation in Svelte without column balancing.</p>
 

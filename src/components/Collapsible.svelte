@@ -28,7 +28,7 @@
 <style>
   button {
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 4pt;
     width: max-content;
     padding: 4pt 1ex;
@@ -41,13 +41,13 @@
   }
   button:hover {
     transform: scale(1.01);
-    background: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.2);
   }
   div {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 4pt;
     overflow: scroll;
-    padding: 4pt 1ex;
+    padding: 0 1em 1ex;
     text-align: left;
   }
 </style>

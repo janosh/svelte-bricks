@@ -3,7 +3,6 @@
   import { repo_url } from '$lib'
   import GitHubCorner from 'svelte-github-corner'
   import '../app.css'
-  import Header from '../components/Header.svx'
 </script>
 
 <GitHubCorner href={repo_url} --ghc-color="var(--bodyBg)" --ghc-bg="white" />
@@ -11,8 +10,6 @@
 {#if $page.url.pathname !== `/`}
   <a href="/" aria-label="Back to index page">&laquo; back</a>
 {/if}
-
-<Header />
 
 <slot />
 
