@@ -56,7 +56,7 @@ h)
 </Masonry>
 ```
 
-**Note**: On non-primitive items, i.e. if `items` is an array of objects, this component by default tries to access a key named `'id'` on each item. This value is used to tell items apart in the keyed `{#each}` block that renders the masonry layout. Without it, Svelte could not avoid duplicates when new items are added or existing ones rearranged. Read the [Svelte docs](https://svelte.dev/tutorial/keyed-each-blocks) for details. To change the name of the identifier key, use the `idKey` prop. You can also pass in a custom function as `getId` that should map items to unique IDs.
+**Note**: If `items` is an array of objects, this component tries to access an `id` property on each item. This value is used to tell items apart in the keyed `{#each}` block that creates the masonry layout. Without it, Svelte could not avoid duplicates when new items are added or existing ones rearranged. Read the [Svelte docs](https://svelte.dev/tutorial/keyed-each-blocks) for details. To change the name of the identifier key, pass `idKey="some-uniq-key`. Or pass a function `getId = (item: Item) => string | number` that maps items to unique IDs.
 
 **Hint**: Balanced columns can be achieved even with this simple implementation if masonry items are allowed to stretch to the column height.
 

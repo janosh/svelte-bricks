@@ -26,7 +26,7 @@
 </script>
 
 <p>
-  See <a href={example_code_url}> the code </a> powering this example.
+  View <a href={example_code_url}>the code </a> powering this example.
 </p>
 
 <br />

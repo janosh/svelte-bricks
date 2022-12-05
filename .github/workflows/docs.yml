@@ -1,8 +1,6 @@
 name: Docs
 
 on:
-  pull_request:
-    branches: [main]
   push:
     branches: [main]
   workflow_dispatch:
@@ -13,13 +11,8 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: true # allow one concurrent deployment
-
 jobs:
   build:
-    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Check out repo
@@ -47,7 +40,6 @@ jobs:
           path: build
 
   deploy:
-    name: Deploy
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
