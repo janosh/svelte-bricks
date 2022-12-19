@@ -49,6 +49,9 @@
 {/await}
 
 <style>
+  p {
+    text-align: center;
+  }
   li {
     list-style: none;
     text-transform: capitalize;

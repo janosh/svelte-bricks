@@ -11,7 +11,7 @@
   let gap = 20
   let masonryWidth: number, masonryHeight: number
 
-  let slideFlip = false
+  let slide_flip = false
 </script>
 
 <div class="controls">
@@ -35,12 +35,15 @@
   bind:masonryWidth
   bind:masonryHeight
 >
-  <Box index={item} {slideFlip} />
+  <Box index={item} {slide_flip} />
 </Masonry>
 
-<p>Sliding card flip?<Toggle name="Slide flip" bind:checked={slideFlip} /></p>
+<p>Sliding card flip?<Toggle name="Slide flip" bind:checked={slide_flip} /></p>
 
 <style>
+  :is(div, p) {
+    text-align: center;
+  }
   .controls {
     display: flex;
     flex-wrap: wrap;

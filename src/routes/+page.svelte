@@ -15,12 +15,24 @@
 
 <Example />
 
-<h2>See another example with dynamically fetched images</h2>
-
-<a href="/fetch-images-example"><code>fetch-images-example.svelte</code></a>
+<footer>
+  <a href="/fetch-images-example">example with dynamically fetched images</a>
+  &bull;
+  <a href="/changelog">changelog</a>
+</footer>
 
 <style>
   :global(.hide-in-docs) {
     display: none; /* needed to hide part of readme on deployed site */
+  }
+  p {
+    text-align: center;
+  }
+  footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5pt;
+    place-content: center;
+    margin-top: 5em;
   }
 </style>
