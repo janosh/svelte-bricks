@@ -33,6 +33,7 @@
     width: max-content;
     padding: 4pt 1ex;
     box-sizing: border-box;
+    display: block;
     margin: 2em auto;
     transition: 0.3s;
     border: none;
@@ -48,6 +49,5 @@
     border-radius: 4pt;
     overflow: scroll;
     padding: 0 1em 1ex;
-    text-align: left;
   }
 </style>

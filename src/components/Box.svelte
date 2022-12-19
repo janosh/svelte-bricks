@@ -1,21 +1,27 @@
 <script lang="ts">
   export let index: number
-  export let slideFlip = false
+  export let slide_flip = false
 
   let flipped = false
 
   const height = 100 + 200 * Math.random()
 
-  const randColor = () => Math.random().toString(16).substr(-6)
+  const random_color = () => Math.random().toString(16).substr(-6)
+  function flip(event: MouseEvent | KeyboardEvent) {
+    if (event instanceof MouseEvent || [` `, `Enter`].includes(event.key)) {
+      flipped = !flipped
+    }
+  }
 
-  const bg = `linear-gradient(45deg, #${randColor()}, #${randColor()})`
+  const bg = `linear-gradient(45deg, #${random_color()}, #${random_color()})`
 </script>
 
 <div
   style="min-height: {height}px;"
-  on:click={() => (flipped = !flipped)}
+  on:click={flip}
+  on:keyup={flip}
   class:flipped
-  class:slideFlip
+  class:slide-flip={slide_flip}
 >
   <!-- background: {bg} must be applied to the p tags, not the div as backface-visibility: hidden would hide text on backface -->
   <p style="background: {bg};">
@@ -50,14 +56,14 @@
   div:hover.flipped {
     transform: rotateY(-180deg) scale(1.03);
   }
-  div.slideFlip {
+  div.slide-flip {
     transition: 1s;
   }
-  div.flipped.slideFlip {
+  div.flipped.slide-flip {
     transform-origin: center right;
     transform: translateX(-100%) rotateY(-180deg);
   }
-  div:hover.flipped.slideFlip {
+  div:hover.flipped.slide-flip {
     transform-origin: center right;
     transform: translateX(-100%) rotateY(-180deg) scale(1.03);
   }

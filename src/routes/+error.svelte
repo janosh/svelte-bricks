@@ -26,7 +26,7 @@
   {/if}
 
   <p>
-    Back to <a href="."> landing page </a>.
+    Back to <a href=".">landing page</a>.
   </p>
 </div>
 
@@ -37,9 +37,5 @@
     padding: 5em 3em 1em;
     margin: auto;
     text-align: center;
-  }
-  p img {
-    vertical-align: middle;
-    margin: 0 1pt 0 3pt;
   }
 </style>
