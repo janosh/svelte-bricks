@@ -1,11 +1,15 @@
 <script lang="ts">
   import { page } from '$app/stores'
   import { repo_url } from '$lib'
-  import GitHubCorner from 'svelte-github-corner'
+  import { GitHubCorner } from 'svelte-zoo'
   import '../app.css'
 </script>
 
-<GitHubCorner href={repo_url} --ghc-color="var(--bodyBg)" --ghc-bg="white" />
+<GitHubCorner
+  href={repo_url}
+  --zoo-github-corner-color="var(--page-bg)"
+  --zoo-github-corner-bg="white"
+/>
 
 {#if $page.url.pathname !== `/`}
   <a href="/" aria-label="Back to index page">&laquo; home</a>

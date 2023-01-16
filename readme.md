@@ -22,7 +22,7 @@ Naive implementation in Svelte without column balancing. **[Live demo](https://j
 ## Installation
 
 ```sh
-npm install -D svelte-bricks
+npm install --dev svelte-bricks
 ```
 
 ## Usage
