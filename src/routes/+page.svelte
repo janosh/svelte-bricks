@@ -1,8 +1,6 @@
 <script lang="ts">
-  import Readme from '../../readme.md'
-  import Collapsible from '../components/Collapsible.svelte'
-  import Example from '../components/Example.svelte'
-  import Header from '../components/Header.svx'
+  import Readme from '$root/readme.md'
+  import { Collapsible, Example, Header } from '$site'
 </script>
 
 <Header />
