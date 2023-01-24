@@ -1,8 +1,7 @@
 <script lang="ts">
-  import Masonry from '$lib/Masonry.svelte'
-  import Box from './Box.svelte'
-  import Slider from './Slider.svelte'
-  import Toggle from './Toggle.svelte'
+  import { Masonry } from '$lib'
+  import { Toggle } from 'svelte-zoo'
+  import { Box, Slider } from '.'
 
   let nItems = 30
   $: indices = [...Array(nItems).keys()]
@@ -38,12 +37,12 @@
   <Box index={item} {slide_flip} />
 </Masonry>
 
-<p>Sliding card flip?<Toggle name="Slide flip" bind:checked={slide_flip} /></p>
+<p>
+  Sliding card flip?
+  <Toggle bind:checked={slide_flip} />
+</p>
 
 <style>
-  :is(div, p) {
-    text-align: center;
-  }
   .controls {
     display: flex;
     flex-wrap: wrap;
@@ -56,5 +55,11 @@
     border-radius: 4pt;
     vertical-align: middle;
     background: #0075ff;
+  }
+  p {
+    display: flex;
+    gap: 6pt;
+    place-content: center;
+    place-items: center;
   }
 </style>
