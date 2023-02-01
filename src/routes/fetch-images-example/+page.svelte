@@ -1,5 +1,6 @@
 <script lang="ts">
-  import Masonry, { repo_url } from '$lib'
+  import Masonry from '$lib'
+  import { repository } from '$root/package.json'
 
   type File = {
     name: string
@@ -22,7 +23,7 @@
     }
   }
 
-  const example_code_url = `${repo_url}/blob/main/src/routes/fetch-images-example.svelte`
+  const example_code_url = `${repository}/blob/-/src/routes/fetch-images-example/+page.svelte`
 </script>
 
 <p>

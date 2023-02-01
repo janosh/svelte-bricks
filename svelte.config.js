@@ -16,7 +16,7 @@ export default {
 
     alias: {
       $root: `.`,
-      $site: `./src/site`,
+      $site: `src/site`,
     },
   },
 }

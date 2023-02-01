@@ -7,7 +7,7 @@
   "license": "MIT",
   "version": "0.1.7",
   "type": "module",
-  "svelte": "Masonry.svelte",
+  "svelte": "./dist/index.js",
   "bugs": "https://github.com/janosh/svelte-bricks/issues",
   "scripts": {
     "dev": "vite dev",
@@ -15,31 +15,33 @@
     "preview": "vite preview",
     "package": "svelte-package",
     "serve": "vite build && vite preview",
-    "check": "svelte-check --ignore package",
+    "check": "svelte-check --ignore dist",
     "test": "vitest test",
     "changelog": "npx auto-changelog --package --output changelog.md --hide-credit --commit-limit false"
   },
+  "dependencies": {
+    "svelte": "^3.55.1"
+  },
   "devDependencies": {
-    "@sveltejs/adapter-static": "^1.0.4",
-    "@sveltejs/kit": "^1.1.1",
-    "@sveltejs/package": "1.0.2",
-    "@typescript-eslint/eslint-plugin": "^5.48.1",
-    "@typescript-eslint/parser": "^5.48.1",
-    "eslint": "^8.32.0",
+    "@sveltejs/adapter-static": "^2.0.1",
+    "@sveltejs/kit": "^1.9.2",
+    "@sveltejs/package": "^2.0.2",
+    "@typescript-eslint/eslint-plugin": "^5.54.0",
+    "@typescript-eslint/parser": "^5.54.0",
+    "eslint": "^8.35.0",
     "eslint-plugin-svelte3": "^4.0.0",
-    "jsdom": "^21.0.0",
+    "jsdom": "^21.1.0",
     "mdsvex": "^0.10.6",
-    "prettier": "^2.8.3",
+    "prettier": "^2.8.4",
     "prettier-plugin-svelte": "^2.9.0",
-    "svelte": "^3.55.1",
-    "svelte-check": "^3.0.2",
-    "svelte-preprocess": "^5.0.0",
+    "svelte-check": "^3.0.4",
+    "svelte-preprocess": "^5.0.1",
     "svelte-toc": "^0.5.2",
-    "svelte-zoo": "^0.2.1",
-    "svelte2tsx": "^0.6.0",
-    "typescript": "^4.9.4",
-    "vite": "^4.0.4",
-    "vitest": "^0.27.1"
+    "svelte-zoo": "^0.3.4",
+    "svelte2tsx": "^0.6.2",
+    "typescript": "^4.9.5",
+    "vite": "^4.1.4",
+    "vitest": "^0.29.2"
   },
   "keywords": [
     "svelte",
@@ -49,5 +51,20 @@
   ],
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "exports": {
+    "./Masonry.svelte": {
+      "types": "./dist/Masonry.svelte.d.ts",
+      "svelte": "./dist/Masonry.svelte",
+      "default": "./dist/Masonry.svelte"
+    },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "svelte": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ]
 }
