@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Masonry } from '$lib'
-  import { Toggle } from 'svelte-zoo'
-  import { Box, Slider } from '.'
+  import { Slider, Toggle } from 'svelte-zoo'
+  import { Box } from '.'
 
   let nItems = 30
   $: indices = [...Array(nItems).keys()]

@@ -1,12 +1,12 @@
 <script lang="ts">
   import { page } from '$app/stores'
-  import { repo_url } from '$lib'
+  import { repository } from '$root/package.json'
   import { GitHubCorner } from 'svelte-zoo'
   import '../app.css'
 </script>
 
 <GitHubCorner
-  href={repo_url}
+  href={repository}
   --zoo-github-corner-color="var(--page-bg)"
   --zoo-github-corner-bg="white"
 />
