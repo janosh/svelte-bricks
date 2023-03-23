@@ -1,4 +1,5 @@
 import Masonry from '$lib'
+import { tick } from 'svelte'
 import { beforeEach, describe, expect, test } from 'vitest'
 
 const n_items = 30
@@ -9,18 +10,19 @@ beforeEach(() => {
 })
 
 describe(`Masonry`, () => {
-  test(`renders items`, async () => {
-    const masonry = new Masonry({
-      target: document.body,
-      props: { items: indices },
-    })
+  test.each([[true], [false]])(
+    `renders items with animate=%s`,
+    async (animate) => {
+      new Masonry({
+        target: document.body,
+        props: { items: indices, animate },
+      })
 
-    expect(masonry).toBeTruthy()
+      const items = document.querySelectorAll(`div.masonry > div.col > *`)
 
-    const items = document.querySelectorAll(`div.masonry > div.col > div`)
-
-    expect(items.length).toBe(n_items)
-  })
+      expect(items.length).toBe(n_items)
+    }
+  )
 
   test(`attaches class props correctly`, async () => {
     new Masonry({
@@ -35,7 +37,6 @@ describe(`Masonry`, () => {
     expect(items.length).toBe(n_items)
   })
 
-  // style not being applied in test DOM for unknown reason, skipping for now
   test(`applies style prop correctly`, async () => {
     const bg_color = `background-color: darkblue;`
     new Masonry({
@@ -48,7 +49,6 @@ describe(`Masonry`, () => {
     expect(outer_masonry_div?.getAttribute(`style`)).toContain(bg_color)
   })
 
-  // same as above
   test(`sets maxColWidth and gap correctly as style attribute`, async () => {
     const [maxColWidth, gap] = [100, 10]
     new Masonry({
@@ -56,7 +56,7 @@ describe(`Masonry`, () => {
       props: { items: indices, maxColWidth, gap },
     })
 
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await tick()
 
     const outer_masonry_div = document.querySelector(`div.masonry > div.col`)
 
