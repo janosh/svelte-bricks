@@ -50,12 +50,16 @@
             out:fade|local={{ delay: 0, duration }}
             animate:flip={{ duration }}
           >
-            <slot {idx} {item} />
+            <slot {idx} {item}>
+              <span>{item}</span>
+            </slot>
           </div>
         {/each}
       {:else}
         {#each col as [item, idx] (getId(item))}
-          <slot {idx} {item} />
+          <slot {idx} {item}>
+            <span>{item}</span>
+          </slot>
         {/each}
       {/if}
     </div>
