@@ -2,20 +2,25 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
-#### Unreleased
+#### [v0.2.0](https://github.com/janosh/svelte-bricks/compare/v0.1.7...v0.2.0)
 
+> 23 May 2023
+
+- DRY workflows [`#20`](https://github.com/janosh/svelte-bricks/pull/20)
+- Small stuff [`#19`](https://github.com/janosh/svelte-bricks/pull/19)
 - Deploy site to GitHub Pages [`#17`](https://github.com/janosh/svelte-bricks/pull/17)
 - `yarn` to `pnpm` [`#16`](https://github.com/janosh/svelte-bricks/pull/16)
-- [pre-commit.ci] pre-commit autoupdate [`#14`](https://github.com/janosh/svelte-bricks/pull/14)
 - add Masonry example rendering dynamically loaded images (closes #5) [`#5`](https://github.com/janosh/svelte-bricks/issues/5)
+- add changelog.md [`d5f0a97`](https://github.com/janosh/svelte-bricks/commit/d5f0a9712f4b84e2d23451b71fd619c28301964e)
+- upgrade svelte-package to v2 [`6b70850`](https://github.com/janosh/svelte-bricks/commit/6b7085029c5f6b5a0671a833da97fa8ac283ed15)
 - use code fences to document props in readme [`e282a7f`](https://github.com/janosh/svelte-bricks/commit/e282a7fb4bbd8fae33abc1747757e9c1cf1b06b6)
-- add changelog.md [`e3de4bb`](https://github.com/janosh/svelte-bricks/commit/e3de4bb739148a7d4d9b3291cc2a1af13669c395)
 - test that readme documents no non-existent props [`4198f55`](https://github.com/janosh/svelte-bricks/commit/4198f55bd61465e1ad97442b665391ea09ee9acd)
 - tweak readme, update deps, add error page [`974d0e9`](https://github.com/janosh/svelte-bricks/commit/974d0e96b9b296af16eea32d6e4d5523a396c92d)
 - simplify readme props testing [`283e02e`](https://github.com/janosh/svelte-bricks/commit/283e02e004a22f498113d7684038fb45e15bee18)
 - update deps and fix sveltekit breaking changes [`36d9e77`](https://github.com/janosh/svelte-bricks/commit/36d9e771a58141f3da888c5605d80608cceb2076)
-- update deps: sveltekit to v1, vite to v4 [`67a3ed6`](https://github.com/janosh/svelte-bricks/commit/67a3ed6b5be5aa2a8a83761f1712c1f43322fa33)
+- replace svelte-github-corner with svelte-zoo [`e9e5d0b`](https://github.com/janosh/svelte-bricks/commit/e9e5d0b1575d48815887ea36ec5b9a1bcedad45f)
 - update to vite v3 [`35493b9`](https://github.com/janosh/svelte-bricks/commit/35493b9f5a7fe44420cd8d5f4f5a77410532678f)
+- setup root+site dir alias and clean up imports [`5325c2b`](https://github.com/janosh/svelte-bricks/commit/5325c2b74ecc5b107ffa47d5e92f376288f2d460)
 - tweak CSS for fetch-images-example.svelte [`5a1754c`](https://github.com/janosh/svelte-bricks/commit/5a1754c5f5e17a5387dca9cc1675c5e1dc00e325)
 - sveltekit routes auto migration [`54d2a44`](https://github.com/janosh/svelte-bricks/commit/54d2a4494b61ebd9543b715eec0294ba8eb47b6c)
 
@@ -31,7 +36,6 @@ All notable changes to this project will be documented in this file. Dates are d
 > 11 April 2022
 
 - Add class props for use with CSS frameworks like Tailwind [`#9`](https://github.com/janosh/svelte-bricks/pull/9)
-- [pre-commit.ci] pre-commit autoupdate [`#7`](https://github.com/janosh/svelte-bricks/pull/7)
 
 #### [v0.1.5](https://github.com/janosh/svelte-bricks/compare/v0.1.4...v0.1.5)
 
@@ -46,7 +50,6 @@ All notable changes to this project will be documented in this file. Dates are d
 - reduce duplication by importing readme into demo site [`8410fe0`](https://github.com/janosh/svelte-bricks/commit/8410fe07423557247afa276cd45df5bdc0a2d13c)
 - refactor index.svx: split out Example.svelte code [`9fa2b0c`](https://github.com/janosh/svelte-bricks/commit/9fa2b0c5565aec8042da18285b7e55cac5100cc9)
 - drop deprecated svelteBracketNewLine [`46e84cb`](https://github.com/janosh/svelte-bricks/commit/46e84cbfb363a34708cf7229a340f0e21bcf7c28)
-- [pre-commit.ci] pre-commit autoupdate [`a56391b`](https://github.com/janosh/svelte-bricks/commit/a56391b28d217ba945a77dbb8e4d1545ca17e096)
 - Masonry make crossfade transition local [`4debb8f`](https://github.com/janosh/svelte-bricks/commit/4debb8f4161faa82ccac242f206a9f6b6e159235)
 
 #### [v0.1.3](https://github.com/janosh/svelte-bricks/compare/v0.1.2...v0.1.3)
