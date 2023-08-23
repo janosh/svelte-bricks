@@ -29,7 +29,7 @@
     "@typescript-eslint/eslint-plugin": "^5.56.0",
     "@typescript-eslint/parser": "^5.56.0",
     "eslint": "^8.36.0",
-    "eslint-plugin-svelte3": "^4.0.0",
+    "eslint-plugin-svelte": "^4.0.0",
     "jsdom": "^21.1.1",
     "mdsvex": "^0.10.6",
     "prettier": "^2.8.6",
