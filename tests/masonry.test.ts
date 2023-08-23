@@ -21,7 +21,7 @@ describe(`Masonry`, () => {
       const items = document.querySelectorAll(`div.masonry > div.col > *`)
 
       expect(items.length).toBe(n_items)
-    }
+    },
   )
 
   test(`attaches class props correctly`, async () => {
@@ -31,7 +31,7 @@ describe(`Masonry`, () => {
     })
 
     const items = document.querySelectorAll(
-      `div.masonry.foo > div.col.bar > div`
+      `div.masonry.foo > div.col.bar > div`,
     )
 
     expect(items.length).toBe(n_items)
@@ -61,7 +61,7 @@ describe(`Masonry`, () => {
     const outer_masonry_div = document.querySelector(`div.masonry > div.col`)
 
     expect(outer_masonry_div?.getAttribute(`style`)).toContain(
-      `gap: ${gap}px; max-width: ${maxColWidth}px;`
+      `gap: ${gap}px; max-width: ${maxColWidth}px;`,
     )
   })
 })

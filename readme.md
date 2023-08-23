@@ -49,8 +49,8 @@ h)
   {maxColWidth}
   {gap}
   let:item
-  bind:width
-  bind:height
+  bind:masonryWidth={width}
+  bind:masonryHeight={height}
 >
   <Some {item} />
 </Masonry>

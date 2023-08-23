@@ -46,8 +46,8 @@
       {#if animate}
         {#each col as [item, idx] (getId(item))}
           <div
-            in:fade|local={{ delay: 100, duration }}
-            out:fade|local={{ delay: 0, duration }}
+            in:fade={{ delay: 100, duration }}
+            out:fade={{ delay: 0, duration }}
             animate:flip={{ duration }}
           >
             <slot {idx} {item}>
