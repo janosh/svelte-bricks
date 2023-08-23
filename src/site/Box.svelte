@@ -22,6 +22,8 @@
   on:keyup={flip}
   class:flipped
   class:slide-flip={slide_flip}
+  role="grid"
+  tabindex="0"
 >
   <!-- background: {bg} must be applied to the p tags, not the div as backface-visibility: hidden would hide text on backface -->
   <p style="background: {bg};">
