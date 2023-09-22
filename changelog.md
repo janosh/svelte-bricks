@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v0.2.1](https://github.com/janosh/svelte-bricks/compare/v0.2.0...v0.2.1)
+
+> 22 Sep 2023
+
+- Add `types` field to `package.json` [`#26`](https://github.com/janosh/svelte-bricks/pull/26)
+- Fixed misleading binding in usage example snippet [`#24`](https://github.com/janosh/svelte-bricks/pull/24)
+
 #### [v0.2.0](https://github.com/janosh/svelte-bricks/compare/v0.1.7...v0.2.0)
 
 > 23 May 2023
