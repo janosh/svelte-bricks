@@ -34,7 +34,7 @@ repos:
         stages: [commit, commit-msg]
 
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v8.49.0
+    rev: v8.50.0
     hooks:
       - id: eslint
         types: [file]
