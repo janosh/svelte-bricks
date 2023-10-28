@@ -19,4 +19,11 @@ export default {
       $site: `src/site`,
     },
   },
+
+  compilerOptions: {
+    // https://github.com/janosh/svelte-multiselect/issues/196
+    immutable: true,
+    // enable direct prop access for vitest unit tests
+    accessors: process.env.TEST,
+  },
 }
