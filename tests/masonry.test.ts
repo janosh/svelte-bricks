@@ -64,4 +64,19 @@ describe(`Masonry`, () => {
       `gap: ${gap}px; max-width: ${maxColWidth}px;`,
     )
   })
+
+  test(`calculates correct number of columns based masonryWidth, minColWidth, gap`, () => {
+    const masonryWidth = 370
+    const minColWidth = 50
+    const gap = 10
+    // floor((370 + 10) / (50 + 10)) = 6 columns
+    const expected_cols = Math.floor((masonryWidth + gap) / (minColWidth + gap))
+
+    const masonry = new Masonry({
+      target: document.body,
+      props: { items: indices, masonryWidth, minColWidth, gap },
+    })
+
+    expect(masonry.calcCols(masonryWidth, minColWidth, gap)).toBe(expected_cols)
+  })
 })

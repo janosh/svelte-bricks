@@ -20,16 +20,16 @@
     "changelog": "npx auto-changelog --package --output changelog.md --hide-credit --commit-limit false"
   },
   "dependencies": {
-    "svelte": "^4.2.1"
+    "svelte": "^4.2.2"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^2.0.3",
-    "@sveltejs/kit": "^1.25.0",
+    "@sveltejs/kit": "^1.27.1",
     "@sveltejs/package": "^2.2.2",
-    "@typescript-eslint/eslint-plugin": "^6.7.2",
-    "@typescript-eslint/parser": "^6.7.2",
-    "eslint": "^8.49.0",
-    "eslint-plugin-svelte": "^2.33.2",
+    "@typescript-eslint/eslint-plugin": "^6.9.0",
+    "@typescript-eslint/parser": "^6.9.0",
+    "eslint": "^8.52.0",
+    "eslint-plugin-svelte": "^2.34.0",
     "jsdom": "^22.1.0",
     "mdsvex": "^0.11.0",
     "prettier": "^3.0.3",
@@ -38,10 +38,10 @@
     "svelte-preprocess": "^5.0.4",
     "svelte-toc": "^0.5.6",
     "svelte-zoo": "^0.4.9",
-    "svelte2tsx": "^0.6.22",
+    "svelte2tsx": "^0.6.23",
     "typescript": "^5.2.2",
-    "vite": "^4.4.9",
-    "vitest": "^0.34.5"
+    "vite": "^4.5.0",
+    "vitest": "^0.34.6"
   },
   "keywords": [
     "svelte",

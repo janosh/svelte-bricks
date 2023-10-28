@@ -3,6 +3,16 @@
   import { fade } from 'svelte/transition'
 
   export let animate: boolean = true
+  export let calcCols = (
+    masonryWidth: number,
+    minColWidth: number,
+    gap: number
+  ): number => {
+    return Math.min(
+      items.length,
+      Math.floor((masonryWidth + gap) / (minColWidth + gap)) || 1
+    )
+  }
   export { className as class }
   export let columnClass: string = ``
   export let duration: number = 200
@@ -25,7 +35,7 @@
   type Item = $$Generic
   let className = ``
 
-  $: nCols = Math.min(items.length, Math.floor(masonryWidth / (minColWidth + gap)) || 1)
+  $: nCols = calcCols(masonryWidth, minColWidth, gap)
   $: itemsToCols = items.reduce(
     (cols: [Item, number][][], item, idx) => {
       cols[idx % cols.length].push([item, idx])

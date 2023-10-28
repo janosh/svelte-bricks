@@ -73,6 +73,21 @@ Additional optional props are:
    Whether to [FLIP-animate](https://svelte.dev/tutorial/animate) masonry items when viewport resizing or other events cause `items` to rearrange.
 
 1. ```ts
+   calcCols = (
+     masonryWidth: number,
+     minColWidth: number,
+     gap: number,
+   ): number => {
+     return Math.min(
+       items.length,
+       Math.floor((masonryWidth + gap) / (minColWidth + gap)) || 1,
+     )
+   }
+   ```
+
+   Function used to compute the number of columns based on the masonry width, minimum column width and gap.
+
+1. ```ts
    class: string = ``
    ```
 
