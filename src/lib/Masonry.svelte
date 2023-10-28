@@ -25,7 +25,10 @@
   type Item = $$Generic
   let className = ``
 
-  $: nCols = Math.min(items.length, Math.floor(masonryWidth / (minColWidth + gap)) || 1)
+  $: nCols = Math.min(
+    items.length,
+    Math.floor((masonryWidth + gap) / (minColWidth + gap)) || 1
+  )
   $: itemsToCols = items.reduce(
     (cols: [Item, number][][], item, idx) => {
       cols[idx % cols.length].push([item, idx])
