@@ -1,6 +1,6 @@
 import Masonry from '$lib'
 import { tick } from 'svelte'
-import { beforeEach, describe, expect, test } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 const n_items = 30
 const indices = [...Array(n_items).keys()]
@@ -78,5 +78,21 @@ describe(`Masonry`, () => {
     })
 
     expect(masonry.calcCols(masonryWidth, minColWidth, gap)).toBe(expected_cols)
+  })
+
+  test(`warns if maxColWidth is less than minColWidth`, () => {
+    const minColWidth = 50
+    const maxColWidth = 40
+    console.warn = vi.fn()
+
+    new Masonry({
+      target: document.body,
+      props: { items: indices, minColWidth, maxColWidth },
+    })
+
+    expect(console.warn).toHaveBeenCalledWith(
+      `svelte-bricks: maxColWidth (${maxColWidth}) < minColWidth (${minColWidth}).`,
+    )
+    expect(console.warn).toHaveBeenCalledTimes(1)
   })
 })
