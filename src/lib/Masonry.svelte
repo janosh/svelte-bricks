@@ -6,11 +6,11 @@
   export let calcCols = (
     masonryWidth: number,
     minColWidth: number,
-    gap: number
+    gap: number,
   ): number => {
     return Math.min(
       items.length,
-      Math.floor((masonryWidth + gap) / (minColWidth + gap)) || 1
+      Math.floor((masonryWidth + gap) / (minColWidth + gap)) || 1,
     )
   }
   export { className as class }
@@ -32,6 +32,12 @@
   export let minColWidth: number = 330
   export let style: string = ``
 
+  $: if (maxColWidth < minColWidth) {
+    console.warn(
+      `svelte-bricks: maxColWidth (${maxColWidth}) < minColWidth (${minColWidth}).`
+    )
+  }
+
   type Item = $$Generic
   let className = ``
 
@@ -41,7 +47,7 @@
       cols[idx % cols.length].push([item, idx])
       return cols
     },
-    Array(nCols).fill(null).map(() => []) // prettier-ignore
+    Array(nCols).fill(null).map(() => []), // prettier-ignore
   )
 </script>
 
