@@ -107,4 +107,60 @@ describe(`Masonry`, () => {
     )
     expect(console.warn).toHaveBeenCalledTimes(1)
   })
+
+  test(`uses custom getId function for keyed each blocks`, () => {
+    const customItems = [{ customId: 1 }, { customId: 2 }]
+    const getId = vi.fn((item) => item.customId)
+
+    mount(Masonry, {
+      target: document.body,
+      props: { items: customItems, getId },
+    })
+
+    expect(getId).toHaveBeenCalled()
+    expect(getId).toHaveBeenCalledWith(customItems[0])
+  })
+
+  test(`uses custom idKey for object items`, () => {
+    const customItems = [{ myId: 1 }, { myId: 2 }]
+
+    mount(Masonry, {
+      target: document.body,
+      props: { items: customItems, idKey: `myId` },
+    })
+
+    const items = document.querySelectorAll(`div.masonry > div.col > div`)
+    expect(items.length).toBe(customItems.length)
+  })
+
+  test(`uses custom calcCols function`, () => {
+    const calcCols = vi.fn(() => 3)
+
+    mount(Masonry, {
+      target: document.body,
+      props: { items: indices, calcCols },
+    })
+
+    expect(calcCols).toHaveBeenCalled()
+    const columns = document.querySelectorAll(`div.masonry > div.col`)
+    expect(columns.length).toBe(3)
+  })
+
+  test(`distributes items evenly across columns`, () => {
+    const n_cols = 3
+    mount(Masonry, {
+      target: document.body,
+      props: { items: indices, calcCols: () => n_cols },
+    })
+
+    const columns = document.querySelectorAll(`div.masonry > div.col`)
+    const items_per_col = Math.ceil(indices.length / n_cols)
+
+    columns.forEach((col) => {
+      const col_items = col.children.length
+      // Each column should have either itemsPerCol or itemsPerCol-1 items
+      expect(col_items).toBeGreaterThanOrEqual(items_per_col - 1)
+      expect(col_items).toBeLessThanOrEqual(items_per_col)
+    })
+  })
 })
