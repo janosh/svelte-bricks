@@ -12,9 +12,8 @@
   }
 
   async function fetch_gh_files(): Promise<File[]> {
-    const response = await fetch(
-      `https://api.github.com/repos/vscode-icons/vscode-icons/contents/icons?ref=master`
-    )
+    const icons_url = `https://api.github.com/repos/vscode-icons/vscode-icons/contents/icons?ref=master`
+    const response = await fetch(icons_url)
 
     if (response.ok) {
       return response.json()
@@ -40,12 +39,14 @@
       <strong><code>vscode-icons</code></strong>
     </a>
   </p>
-  <Masonry items={files} let:item idKey="name" minColWidth={100}>
-    {@const { name, download_url } = item}
-    <li>
-      <span>{name.replace(`.svg`, ``).replaceAll(`_`, ` `)}</span>
-      <img src={download_url} alt={name} width="100" />
-    </li>
+  <Masonry items={files} idKey="name" minColWidth={100}>
+    {#snippet children({ item }: { item: File })}
+      {@const { name, download_url } = item}
+      <li>
+        <span>{name.replace(`.svg`, ``).replaceAll(`_`, ` `)}</span>
+        <img src={download_url} alt={name} width="100" />
+      </li>
+    {/snippet}
   </Masonry>
 {/await}
 

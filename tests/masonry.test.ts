@@ -1,9 +1,22 @@
 import Masonry from '$lib'
-import { tick } from 'svelte'
+import { mount, tick } from 'svelte'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 const n_items = 30
 const indices = [...Array(n_items).keys()]
+
+// Mock required browser APIs
+globalThis.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+// Mock Web Animations API
+Element.prototype.animate = vi.fn().mockReturnValue({
+  finished: Promise.resolve(),
+  cancel: () => {},
+})
 
 beforeEach(() => {
   document.body.innerHTML = ``
@@ -13,7 +26,7 @@ describe(`Masonry`, () => {
   test.each([[true], [false]])(
     `renders items with animate=%s`,
     async (animate) => {
-      new Masonry({
+      mount(Masonry, {
         target: document.body,
         props: { items: indices, animate },
       })
@@ -25,7 +38,7 @@ describe(`Masonry`, () => {
   )
 
   test(`attaches class props correctly`, async () => {
-    new Masonry({
+    mount(Masonry, {
       target: document.body,
       props: { items: indices, class: `foo`, columnClass: `bar` },
     })
@@ -39,7 +52,7 @@ describe(`Masonry`, () => {
 
   test(`applies style prop correctly`, async () => {
     const bg_color = `background-color: darkblue;`
-    new Masonry({
+    mount(Masonry, {
       target: document.body,
       props: { items: indices, style: bg_color },
     })
@@ -51,7 +64,7 @@ describe(`Masonry`, () => {
 
   test(`sets maxColWidth and gap correctly as style attribute`, async () => {
     const [maxColWidth, gap] = [100, 10]
-    new Masonry({
+    mount(Masonry, {
       target: document.body,
       props: { items: indices, maxColWidth, gap },
     })
@@ -66,18 +79,17 @@ describe(`Masonry`, () => {
   })
 
   test(`calculates correct number of columns based masonryWidth, minColWidth, gap`, () => {
-    const masonryWidth = 370
-    const minColWidth = 50
-    const gap = 10
+    const [masonryWidth, minColWidth, gap] = [370, 50, 10]
     // floor((370 + 10) / (50 + 10)) = 6 columns
     const expected_cols = Math.floor((masonryWidth + gap) / (minColWidth + gap))
 
-    const masonry = new Masonry({
+    mount(Masonry, {
       target: document.body,
       props: { items: indices, masonryWidth, minColWidth, gap },
     })
 
-    expect(masonry.calcCols(masonryWidth, minColWidth, gap)).toBe(expected_cols)
+    const columns = document.querySelectorAll(`div.masonry > div.col`)
+    expect(columns.length).toBe(expected_cols)
   })
 
   test(`warns if maxColWidth is less than minColWidth`, () => {
@@ -85,7 +97,7 @@ describe(`Masonry`, () => {
     const maxColWidth = 40
     console.warn = vi.fn()
 
-    new Masonry({
+    mount(Masonry, {
       target: document.body,
       props: { items: indices, minColWidth, maxColWidth },
     })
