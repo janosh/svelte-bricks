@@ -1,12 +1,13 @@
 <script lang="ts">
-  export let index: number
-  export let slide_flip = false
-
-  let flipped = false
-
+  interface Props {
+    index: number
+    slide_flip?: boolean
+  }
+  let { index, slide_flip = false }: Props = $props()
+  let flipped = $state(false)
   const height = 100 + 200 * Math.random()
 
-  const random_color = () => Math.random().toString(16).substr(-6)
+  const random_color = () => Math.random().toString(16).slice(-6)
   function flip(event: MouseEvent | KeyboardEvent) {
     if (event instanceof MouseEvent || [` `, `Enter`].includes(event.key)) {
       flipped = !flipped
@@ -18,8 +19,8 @@
 
 <div
   style="min-height: {height}px;"
-  on:click={flip}
-  on:keyup={flip}
+  onclick={flip}
+  onkeyup={flip}
   class:flipped
   class:slide-flip={slide_flip}
   role="grid"

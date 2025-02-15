@@ -1,15 +1,12 @@
 import adapter from '@sveltejs/adapter-static'
 import { mdsvex } from 'mdsvex'
-import preprocess from 'svelte-preprocess'
+import { sveltePreprocess } from 'svelte-preprocess'
 
 /** @type {import('@sveltejs/kit').Config} */
 export default {
   extensions: [`.svelte`, `.svx`, `.md`],
 
-  preprocess: [
-    preprocess(),
-    mdsvex({ extensions: [`.svelte`, `.svx`, `.md`] }),
-  ],
+  preprocess: [sveltePreprocess(), mdsvex({ extensions: [`.svx`, `.md`] })],
 
   kit: {
     adapter: adapter(),
@@ -21,9 +18,11 @@ export default {
   },
 
   compilerOptions: {
-    // https://github.com/janosh/svelte-multiselect/issues/196
-    immutable: true,
     // enable direct prop access for vitest unit tests
-    accessors: process.env.TEST,
+    accessors: Boolean(process.env.TEST),
+  },
+
+  vitePlugin: {
+    inspector: true,
   },
 }

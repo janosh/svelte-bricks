@@ -2,12 +2,17 @@
   import { tweened } from 'svelte/motion'
   import { slide } from 'svelte/transition'
 
-  export let title: string | string[]
+  interface Props {
+    title: string | string[]
+    children?: import('svelte').Snippet
+  }
+
+  let { title, children }: Props = $props()
 
   const duration = 200
   const angle = tweened(180, { duration })
 
-  let isOpen = false
+  let isOpen = $state(false)
 
   function toggle() {
     isOpen = !isOpen
@@ -15,13 +20,13 @@
   }
 </script>
 
-<button on:click={toggle}>
+<button onclick={toggle}>
   {#if Array.isArray(title)}{isOpen ? title[1] : title[0]}{:else}{title}{/if}
   <span style="display:inline-block; transform: rotate({$angle}deg);">👆</span>
 </button>
 {#if isOpen}
   <div transition:slide={{ duration }}>
-    <slot />
+    {@render children?.()}
   </div>
 {/if}
 

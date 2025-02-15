@@ -1,8 +1,7 @@
 import { sveltekit } from '@sveltejs/kit/vite'
-import type { UserConfig } from 'vite'
-import type { UserConfig as VitestConfig } from 'vitest'
+import { defineConfig } from 'vitest/config'
 
-export default {
+export default defineConfig(({ mode }) => ({
   plugins: [sveltekit()],
 
   test: {
@@ -13,6 +12,10 @@ export default {
     },
   },
 
+  resolve: {
+    conditions: mode === `test` ? [`browser`] : [],
+  },
+
   server: {
     fs: { allow: [`..`] }, // needed to import from $root
     port: 3000,
@@ -21,4 +24,4 @@ export default {
   preview: {
     port: 3000,
   },
-} satisfies UserConfig & { test: VitestConfig }
+}))
