@@ -2,9 +2,17 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v0.3.0](https://github.com/janosh/svelte-bricks/compare/v0.2.1...v0.3.0)
+
+> 15 February 2025
+
+- Migrate to Svelte 5 [`#37`](https://github.com/janosh/svelte-bricks/pull/37)
+- Warn if `maxColWidth &lt; minColWidth` [`#33`](https://github.com/janosh/svelte-bricks/pull/33)
+- Fix `nCols` formula missing `gap` in numerator [`#31`](https://github.com/janosh/svelte-bricks/pull/31)
+
 #### [v0.2.1](https://github.com/janosh/svelte-bricks/compare/v0.2.0...v0.2.1)
 
-> 22 Sep 2023
+> 22 September 2023
 
 - Add `types` field to `package.json` [`#26`](https://github.com/janosh/svelte-bricks/pull/26)
 - Fixed misleading binding in usage example snippet [`#24`](https://github.com/janosh/svelte-bricks/pull/24)
