@@ -2,7 +2,7 @@
   import { page } from '$app/stores'
   import { homepage, name } from '$root/package.json'
 
-  let online: boolean
+  let online: boolean = $state(true)
 </script>
 
 <svelte:head>

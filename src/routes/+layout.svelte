@@ -3,19 +3,25 @@
   import { repository } from '$root/package.json'
   import { GitHubCorner } from 'svelte-zoo'
   import '../app.css'
+
+  interface Props {
+    children?: import('svelte').Snippet
+  }
+
+  let { children }: Props = $props()
 </script>
 
 <GitHubCorner
   href={repository}
-  --zoo-github-corner-color="var(--page-bg)"
-  --zoo-github-corner-bg="white"
+  --zoo-gh-corner-color="var(--page-bg)"
+  --zoo-gh-corner-bg="white"
 />
 
 {#if $page.url.pathname !== `/`}
   <a href="/" aria-label="Back to index page">&laquo; home</a>
 {/if}
 
-<slot />
+{@render children?.()}
 
 <style>
   :global(h1) {

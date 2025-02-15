@@ -3,14 +3,15 @@
   import { Slider, Toggle } from 'svelte-zoo'
   import { Box } from '.'
 
-  let nItems = 30
-  $: indices = [...Array(nItems).keys()]
+  let nItems = $state(30)
+  let indices = $derived([...Array(nItems).keys()])
 
-  let [minColWidth, maxColWidth] = [330, 500]
-  let gap = 20
-  let masonryWidth: number, masonryHeight: number
+  let [minColWidth, maxColWidth] = $state([330, 500])
+  let gap = $state(20)
+  let masonryWidth: number = $state(0)
+  let masonryHeight: number = $state(0)
 
-  let slide_flip = false
+  let slide_flip = $state(false)
 </script>
 
 <div class="controls">
@@ -30,11 +31,12 @@
   {minColWidth}
   {maxColWidth}
   {gap}
-  let:item
   bind:masonryWidth
   bind:masonryHeight
 >
-  <Box index={item} {slide_flip} />
+  {#snippet children({ item }: { item: number })}
+    <Box index={item} {slide_flip} />
+  {/snippet}
 </Masonry>
 
 <p>
