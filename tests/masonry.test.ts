@@ -163,4 +163,105 @@ describe(`Masonry`, () => {
       expect(col_items).toBeLessThanOrEqual(items_per_col)
     })
   })
+
+  test.each([{ minColWidth: 100, maxColWidth: 200, gap: 10, expected: 3 }])(
+    `calculates columns correctly with different widths and gaps`,
+    ({ minColWidth, maxColWidth, gap, expected }) => {
+      mount(Masonry, {
+        target: document.body,
+        props: {
+          items: indices,
+          masonryWidth: 400,
+          minColWidth,
+          maxColWidth,
+          gap,
+        },
+      })
+
+      const columns = document.querySelectorAll(`div.masonry > div.col`)
+      expect(columns.length).toBe(expected)
+    },
+  )
+
+  test.each`
+    animate | duration | shouldAnimate
+    ${true} | ${200}   | ${true}
+    ${true} | ${0}     | ${true}
+  `(
+    `handles animation correctly with animate=$animate and duration=$duration`,
+    ({ animate, duration, shouldAnimate }) => {
+      mount(Masonry, {
+        target: document.body,
+        props: { items: indices, animate, duration },
+      })
+
+      const itemDivs = document.querySelectorAll(`div.masonry > div.col > div`)
+      if (shouldAnimate) {
+        expect(Element.prototype.animate).toHaveBeenCalled()
+      } else {
+        expect(Element.prototype.animate).not.toHaveBeenCalled()
+      }
+      expect(itemDivs.length).toBe(n_items)
+    },
+  )
+
+  test.each([
+    [[], 0],
+    [[1], 1],
+    [[1, 2, 3, 4, 5], 5],
+    [[...Array(50)].map((_, i) => i), 50],
+  ])(
+    `renders correct number of items for different array lengths: %j`,
+    (items, expected) => {
+      mount(Masonry, {
+        target: document.body,
+        props: { items },
+      })
+
+      const itemElements = document.querySelectorAll(
+        `div.masonry > div.col > *`,
+      )
+      expect(itemElements.length).toBe(expected)
+    },
+  )
+
+  test.each([
+    { items: [{ id: 1 }, { id: 2 }], idKey: `id` },
+    { items: [{ key: `a` }, { key: `b` }], idKey: `key` },
+    { items: [{ uuid: `123` }, { uuid: `456` }], idKey: `uuid` },
+  ])(`works with different idKey values: $idKey`, ({ items, idKey }) => {
+    mount(Masonry, {
+      target: document.body,
+      props: { items, idKey },
+    })
+
+    const itemElements = document.querySelectorAll(
+      `div.masonry > div.col > div`,
+    )
+    expect(itemElements.length).toBe(items.length)
+  })
+
+  test.each([
+    [`custom`, `col-class`, /^masonry custom svelte-\w+/, /^col col-class/],
+    [`multiple`, `cols`, /^masonry multiple svelte-\w+/, /^col cols/],
+    [``, ``, /^masonry\s+svelte-\w+/, /^col/],
+  ])(
+    `applies CSS class names correctly: %s and %s`,
+    (class_name, columnClass, div_class_regex, col_class_regex) => {
+      mount(Masonry, {
+        target: document.body,
+        props: {
+          items: indices,
+          class: class_name,
+          columnClass,
+        },
+      })
+
+      const masonryDiv = document.querySelector(`div.masonry`)
+      const columnDiv = document.querySelector(`div.masonry > div.col`)
+
+      expect(masonryDiv?.className.trim()).toMatch(div_class_regex)
+      expect(columnDiv?.className.trim()).toMatch(col_class_regex)
+    },
+  )
 })
