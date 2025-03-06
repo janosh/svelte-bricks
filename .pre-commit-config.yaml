@@ -36,6 +36,7 @@ repos:
       - id: deno-lint
         name: Deno lint
         entry: deno lint
+        args: [--fix]
         types: [file]
         files: \.(js|ts|svelte)$
         language: system
