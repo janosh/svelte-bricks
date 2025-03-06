@@ -1,6 +1,6 @@
 ci:
   autoupdate_schedule: quarterly
-  skip: [eslint]
+  skip: [deno-fmt, deno-lint]
 
 default_stages: [pre-commit]
 
@@ -18,16 +18,6 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
 
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v4.0.0-alpha.8
-    hooks:
-      - id: prettier
-        args: [--write] # edit files in-place
-        additional_dependencies:
-          - prettier
-          - prettier-plugin-svelte
-          - svelte
-
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
@@ -35,18 +25,18 @@ repos:
         stages: [pre-commit, commit-msg]
         args: [--check-filenames]
 
-  - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v9.19.0
+  - repo: local
     hooks:
-      - id: eslint
+      - id: deno-fmt
+        name: Deno format
+        entry: deno fmt
         types: [file]
+        language: system
+        exclude_types: [markdown]
+      - id: deno-lint
+        name: Deno lint
+        entry: deno lint
         args: [--fix]
+        types: [file]
         files: \.(js|ts|svelte)$
-        additional_dependencies:
-          - 'typescript-eslint'
-          - eslint
-          - eslint-plugin-svelte
-          - globals
-          - svelte
-          - typescript
-          - '@stylistic/eslint-plugin'
+        language: system
