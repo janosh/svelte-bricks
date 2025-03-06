@@ -9,16 +9,6 @@
   "type": "module",
   "svelte": "./dist/index.js",
   "bugs": "https://github.com/janosh/svelte-bricks/issues",
-  "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "preview": "vite preview",
-    "package": "svelte-package",
-    "serve": "vite build && vite preview",
-    "check": "svelte-check --ignore dist",
-    "test": "vitest test",
-    "changelog": "npx auto-changelog --package --output changelog.md --hide-credit --commit-limit false"
-  },
   "dependencies": {
     "svelte": "^5.20.1"
   },
