@@ -1,5 +1,6 @@
 ci:
   autoupdate_schedule: quarterly
+  skip: [deno-fmt, deno-lint]
 
 default_stages: [pre-commit]
 
@@ -24,8 +25,17 @@ repos:
         stages: [pre-commit, commit-msg]
         args: [--check-filenames]
 
-  - repo: https://github.com/nozaq/pre-commit-deno
-    rev: 0.1.0
+  - repo: local
     hooks:
       - id: deno-fmt
+        name: Deno format
+        entry: deno fmt
+        types: [file]
+        language: system
+        exclude_types: [markdown]
       - id: deno-lint
+        name: Deno lint
+        entry: deno lint
+        types: [file]
+        files: \.(js|ts|svelte)$
+        language: system
