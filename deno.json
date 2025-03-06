@@ -4,7 +4,8 @@
     "build": "deno run -A npm:vite build",
     "preview": "deno run -A npm:vite preview",
     "lint": "deno lint",
-    "fmt": "deno fmt"
+    "fmt": "deno fmt",
+    "test": "deno run -A npm:vitest"
   },
   "lock": false,
   "lint": {
