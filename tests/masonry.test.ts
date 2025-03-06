@@ -25,7 +25,7 @@ beforeEach(() => {
 describe(`Masonry`, () => {
   test.each([[true], [false]])(
     `renders items with animate=%s`,
-    async (animate) => {
+    (animate) => {
       mount(Masonry, {
         target: document.body,
         props: { items: indices, animate },
@@ -37,7 +37,7 @@ describe(`Masonry`, () => {
     },
   )
 
-  test(`attaches class props correctly`, async () => {
+  test(`attaches class props correctly`, () => {
     mount(Masonry, {
       target: document.body,
       props: { items: indices, class: `foo`, columnClass: `bar` },
@@ -50,7 +50,7 @@ describe(`Masonry`, () => {
     expect(items.length).toBe(n_items)
   })
 
-  test(`applies style prop correctly`, async () => {
+  test(`applies style prop correctly`, () => {
     const bg_color = `background-color: darkblue;`
     mount(Masonry, {
       target: document.body,

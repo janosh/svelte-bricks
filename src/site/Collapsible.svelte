@@ -22,7 +22,7 @@
 
 <button onclick={toggle}>
   {#if Array.isArray(title)}{isOpen ? title[1] : title[0]}{:else}{title}{/if}
-  <span style="display:inline-block; transform: rotate({$angle}deg);">👆</span>
+  <span style="display: inline-block; transform: rotate({$angle}deg)">👆</span>
 </button>
 {#if isOpen}
   <div transition:slide={{ duration }}>

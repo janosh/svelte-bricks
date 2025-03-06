@@ -1,6 +1,7 @@
 import adapter from '@sveltejs/adapter-static'
 import { mdsvex } from 'mdsvex'
 import { sveltePreprocess } from 'svelte-preprocess'
+import process from 'node:process'
 
 /** @type {import('@sveltejs/kit').Config} */
 export default {

@@ -65,7 +65,7 @@
         cols[idx % cols.length].push([item, idx])
         return cols
       },
-      Array(nCols).fill(null).map(() => []), // prettier-ignore
+      Array(nCols).fill(null).map(() => []),
     ),
   )
 </script>
