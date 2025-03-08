@@ -60,8 +60,8 @@
   })
   let nCols = $derived(calcCols(masonryWidth, minColWidth, gap))
   let itemsToCols = $derived(
-    items.reduce(
-      (cols: [Item, number][][], item, idx) => {
+    items.reduce<[Item, number][][]>(
+      (cols, item, idx) => {
         cols[idx % cols.length].push([item, idx])
         return cols
       },
