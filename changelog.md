@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v0.3.1](https://github.com/janosh/svelte-bricks/compare/v0.3.0...v0.3.1)
+
+> 8 March 2025
+
+- Migrate kitchen sink in readme.md to svelte 5 syntax [`#43`](https://github.com/janosh/svelte-bricks/pull/43)
+- Add `col-{index}` CSS classes to Masonry columns [`#42`](https://github.com/janosh/svelte-bricks/pull/42)
+- Type `children` `Snippet` params [`#41`](https://github.com/janosh/svelte-bricks/pull/41)
+- Migrate project from node to Deno [`#38`](https://github.com/janosh/svelte-bricks/pull/38)
+- Type `children` `Snippet` params (#41) [`#39`](https://github.com/janosh/svelte-bricks/issues/39)
+
 #### [v0.3.0](https://github.com/janosh/svelte-bricks/compare/v0.2.1...v0.3.0)
 
 > 15 February 2025
