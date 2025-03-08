@@ -133,8 +133,9 @@ describe(`Masonry`, () => {
     expect(items.length).toBe(customItems.length)
   })
 
-  test(`uses custom calcCols function`, () => {
-    const calcCols = vi.fn(() => 3)
+  test(`uses custom calcCols function and adds column index classes`, () => {
+    const n_cols = 3
+    const calcCols = vi.fn(() => n_cols)
 
     mount(Masonry, {
       target: document.body,
@@ -143,7 +144,12 @@ describe(`Masonry`, () => {
 
     expect(calcCols).toHaveBeenCalled()
     const columns = document.querySelectorAll(`div.masonry > div.col`)
-    expect(columns.length).toBe(3)
+    expect(columns.length).toBe(n_cols)
+
+    // Check that each column has the correct index class
+    for (const [idx, col] of columns.entries()) {
+      expect(col.classList).toContain(`col-${idx}`)
+    }
   })
 
   test(`distributes items evenly across columns`, () => {
@@ -156,12 +162,12 @@ describe(`Masonry`, () => {
     const columns = document.querySelectorAll(`div.masonry > div.col`)
     const items_per_col = Math.ceil(indices.length / n_cols)
 
-    columns.forEach((col) => {
+    for (const col of columns) {
       const col_items = col.children.length
       // Each column should have either itemsPerCol or itemsPerCol-1 items
       expect(col_items).toBeGreaterThanOrEqual(items_per_col - 1)
       expect(col_items).toBeLessThanOrEqual(items_per_col)
-    })
+    }
   })
 
   test.each([{ minColWidth: 100, maxColWidth: 200, gap: 10, expected: 3 }])(
@@ -195,13 +201,13 @@ describe(`Masonry`, () => {
         props: { items: indices, animate, duration },
       })
 
-      const itemDivs = document.querySelectorAll(`div.masonry > div.col > div`)
+      const item_divs = document.querySelectorAll(`div.masonry > div.col > div`)
       if (shouldAnimate) {
         expect(Element.prototype.animate).toHaveBeenCalled()
       } else {
         expect(Element.prototype.animate).not.toHaveBeenCalled()
       }
-      expect(itemDivs.length).toBe(n_items)
+      expect(item_divs.length).toBe(n_items)
     },
   )
 
@@ -242,9 +248,9 @@ describe(`Masonry`, () => {
   })
 
   test.each([
-    [`custom`, `col-class`, /^masonry custom svelte-\w+/, /^col col-class/],
-    [`multiple`, `cols`, /^masonry multiple svelte-\w+/, /^col cols/],
-    [``, ``, /^masonry\s+svelte-\w+/, /^col/],
+    [`custom`, `col-class`, /^masonry custom svelte-\w+/, /col col-\d+ col-class/],
+    [`multiple`, `cols`, /^masonry multiple svelte-\w+/, /col col-\d+ cols/],
+    [``, ``, /^masonry\s+svelte-\w+/, /col col-\d+/],
   ])(
     `applies CSS class names correctly: %s and %s`,
     (class_name, columnClass, div_class_regex, col_class_regex) => {
@@ -257,11 +263,13 @@ describe(`Masonry`, () => {
         },
       })
 
-      const masonryDiv = document.querySelector(`div.masonry`)
-      const columnDiv = document.querySelector(`div.masonry > div.col`)
+      const masonry_div = document.querySelector(`div.masonry`)
+      const col_div = document.querySelector(`div.masonry > div.col`)
 
-      expect(masonryDiv?.className.trim()).toMatch(div_class_regex)
-      expect(columnDiv?.className.trim()).toMatch(col_class_regex)
+      expect(masonry_div?.className.trim()).toMatch(div_class_regex)
+      expect(col_div?.className.trim()).toMatch(col_class_regex)
+
+      expect(col_div?.classList).toContain(`col-0`)
     },
   )
 })

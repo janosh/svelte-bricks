@@ -76,8 +76,8 @@
   bind:clientHeight={masonryHeight}
   style="gap: {gap}px; {style}"
 >
-  {#each itemsToCols as col}
-    <div class="col {columnClass}" style="gap: {gap}px; max-width: {maxColWidth}px;">
+  {#each itemsToCols as col, idx}
+    <div class="col col-{idx} {columnClass}" style="gap: {gap}px; max-width: {maxColWidth}px;">
       {#if animate}
         {#each col as [item, idx] (getId(item))}
           <div
