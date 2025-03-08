@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
-  import { flip } from 'svelte/animate';
-  import { fade } from 'svelte/transition';
+  import type { Snippet } from 'svelte'
+  import { flip } from 'svelte/animate'
+  import { fade } from 'svelte/transition'
 
   // On non-primitive types, we need a property to tell masonry items apart. The name of this attribute can be customized with idKey which defaults to 'id'. See https://svelte.dev/tutorial/svelte/keyed-each-blocks.
   type Item = $$Generic
@@ -69,6 +69,7 @@
   )
 </script>
 
+<!-- deno-fmt-ignore -->
 <div
   class="masonry {className}"
   bind:clientWidth={masonryWidth}
