@@ -38,5 +38,4 @@ repos:
         entry: deno lint
         args: [--fix]
         types: [file]
-        files: \.(js|ts|svelte)$
         language: system
