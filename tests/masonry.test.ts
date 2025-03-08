@@ -201,13 +201,13 @@ describe(`Masonry`, () => {
         props: { items: indices, animate, duration },
       })
 
-      const itemDivs = document.querySelectorAll(`div.masonry > div.col > div`)
+      const item_divs = document.querySelectorAll(`div.masonry > div.col > div`)
       if (shouldAnimate) {
         expect(Element.prototype.animate).toHaveBeenCalled()
       } else {
         expect(Element.prototype.animate).not.toHaveBeenCalled()
       }
-      expect(itemDivs.length).toBe(n_items)
+      expect(item_divs.length).toBe(n_items)
     },
   )
 
@@ -263,13 +263,13 @@ describe(`Masonry`, () => {
         },
       })
 
-      const masonryDiv = document.querySelector(`div.masonry`)
-      const columnDiv = document.querySelector(`div.masonry > div.col`)
+      const masonry_div = document.querySelector(`div.masonry`)
+      const col_div = document.querySelector(`div.masonry > div.col`)
 
-      expect(masonryDiv?.className.trim()).toMatch(div_class_regex)
-      expect(columnDiv?.className.trim()).toMatch(col_class_regex)
+      expect(masonry_div?.className.trim()).toMatch(div_class_regex)
+      expect(col_div?.className.trim()).toMatch(col_class_regex)
 
-      expect(columnDiv?.classList).toContain(`col-0`)
+      expect(col_div?.classList).toContain(`col-0`)
     },
   )
 })
