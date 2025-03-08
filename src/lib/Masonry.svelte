@@ -1,10 +1,9 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte'
-  import { flip } from 'svelte/animate'
-  import { fade } from 'svelte/transition'
+  import type { Snippet } from 'svelte';
+  import { flip } from 'svelte/animate';
+  import { fade } from 'svelte/transition';
 
-  // On non-primitive types, we need a property to tell masonry items apart. This component
-  // hard-codes the name of this property to 'id'. See https://svelte.dev/tutorial/svelte/keyed-each-blocks.
+  // On non-primitive types, we need a property to tell masonry items apart. The name of this property can be customized with idKey which defaults to 'id'. See https://svelte.dev/tutorial/svelte/keyed-each-blocks.
   type Item = $$Generic
   interface Props {
     animate?: boolean
@@ -21,7 +20,7 @@
     minColWidth?: number
     style?: string
     class?: string
-    children?: Snippet
+    children?: Snippet<[{ idx: number; item: Item }]>
   }
 
   let {
