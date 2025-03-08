@@ -46,7 +46,7 @@
       {@const { name, download_url } = item}
       <li>
         <span>{name.replace(`.svg`, ``).replaceAll(`_`, ` `)}</span>
-        <img src={download_url} alt={name} width="100" />
+        <img src={download_url} alt={name} style="width: 100%" />
       </li>
     {/snippet}
   </Masonry>
