@@ -12,7 +12,6 @@
   },
   "lock": false,
   "lint": {
-    "include": ["src/"],
     "rules": {
       "tags": ["recommended"],
       "include": [

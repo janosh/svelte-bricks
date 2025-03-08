@@ -37,5 +37,5 @@ repos:
         name: Deno lint
         entry: deno lint
         args: [--fix]
-        types: [file]
+        types: [javascript, ts, svelte]
         language: system
