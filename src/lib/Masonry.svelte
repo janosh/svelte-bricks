@@ -21,7 +21,7 @@
     minColWidth?: number
     style?: string
     class?: string
-    children?: Snippet
+    children?: Snippet<[{ idx: number, item: Item }]>
   }
 
   let {
