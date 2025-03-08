@@ -3,7 +3,7 @@
   import { flip } from 'svelte/animate';
   import { fade } from 'svelte/transition';
 
-  // On non-primitive types, we need a property to tell masonry items apart. The name of this property can be customized with idKey which defaults to 'id'. See https://svelte.dev/tutorial/svelte/keyed-each-blocks.
+  // On non-primitive types, we need a property to tell masonry items apart. The name of this attribute can be customized with idKey which defaults to 'id'. See https://svelte.dev/tutorial/svelte/keyed-each-blocks.
   type Item = $$Generic
   interface Props {
     animate?: boolean
@@ -59,8 +59,8 @@
   })
   let nCols = $derived(calcCols(masonryWidth, minColWidth, gap))
   let itemsToCols = $derived(
-    items.reduce(
-      (cols: [Item, number][][], item, idx) => {
+    items.reduce<[Item, number][][]>(
+      (cols, item, idx) => {
         cols[idx % cols.length].push([item, idx])
         return cols
       },
