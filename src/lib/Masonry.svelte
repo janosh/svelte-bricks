@@ -21,6 +21,7 @@
     style?: string
     class?: string
     children?: Snippet<[{ idx: number; item: Item }]>
+    div?: HTMLDivElement
   }
 
   let {
@@ -48,6 +49,7 @@
     style = ``,
     class: className = ``,
     children,
+    div = $bindable(undefined), // TODO add unit test for this prop
   }: Props = $props()
 
   $effect.pre(() => {
@@ -74,6 +76,7 @@
   class="masonry {className}"
   bind:clientWidth={masonryWidth}
   bind:clientHeight={masonryHeight}
+  bind:this={div}
   style="gap: {gap}px; {style}"
 >
   {#each itemsToCols as col, idx}
