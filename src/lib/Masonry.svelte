@@ -1,11 +1,11 @@
-<script lang="ts">
+<script lang="ts" generics="Item">
   import type { Snippet } from 'svelte'
   import { flip } from 'svelte/animate'
   import { fade } from 'svelte/transition'
 
   // On non-primitive types, we need a property to tell masonry items apart. This component
   // hard-codes the name of this property to 'id'. See https://svelte.dev/tutorial/svelte/keyed-each-blocks.
-  type Item = $$Generic
+
   interface Props {
     animate?: boolean
     calcCols?: (masonryWidth: number, minColWidth: number, gap: number) => number
