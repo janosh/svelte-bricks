@@ -17,6 +17,7 @@
   const bg = `linear-gradient(45deg, #${random_color()}, #${random_color()})`
 </script>
 
+<!-- deno-fmt-ignore -->
 <div
   style="min-height: {height}px;"
   onclick={flip}

@@ -7,9 +7,9 @@ const indices = [...Array(n_items).keys()]
 
 // Mock required browser APIs
 globalThis.ResizeObserver = class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
 }
 
 // Mock Web Animations API
