@@ -1,4 +1,3 @@
-
 <h1 align="center">
   <img src="https://raw.githubusercontent.com/janosh/svelte-bricks/main/static/favicon.svg" alt="Svelte Bricks" height=60>
   <br>&ensp;Svelte Bricks
