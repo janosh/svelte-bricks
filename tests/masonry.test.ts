@@ -23,19 +23,16 @@ beforeEach(() => {
 })
 
 describe(`Masonry`, () => {
-  test.each([[true], [false]])(
-    `renders items with animate=%s`,
-    (animate) => {
-      mount(Masonry, {
-        target: document.body,
-        props: { items: indices, animate },
-      })
+  test.each([[true], [false]])(`renders items with animate=%s`, (animate) => {
+    mount(Masonry, {
+      target: document.body,
+      props: { items: indices, animate },
+    })
 
-      const items = document.querySelectorAll(`div.masonry > div.col > *`)
+    const items = document.querySelectorAll(`div.masonry > div.col > *`)
 
-      expect(items.length).toBe(n_items)
-    },
-  )
+    expect(items.length).toBe(n_items)
+  })
 
   test(`attaches class props correctly`, () => {
     mount(Masonry, {
@@ -43,9 +40,7 @@ describe(`Masonry`, () => {
       props: { items: indices, class: `foo`, columnClass: `bar` },
     })
 
-    const items = document.querySelectorAll(
-      `div.masonry.foo > div.col.bar > div`,
-    )
+    const items = document.querySelectorAll(`div.masonry.foo > div.col.bar > div`)
 
     expect(items.length).toBe(n_items)
   })
@@ -175,13 +170,7 @@ describe(`Masonry`, () => {
     ({ minColWidth, maxColWidth, gap, expected }) => {
       mount(Masonry, {
         target: document.body,
-        props: {
-          items: indices,
-          masonryWidth: 400,
-          minColWidth,
-          maxColWidth,
-          gap,
-        },
+        props: { items: indices, masonryWidth: 400, minColWidth, maxColWidth, gap },
       })
 
       const columns = document.querySelectorAll(`div.masonry > div.col`)
@@ -224,9 +213,7 @@ describe(`Masonry`, () => {
         props: { items },
       })
 
-      const itemElements = document.querySelectorAll(
-        `div.masonry > div.col > *`,
-      )
+      const itemElements = document.querySelectorAll(`div.masonry > div.col > *`)
       expect(itemElements.length).toBe(expected)
     },
   )
@@ -241,9 +228,7 @@ describe(`Masonry`, () => {
       props: { items, idKey },
     })
 
-    const itemElements = document.querySelectorAll(
-      `div.masonry > div.col > div`,
-    )
+    const itemElements = document.querySelectorAll(`div.masonry > div.col > div`)
     expect(itemElements.length).toBe(items.length)
   })
 
@@ -256,11 +241,7 @@ describe(`Masonry`, () => {
     (class_name, columnClass, div_class_regex, col_class_regex) => {
       mount(Masonry, {
         target: document.body,
-        props: {
-          items: indices,
-          class: class_name,
-          columnClass,
-        },
+        props: { items: indices, class: class_name, columnClass },
       })
 
       const masonry_div = document.querySelector(`div.masonry`)
@@ -272,4 +253,37 @@ describe(`Masonry`, () => {
       expect(col_div?.classList).toContain(`col-0`)
     },
   )
+
+  test(`applies columnClass correctly to column divs`, () => {
+    const testColClass = `my-column-class`
+    mount(Masonry, {
+      target: document.body,
+      props: { items: [1, 2, 3, 4], columnClass: testColClass },
+    })
+
+    const columns = document.querySelectorAll(`div.masonry > div.col`)
+    expect(columns.length).toBeGreaterThan(0) // Ensure columns rendered
+    columns.forEach((col) => {
+      expect(col.classList).toContain(testColClass)
+      expect(col.className).toMatch(/col col-\d+ my-column-class/)
+    })
+  })
+
+  test(`applies columnStyle correctly to column divs`, () => {
+    const testColStyle = `border: 1px solid red;`
+    const [maxColWidth, gap] = [150, 5] // Use known values for base style check
+    mount(Masonry, {
+      target: document.body,
+      props: { items: [1, 2, 3, 4], columnStyle: testColStyle, maxColWidth, gap },
+    })
+
+    const columns = document.querySelectorAll(`div.masonry > div.col`)
+    expect(columns.length).toBeGreaterThan(0) // Ensure columns rendered
+    columns.forEach((col) => {
+      const style = col.getAttribute(`style`)
+      expect(style).toContain(`gap: ${gap}px;`)
+      expect(style).toContain(`max-width: ${maxColWidth}px;`)
+      expect(style).toContain(testColStyle)
+    })
+  })
 })
