@@ -47,7 +47,8 @@ Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; 
   {minColWidth}
   {maxColWidth}
   {gap}
-
+  style="padding: 20px;"
+  columnStyle="background-color: rgba(0, 0, 0, 0.1);"
   bind:masonryWidth={width}
   bind:masonryHeight={height}
 >

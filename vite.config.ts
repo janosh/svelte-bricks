@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => ({
     css: true,
     coverage: {
       reporter: [`text`, `json-summary`],
+      include: [`src/lib/*`],
     },
   },
 

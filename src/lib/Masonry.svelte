@@ -8,7 +8,6 @@
   interface Props {
     animate?: boolean
     calcCols?: (masonryWidth: number, minColWidth: number, gap: number) => number
-    columnClass?: string
     duration?: number
     gap?: number
     getId?: (item: Item) => string | number
@@ -20,6 +19,8 @@
     minColWidth?: number
     style?: string
     class?: string
+    columnStyle?: string
+    columnClass?: string
     children?: Snippet<[{ idx: number; item: Item }]>
     div?: HTMLDivElement
   }
@@ -32,7 +33,6 @@
         Math.floor((masonryWidth + gap) / (minColWidth + gap)) || 1,
       )
     },
-    columnClass = ``,
     duration = 200,
     gap = 20,
     getId = (item: Item): string | number => {
@@ -48,6 +48,8 @@
     minColWidth = 330,
     style = ``,
     class: className = ``,
+    columnStyle = ``,
+    columnClass = ``,
     children,
     div = $bindable(undefined), // TODO add unit test for this prop
   }: Props = $props()
@@ -80,7 +82,10 @@
   style="gap: {gap}px; {style}"
 >
   {#each itemsToCols as col, idx}
-    <div class="col col-{idx} {columnClass}" style="gap: {gap}px; max-width: {maxColWidth}px;">
+    <div
+      class="col col-{idx} {columnClass}"
+      style="gap: {gap}px; max-width: {maxColWidth}px; {columnStyle}"
+    >
       {#if animate}
         {#each col as [item, idx] (getId(item))}
           <div
