@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v0.3.2](https://github.com/janosh/svelte-bricks/compare/v0.3.1...v0.3.2)
+
+- Masonry.svelte add columnStyle prop (closes #44) [`#44`](https://github.com/janosh/svelte-bricks/issues/44)
+
 #### [v0.3.1](https://github.com/janosh/svelte-bricks/compare/v0.3.0...v0.3.1)
 
 > 8 March 2025
