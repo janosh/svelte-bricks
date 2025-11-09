@@ -1,30 +1,10 @@
-<script lang="ts">
+<script lang="ts" generics="Item">
   import type { Snippet } from 'svelte'
   import { flip } from 'svelte/animate'
+  import type { HTMLAttributes } from 'svelte/elements'
   import { fade } from 'svelte/transition'
 
   // On non-primitive types, we need a property to tell masonry items apart. The name of this attribute can be customized with idKey which defaults to 'id'. See https://svelte.dev/tutorial/svelte/keyed-each-blocks.
-  type Item = $$Generic
-  interface Props {
-    animate?: boolean
-    calcCols?: (masonryWidth: number, minColWidth: number, gap: number) => number
-    duration?: number
-    gap?: number
-    getId?: (item: Item) => string | number
-    idKey?: string
-    items: Item[]
-    masonryHeight?: number
-    masonryWidth?: number
-    maxColWidth?: number
-    minColWidth?: number
-    style?: string
-    class?: string
-    columnStyle?: string
-    columnClass?: string
-    children?: Snippet<[{ idx: number; item: Item }]>
-    div?: HTMLDivElement
-  }
-
   let {
     animate = true,
     calcCols = (masonryWidth: number, minColWidth: number, gap: number): number => {
@@ -46,13 +26,30 @@
     masonryWidth = $bindable(0),
     maxColWidth = 500,
     minColWidth = 330,
-    style = ``,
-    class: className = ``,
     columnStyle = ``,
     columnClass = ``,
     children,
-    div = $bindable(undefined), // TODO add unit test for this prop
-  }: Props = $props()
+    div = $bindable(), // TODO add unit test for this prop
+    ...rest
+  }: Omit<HTMLAttributes<HTMLDivElement>, `children`> & {
+    animate?: boolean
+    calcCols?: (masonryWidth: number, minColWidth: number, gap: number) => number
+    duration?: number
+    gap?: number
+    getId?: (item: Item) => string | number
+    idKey?: string
+    items: Item[]
+    masonryHeight?: number
+    masonryWidth?: number
+    maxColWidth?: number
+    minColWidth?: number
+    style?: string
+    class?: string
+    columnStyle?: string
+    columnClass?: string
+    children?: Snippet<[{ idx: number; item: Item }]>
+    div?: HTMLDivElement
+  } = $props()
 
   $effect.pre(() => {
     if (maxColWidth < minColWidth) {
@@ -75,11 +72,12 @@
 
 <!-- deno-fmt-ignore -->
 <div
-  class="masonry {className}"
   bind:clientWidth={masonryWidth}
   bind:clientHeight={masonryHeight}
   bind:this={div}
-  style="gap: {gap}px; {style}"
+  style:gap="{gap}px"
+  {...rest}
+  class="masonry {rest.class ?? ``}"
 >
   {#each itemsToCols as col, idx}
     <div
