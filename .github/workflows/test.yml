@@ -13,3 +13,5 @@ jobs:
   tests:
     uses: janosh/workflows/.github/workflows/deno-test.yml@main
     secrets: inherit
+    with:
+      test-cmd: npx vitest

@@ -1,23 +1,20 @@
 <script lang="ts">
-  import { page } from '$app/stores'
+  import { page } from '$app/state'
   import { repository } from '$root/package.json'
-  import { GitHubCorner } from 'svelte-zoo'
+  import type { Snippet } from 'svelte'
+  import { GitHubCorner } from 'svelte-multiselect'
   import '../app.css'
 
-  interface Props {
-    children?: import('svelte').Snippet
-  }
-
-  let { children }: Props = $props()
+  let { children }: { children?: Snippet<[]> } = $props()
 </script>
 
 <GitHubCorner
   href={repository}
-  --zoo-gh-corner-color="var(--page-bg)"
-  --zoo-gh-corner-bg="white"
+  --gh-corner-color="var(--page-bg)"
+  --gh-corner-bg="white"
 />
 
-{#if $page.url.pathname !== `/`}
+{#if page.url.pathname !== `/`}
   <a href="/" aria-label="Back to index page">&laquo; home</a>
 {/if}
 

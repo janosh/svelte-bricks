@@ -1,14 +1,8 @@
-ci:
-  autoupdate_schedule: quarterly
-  skip: [deno-fmt, deno-lint]
-
-default_stages: [pre-commit]
-
 default_install_hook_types: [pre-commit, commit-msg]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-case-conflict
       - id: check-symlinks
@@ -25,6 +19,13 @@ repos:
         stages: [pre-commit, commit-msg]
         args: [--check-filenames]
 
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.39.0
+    hooks:
+      - id: typos
+        types: [text]
+        args: []
+
   - repo: local
     hooks:
       - id: deno-fmt
@@ -32,10 +33,16 @@ repos:
         entry: deno fmt
         types: [file]
         language: system
-        exclude_types: [markdown]
+        args: [--config, deno.jsonc, --permit-no-files]
       - id: deno-lint
         name: Deno lint
         entry: deno lint
-        args: [--fix]
-        types: [javascript, ts, svelte]
+        types: [file]
         language: system
+        args: [--config, deno.jsonc, --permit-no-files, --fix]
+      - id: svelte-check
+        name: Svelte type check
+        entry: bash -c 'deno install && deno run -A --node-modules-dir npm:@sveltejs/kit sync && deno run -A --node-modules-dir npm:svelte-check --fail-on-warnings --threshold error'
+        language: system
+        types_or: [ts, svelte]
+        pass_filenames: false

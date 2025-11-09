@@ -8,13 +8,14 @@ export default defineConfig(({ mode }) => ({
     environment: `jsdom`,
     css: true,
     coverage: {
+      provider: `v8`,
       reporter: [`text`, `json-summary`],
       include: [`src/lib/*`],
     },
   },
 
   resolve: {
-    conditions: mode === `test` ? [`browser`] : [],
+    conditions: mode === `test` ? [`browser`] : undefined,
   },
 
   server: {

@@ -1,7 +1,6 @@
 import adapter from '@sveltejs/adapter-static'
 import { mdsvex } from 'mdsvex'
 import { sveltePreprocess } from 'svelte-preprocess'
-import process from 'node:process'
 
 /** @type {import('@sveltejs/kit').Config} */
 export default {
@@ -16,11 +15,6 @@ export default {
       $root: `.`,
       $site: `src/site`,
     },
-  },
-
-  compilerOptions: {
-    // enable direct prop access for vitest unit tests
-    accessors: Boolean(process.env.TEST),
   },
 
   vitePlugin: {

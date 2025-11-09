@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Masonry } from '$lib'
-  import { Slider, Toggle } from 'svelte-zoo'
+  import { Toggle } from 'svelte-multiselect'
   import { Box } from '.'
 
   let nItems = $state(30)
@@ -15,10 +15,22 @@
 </script>
 
 <div class="controls">
-  <Slider label="nItems" bind:value={nItems} min={1} max={100} />
-  <Slider label="minColWidth" bind:value={minColWidth} min={120} max={maxColWidth} />
-  <Slider label="maxColWidth" bind:value={maxColWidth} min={minColWidth} max={800} />
-  <Slider label="gap" bind:value={gap} min={0} max={50} />
+  <label>
+    <code>nItems</code> = {nItems}
+    <input type="range" bind:value={nItems} min={1} max={100} />
+  </label>
+  <label>
+    <code>minColWidth</code> = {minColWidth}
+    <input type="range" bind:value={minColWidth} min={120} max={maxColWidth} />
+  </label>
+  <label>
+    <code>maxColWidth</code> = {maxColWidth}
+    <input type="range" bind:value={maxColWidth} min={minColWidth} max={800} />
+  </label>
+  <label>
+    <code>gap</code> = {gap}
+    <input type="range" bind:value={gap} min={0} max={50} />
+  </label>
 </div>
 
 <p>
