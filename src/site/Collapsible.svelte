@@ -1,13 +1,10 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte'
   import { tweened } from 'svelte/motion'
   import { slide } from 'svelte/transition'
 
-  interface Props {
-    title: string | string[]
-    children?: import('svelte').Snippet
-  }
-
-  let { title, children }: Props = $props()
+  let { title, children }: { title: string | string[]; children?: Snippet<[]> } =
+    $props()
 
   const duration = 200
   const angle = tweened(180, { duration })
@@ -33,26 +30,26 @@
 <style>
   button {
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4pt;
+    background: var(--btn-bg, rgba(255, 255, 255, 0.1));
+    border-radius: var(--btn-border-radius, 4pt);
     width: max-content;
-    padding: 4pt 1ex;
+    padding: var(--btn-padding, 4pt 1ex);
     box-sizing: border-box;
     display: block;
-    margin: 2em auto;
+    margin: var(--btn-margin, 2em auto);
     transition: 0.3s;
     border: none;
-    color: white;
-    font-size: 1.3em;
+    color: var(--btn-text-color, white);
+    font-size: var(--btn-font-size, 1.1em);
   }
   button:hover {
-    transform: scale(1.01);
-    background: rgba(255, 255, 255, 0.2);
+    transform: var(--btn-hover-transform, scale(1.01));
+    background: var(--btn-hover-bg, rgba(255, 255, 255, 0.2));
   }
   div {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4pt;
+    background: var(--collapsible-bg, rgba(255, 255, 255, 0.1));
+    border-radius: var(--collapsible-border-radius, 4pt);
     overflow: scroll;
-    padding: 0 1em 1ex;
+    padding: var(--collapsible-padding, 0 1em 1ex);
   }
 </style>

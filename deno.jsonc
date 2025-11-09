@@ -4,9 +4,7 @@
     "build": "deno run -A npm:vite build",
     "preview": "deno run -A npm:vite preview",
     "serve": "deno run -A npm:vite build && deno run -A npm:vite preview",
-    "lint": "deno lint",
-    "fmt": "deno fmt",
-    "test": "deno run -A npm:vitest",
+    "vitest": "deno run -A npm:vitest",
     "package": "deno run -A npm:svelte-package",
     "changelog": "deno run -A npm:auto-changelog --package --output changelog.md --hide-credit --commit-limit false"
   },
@@ -23,7 +21,6 @@
         "no-boolean-literal-for-arguments",
         "no-const-assign",
         "no-eval",
-        "no-inferrable-types",
         "no-non-null-asserted-optional-chain",
         "no-non-null-assertion",
         "no-self-compare",
@@ -37,6 +34,7 @@
   },
   "fmt": {
     "include": ["src/"],
+    "exclude": ["readme.md", "changelog.md"],
     "indentWidth": 2,
     "lineWidth": 90,
     "semiColons": false,
