@@ -5,7 +5,10 @@
 
 <Header />
 
-<p>Naive implementation in Svelte without column balancing.</p>
+<p>
+  Svelte masonry component with SSR support (via CSS container queries) and automatic
+  column balancing.
+</p>
 
 <Collapsible title={[`Click for docs`, `Close docs`]}>
   <Readme />

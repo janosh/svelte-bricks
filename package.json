@@ -1,6 +1,6 @@
 {
   "name": "svelte-bricks",
-  "description": "Simple masonry implementation without column balancing",
+  "description": "Svelte masonry component with SSR support and column balancing",
   "author": "Janosh Riebesell <janosh.riebesell@gmail.com>",
   "homepage": "https://janosh.github.io/svelte-bricks",
   "repository": "https://github.com/janosh/svelte-bricks",
