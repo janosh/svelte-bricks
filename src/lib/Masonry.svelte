@@ -58,7 +58,40 @@
       )
     }
   })
-  let nCols = $derived(calcCols(masonryWidth, minColWidth, gap))
+  // Calculate number of columns - CSS container queries hide excess columns for CLS-free SSR
+  const max_viewport = 1920
+  let nCols = $derived(
+    masonryWidth > 0 ? calcCols(masonryWidth, minColWidth, gap) : Math.min(
+      items.length,
+      Math.floor((max_viewport + gap) / (minColWidth + gap)) || 1,
+    ),
+  )
+
+  // Generate CSS container query rules to hide excess columns based on container width
+  // breakpoint(n) = (minColWidth + gap) * n - gap is the minimum width needed for n columns
+  let container_query_css = $derived.by(() => {
+    const rules: string[] = []
+    for (let col_count = 1; col_count < nCols; col_count++) {
+      const min_width_for_next = (minColWidth + gap) * (col_count + 1) - gap
+      if (col_count === 1) {
+        // Hide all columns except first when container is too narrow for 2 columns
+        rules.push(
+          `@container (max-width: ${
+            min_width_for_next - 1
+          }px) { .masonry > .col:nth-child(n+2) { display: none; } }`,
+        )
+      } else {
+        const min_width_for_current = (minColWidth + gap) * col_count - gap
+        rules.push(
+          `@container (min-width: ${min_width_for_current}px) and (max-width: ${
+            min_width_for_next - 1
+          }px) { .masonry > .col:nth-child(n+${col_count + 1}) { display: none; } }`,
+        )
+      }
+    }
+    return rules.join(`\n`)
+  })
+
   let itemsToCols = $derived(
     items.reduce<[Item, number][][]>(
       (cols, item, idx) => {
@@ -69,6 +102,9 @@
     ),
   )
 </script>
+
+<!-- Dynamic container query styles for CLS-free SSR -->
+<svelte:element this={`style`}>{container_query_css}</svelte:element>
 
 <!-- deno-fmt-ignore -->
 <div
@@ -109,6 +145,7 @@
 
 <style>
   :where(div.masonry) {
+    container-type: inline-size;
     display: flex;
     justify-content: center;
     overflow-wrap: anywhere;

@@ -2,10 +2,19 @@
   import { page } from '$app/state'
   import { repository } from '$root/package.json'
   import type { Snippet } from 'svelte'
-  import { GitHubCorner } from 'svelte-multiselect'
+  import { GitHubCorner, Nav } from 'svelte-multiselect'
   import '../app.css'
 
   let { children }: { children?: Snippet<[]> } = $props()
+
+  const routes: [string, string][] = [
+    [`/`, `Home`],
+    [`/edge-cases`, `Edge Cases`],
+    [`/stress-test`, `Stress Test`],
+    [`/cls-demo`, `CLS Demo`],
+    [`/fetch-images-example`, `Fetched Images`],
+    [`/changelog`, `Changelog`],
+  ]
 </script>
 
 <GitHubCorner
@@ -14,9 +23,7 @@
   --gh-corner-bg="white"
 />
 
-{#if page.url.pathname !== `/`}
-  <a href="/" aria-label="Back to index page">&laquo; home</a>
-{/if}
+<Nav {routes} {page} />
 
 {@render children?.()}
 
@@ -38,17 +45,26 @@
       line-height: 1.1em;
     }
   }
-  a[href='/'] {
-    font-size: 16pt;
-    position: absolute;
-    top: 2em;
-    left: 2em;
-    background-color: rgba(255, 255, 255, 0.1);
-    padding: 1pt 5pt;
-    border-radius: 3pt;
-    transition: 0.2s;
+  /* Nav component styling */
+  :global(nav) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5em 1em;
+    padding: 0.8em 1em;
   }
-  a[href='/']:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+  :global(nav a) {
+    color: #8cf;
+    text-decoration: none;
+    padding: 0.3em 0.6em;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+  :global(nav a:hover) {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  :global(nav a[aria-current='page']) {
+    background: rgba(100, 180, 255, 0.2);
+    color: #fff;
   }
 </style>
