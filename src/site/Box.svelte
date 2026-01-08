@@ -47,6 +47,7 @@
     grid-area: 1/1;
     border-radius: 1ex;
     margin: 0;
+    padding-inline: 1em;
   }
   div:hover {
     transform: scale(1.03);
