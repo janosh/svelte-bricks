@@ -14,7 +14,7 @@
 
 </h4>
 
-Naive implementation in Svelte without column balancing. **[Live demo](https://janosh.github.io/svelte-bricks)**
+Svelte masonry component with SSR support (via CSS container queries) and automatic column balancing. **[Live demo](https://janosh.github.io/svelte-bricks)**
 
 </div>
 
@@ -59,8 +59,6 @@ Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; 
 
 **Note**: If `items` is an array of objects, this component tries to access an `id` property on each item. This value is used to tell items apart in the keyed `{#each}` block that creates the masonry layout. Without it, Svelte could not avoid duplicates when new items are added or existing ones rearranged. Read the [Svelte docs](https://svelte.dev/tutorial/keyed-each-blocks) for details. To change the name of the identifier key, pass `idKey="some-uniq-key`. Or pass a function `getId = (item: Item) => string | number` that maps items to unique IDs.
 
-**Hint**: Balanced columns can be achieved even with this simple implementation if masonry items are allowed to stretch to the column height.
-
 ## Props
 
 `Masonry.svelte` expects an array of `items` as well as a `<slot />` component used to render each of the `items`. The array can contain whatever data (objects, strings, numbers) as long as the slot component knows how to handle it.
@@ -72,6 +70,12 @@ Additional optional props are:
    ```
 
    Whether to [FLIP-animate](https://svelte.dev/tutorial/animate) masonry items when viewport resizing or other events cause `items` to rearrange.
+
+1. ```ts
+   balance: boolean = true
+   ```
+
+   Enable height-based column balancing. Items are distributed to the shortest column for a more even layout. Set to `false` for simple round-robin distribution.
 
 1. ```ts
    calcCols = (
