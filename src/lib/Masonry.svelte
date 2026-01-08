@@ -58,39 +58,26 @@
       )
     }
   })
-  // Calculate number of columns - CSS container queries hide excess columns for CLS-free SSR
-  const max_viewport = 1920
+  // CSS container queries hide excess columns for CLS-free SSR
+  // When masonryWidth is 0 (SSR), calculate max cols for 1920px viewport
+  const max_ssr_viewport = 1920
   let nCols = $derived(
-    masonryWidth > 0 ? calcCols(masonryWidth, minColWidth, gap) : Math.min(
-      items.length,
-      Math.floor((max_viewport + gap) / (minColWidth + gap)) || 1,
-    ),
+    calcCols(masonryWidth || max_ssr_viewport, minColWidth, gap),
   )
 
-  // Generate CSS container query rules to hide excess columns based on container width
-  // breakpoint(n) = (minColWidth + gap) * n - gap is the minimum width needed for n columns
-  let container_query_css = $derived.by(() => {
-    const rules: string[] = []
-    for (let col_count = 1; col_count < nCols; col_count++) {
-      const min_width_for_next = (minColWidth + gap) * (col_count + 1) - gap
-      if (col_count === 1) {
-        // Hide all columns except first when container is too narrow for 2 columns
-        rules.push(
-          `@container (max-width: ${
-            min_width_for_next - 1
-          }px) { .masonry > .col:nth-child(n+2) { display: none; } }`,
-        )
-      } else {
-        const min_width_for_current = (minColWidth + gap) * col_count - gap
-        rules.push(
-          `@container (min-width: ${min_width_for_current}px) and (max-width: ${
-            min_width_for_next - 1
-          }px) { .masonry > .col:nth-child(n+${col_count + 1}) { display: none; } }`,
-        )
-      }
-    }
-    return rules.join(`\n`)
-  })
+  // Container query rules: breakpoint(n) = (minColWidth + gap) * n - gap
+  let container_query_css = $derived(
+    Array.from({ length: nCols - 1 }, (_, idx) => {
+      const col = idx + 1
+      const max_w = (minColWidth + gap) * (col + 1) - gap - 1
+      const min_w = col === 1
+        ? ``
+        : `(min-width: ${(minColWidth + gap) * col - gap}px) and `
+      return `@container ${min_w}(max-width: ${max_w}px) { .masonry > .col:nth-child(n+${
+        col + 1
+      }) { display: none; } }`
+    }).join(`\n`),
+  )
 
   let itemsToCols = $derived(
     items.reduce<[Item, number][][]>(

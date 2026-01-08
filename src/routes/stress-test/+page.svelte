@@ -1,10 +1,15 @@
 <script lang="ts">
   import Masonry from '$lib'
 
+  type TestMode =
+    | 'rapid-add'
+    | 'rapid-remove'
+    | 'resize-spam'
+    | 'shuffle-chaos'
+    | 'idle'
+
   // State
-  let test_mode = $state<
-    'rapid-add' | 'rapid-remove' | 'resize-spam' | 'shuffle-chaos' | 'idle'
-  >(`idle`)
+  let test_mode = $state<TestMode>(`idle`)
   let interval_id = $state<ReturnType<typeof setInterval> | null>(null)
   let operation_count = $state(0)
   let items = $state<{ id: number; height: number; hue: number }[]>([])
@@ -17,36 +22,31 @@
   let masonry_width = $state(0)
   let masonry_height = $state(0)
 
-  function add_items(count: number) {
-    items = [
-      ...items,
-      ...Array.from({ length: count }, () => {
-        const item = {
-          id: next_id,
-          height: 50 + Math.floor(Math.random() * 200),
-          hue: Math.floor(Math.random() * 360),
-        }
-        next_id++
-        return item
-      }),
-    ]
-  }
-
-  function clear_all() {
+  const make_item = () => ({
+    id: next_id++,
+    height: 50 + Math.floor(Math.random() * 200),
+    hue: Math.floor(Math.random() * 360),
+  })
+  const add_items = (
+    count: number,
+  ) => (items = [...items, ...Array.from({ length: count }, make_item)])
+  const clear_all = () => {
     items = []
     next_id = 0
   }
+  const remove_random = () =>
+    items.length > 0 &&
+    (items = items.toSpliced(Math.floor(Math.random() * items.length), 1))
+  const shuffle = () => (items = [...items].sort(() => Math.random() - 0.5))
 
   function stop_test() {
-    if (interval_id) {
-      clearInterval(interval_id)
-      interval_id = null
-    }
+    if (interval_id) clearInterval(interval_id)
+    interval_id = null
     test_mode = `idle`
   }
 
   function start_test(
-    mode: typeof test_mode,
+    mode: TestMode,
     setup: () => void,
     tick: () => void,
     interval: number,
@@ -60,6 +60,65 @@
       operation_count++
     }, interval)
   }
+
+  const scenarios: { label: string; action: () => void }[] = [
+    {
+      label: `0 Items`,
+      action: () => {
+        stop_test()
+        clear_all()
+      },
+    },
+    {
+      label: `1 Item`,
+      action: () => {
+        stop_test()
+        clear_all()
+        add_items(1)
+      },
+    },
+    {
+      label: `Wide Column`,
+      action: () => {
+        stop_test()
+        clear_all()
+        min_col_width = 800
+        max_col_width = 1200
+        add_items(5)
+      },
+    },
+    {
+      label: `Many Narrow`,
+      action: () => {
+        stop_test()
+        clear_all()
+        min_col_width = 80
+        max_col_width = 120
+        add_items(50)
+      },
+    },
+    {
+      label: `Exact Fit`,
+      action: () => {
+        stop_test()
+        clear_all()
+        min_col_width = 200
+        max_col_width = 200
+        gap = 0
+        add_items(10)
+      },
+    },
+    {
+      label: `200 Items`,
+      action: () => {
+        stop_test()
+        clear_all()
+        min_col_width = 50
+        max_col_width = 100
+        add_items(200)
+      },
+    },
+  ]
 
   let expected_cols = $derived(
     masonry_width > 0
@@ -97,10 +156,8 @@
       start_test(`rapid-remove`, () => {
         if (items.length < 50) add_items(100)
       }, () => {
-        if (items.length > 0) {
-          const idx = Math.floor(Math.random() * items.length)
-          items = [...items.slice(0, idx), ...items.slice(idx + 1)]
-        } else stop_test()
+        if (items.length > 0) remove_random()
+        else stop_test()
       }, 50)}
       class:active={test_mode === `rapid-remove`}
       disabled={test_mode !== `idle` && test_mode !== `rapid-remove`}
@@ -122,12 +179,9 @@
       start_test(`shuffle-chaos`, () => {
         if (items.length < 30) add_items(50)
       }, () => {
-        items = [...items].sort(() => Math.random() - 0.5)
+        shuffle()
         if (Math.random() > 0.7) add_items(1)
-        if (Math.random() > 0.7 && items.length > 5) {
-          const idx = Math.floor(Math.random() * items.length)
-          items = [...items.slice(0, idx), ...items.slice(idx + 1)]
-        }
+        if (Math.random() > 0.7 && items.length > 5) remove_random()
       }, 150)}
       class:active={test_mode === `shuffle-chaos`}
       disabled={test_mode !== `idle` && test_mode !== `shuffle-chaos`}
@@ -148,68 +202,9 @@
 <section class="scenarios">
   <h3>Extreme Scenarios</h3>
   <div class="button-row">
-    <button
-      onclick={() => {
-        stop_test()
-        clear_all()
-      }}
-    >
-      0 Items
-    </button>
-    <button
-      onclick={() => {
-        stop_test()
-        clear_all()
-        add_items(1)
-      }}
-    >
-      1 Item
-    </button>
-    <button
-      onclick={() => {
-        stop_test()
-        clear_all()
-        min_col_width = 800
-        max_col_width = 1200
-        add_items(5)
-      }}
-    >
-      Wide Column
-    </button>
-    <button
-      onclick={() => {
-        stop_test()
-        clear_all()
-        min_col_width = 80
-        max_col_width = 120
-        add_items(50)
-      }}
-    >
-      Many Narrow
-    </button>
-    <button
-      onclick={() => {
-        stop_test()
-        clear_all()
-        min_col_width = 200
-        max_col_width = 200
-        gap = 0
-        add_items(10)
-      }}
-    >
-      Exact Fit
-    </button>
-    <button
-      onclick={() => {
-        stop_test()
-        clear_all()
-        min_col_width = 50
-        max_col_width = 100
-        add_items(200)
-      }}
-    >
-      200 Items
-    </button>
+    {#each scenarios as { label, action }}
+      <button onclick={action}>{label}</button>
+    {/each}
   </div>
 </section>
 
@@ -219,11 +214,9 @@
     <button onclick={() => add_items(1)}>+ 1</button>
     <button onclick={() => add_items(10)}>+ 10</button>
     <button onclick={() => add_items(50)}>+ 50</button>
-    <button onclick={() => items = items.slice(0, -1)}>- 1</button>
-    <button onclick={() => items = items.slice(0, -10)}>- 10</button>
-    <button onclick={() => items = [...items].sort(() => Math.random() - 0.5)}>
-      🔀 Shuffle
-    </button>
+    <button onclick={() => (items = items.slice(0, -1))}>- 1</button>
+    <button onclick={() => (items = items.slice(0, -10))}>- 10</button>
+    <button onclick={shuffle}>🔀 Shuffle</button>
     <button onclick={clear_all}>🗑 Clear</button>
   </div>
   <div class="sliders">

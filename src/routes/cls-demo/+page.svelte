@@ -18,29 +18,42 @@
   let masonry_width = $state(0)
   let cls_events = $state<string[]>([])
 
-  function generate_images(count: number) {
+  type Image = {
+    id: number
+    width: number
+    height: number
+    loaded: boolean
+    load_delay: number
+  }
+
+  const rand_delay = () => 500 + Math.floor(Math.random() * 2000)
+
+  function generate_images(count: number): Image[] {
     return Array.from({ length: count }, (_, idx) => ({
       id: idx,
       width: 300,
       height: 150 + Math.floor(Math.random() * 250),
       loaded: !simulate_slow_load,
-      load_delay: simulate_slow_load ? 500 + Math.floor(Math.random() * 2000) : 0,
+      load_delay: simulate_slow_load ? rand_delay() : 0,
     }))
+  }
+
+  function simulate_loading() {
+    images.forEach((img, idx) => {
+      if (!img.loaded) {
+        setTimeout(
+          () => (images[idx] = { ...images[idx], loaded: true }),
+          img.load_delay,
+        )
+      }
+    })
   }
 
   let images = $state(generate_images(15))
 
-  // Simulate image loading
+  // Simulate image loading on mount if slow load is enabled
   $effect(() => {
-    if (simulate_slow_load) {
-      images.forEach((img, idx) => {
-        if (!img.loaded) {
-          setTimeout(() => {
-            images[idx] = { ...images[idx], loaded: true }
-          }, img.load_delay)
-        }
-      })
-    }
+    if (simulate_slow_load) simulate_loading()
   })
 
   // Observe CLS
@@ -61,17 +74,11 @@
     return () => observer?.disconnect()
   })
 
-  let ssr_cols = $derived(
-    Math.min(images.length, Math.floor((1920 + gap) / (min_col_width + gap)) || 1),
-  )
-  let actual_cols = $derived(
-    masonry_width > 0
-      ? Math.min(
-        images.length,
-        Math.floor((masonry_width + gap) / (min_col_width + gap)) || 1,
-      )
-      : ssr_cols,
-  )
+  const calc_cols = (width: number) =>
+    Math.min(images.length, Math.floor((width + gap) / (min_col_width + gap)) || 1)
+
+  let ssr_cols = $derived(calc_cols(1920))
+  let actual_cols = $derived(masonry_width > 0 ? calc_cols(masonry_width) : ssr_cols)
 </script>
 
 <svelte:head>
@@ -152,13 +159,9 @@
         images = images.map((img) => ({
           ...img,
           loaded: false,
-          load_delay: 500 + Math.floor(Math.random() * 2000),
+          load_delay: rand_delay(),
         }))
-        images.forEach((img, idx) => {
-          setTimeout(() => {
-            images[idx] = { ...images[idx], loaded: true }
-          }, img.load_delay)
-        })
+        simulate_loading()
       }}
       disabled={!simulate_slow_load}
     >

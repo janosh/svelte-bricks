@@ -16,21 +16,107 @@
   let masonry_width = $state(0)
   let masonry_height = $state(0)
 
-  function generate_items(count: number) {
-    return Array.from({ length: count }, (_, idx) => ({
-      id: idx,
-      height: fixed_height
-        ? min_height
-        : Math.floor(min_height + Math.random() * (max_height - min_height)),
-      color: `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`,
-    }))
-  }
+  const rand_height = () =>
+    fixed_height
+      ? min_height
+      : Math.floor(min_height + Math.random() * (max_height - min_height))
+  const rand_color = () => `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`
+  const make_item = (id: number) => ({
+    id,
+    height: rand_height(),
+    color: rand_color(),
+  })
 
-  let items = $state(generate_items(20))
+  let items = $state(Array.from({ length: 20 }, (_, idx) => make_item(idx)))
 
   function regenerate() {
-    items = generate_items(n_items)
+    items = Array.from({ length: n_items }, (_, idx) => make_item(idx))
   }
+
+  const add_item = () => {
+    const new_id = items.length > 0
+      ? Math.max(...items.map((item) => item.id)) + 1
+      : 0
+    items = [...items, make_item(new_id)]
+  }
+  const remove_last = () => (items = items.slice(0, -1))
+  const remove_random = () => {
+    if (items.length > 0) {
+      const idx = Math.floor(Math.random() * items.length)
+      items = items.toSpliced(idx, 1)
+    }
+  }
+  const shuffle = () => (items = [...items].sort(() => Math.random() - 0.5))
+
+  const presets: { label: string; action: () => void }[] = [
+    {
+      label: `1 Item`,
+      action: () => {
+        n_items = 1
+        regenerate()
+      },
+    },
+    {
+      label: `3 Items`,
+      action: () => {
+        n_items = 3
+        regenerate()
+      },
+    },
+    {
+      label: `100 Items`,
+      action: () => {
+        n_items = 100
+        regenerate()
+      },
+    },
+    {
+      label: `Tall Items`,
+      action: () => {
+        min_height = 300
+        max_height = 500
+        regenerate()
+      },
+    },
+    {
+      label: `Short Items`,
+      action: () => {
+        min_height = 30
+        max_height = 60
+        regenerate()
+      },
+    },
+    {
+      label: `Uniform Height`,
+      action: () => {
+        fixed_height = true
+        regenerate()
+      },
+    },
+    {
+      label: `Varied Height`,
+      action: () => {
+        fixed_height = false
+        min_height = 50
+        max_height = 400
+        regenerate()
+      },
+    },
+    {
+      label: `Narrow Cols`,
+      action: () => {
+        min_col_width = 100
+        max_col_width = 150
+      },
+    },
+    {
+      label: `Wide Cols`,
+      action: () => {
+        min_col_width = 400
+        max_col_width = 600
+      },
+    },
+  ]
 
   let expected_cols = $derived(
     masonry_width > 0
@@ -74,36 +160,10 @@
     </label>
     <div class="button-row">
       <button onclick={regenerate}>Regenerate</button>
-      <button
-        onclick={() => {
-          const new_id = items.length > 0
-            ? Math.max(...items.map((item) => item.id)) + 1
-            : 0
-          items = [...items, {
-            id: new_id,
-            height: fixed_height ? min_height : Math.floor(
-              min_height + Math.random() * (max_height - min_height),
-            ),
-            color: `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`,
-          }]
-        }}
-      >
-        + Add
-      </button>
-      <button onclick={() => items = items.slice(0, -1)}>- Remove</button>
-      <button
-        onclick={() => {
-          if (items.length > 0) {
-            const idx = Math.floor(Math.random() * items.length)
-            items = [...items.slice(0, idx), ...items.slice(idx + 1)]
-          }
-        }}
-      >
-        🎲 Random
-      </button>
-      <button onclick={() => items = [...items].sort(() => Math.random() - 0.5)}>
-        🔀 Shuffle
-      </button>
+      <button onclick={add_item}>+ Add</button>
+      <button onclick={remove_last}>- Remove</button>
+      <button onclick={remove_random}>🎲 Random</button>
+      <button onclick={shuffle}>🔀 Shuffle</button>
     </div>
   </section>
 
@@ -151,82 +211,9 @@
 <section class="presets">
   <h3>Quick Presets</h3>
   <div class="button-row">
-    <button
-      onclick={() => {
-        n_items = 1
-        regenerate()
-      }}
-    >
-      1 Item
-    </button>
-    <button
-      onclick={() => {
-        n_items = 3
-        regenerate()
-      }}
-    >
-      3 Items
-    </button>
-    <button
-      onclick={() => {
-        n_items = 100
-        regenerate()
-      }}
-    >
-      100 Items
-    </button>
-    <button
-      onclick={() => {
-        min_height = 300
-        max_height = 500
-        regenerate()
-      }}
-    >
-      Tall Items
-    </button>
-    <button
-      onclick={() => {
-        min_height = 30
-        max_height = 60
-        regenerate()
-      }}
-    >
-      Short Items
-    </button>
-    <button
-      onclick={() => {
-        fixed_height = true
-        regenerate()
-      }}
-    >
-      Uniform Height
-    </button>
-    <button
-      onclick={() => {
-        fixed_height = false
-        min_height = 50
-        max_height = 400
-        regenerate()
-      }}
-    >
-      Varied Height
-    </button>
-    <button
-      onclick={() => {
-        min_col_width = 100
-        max_col_width = 150
-      }}
-    >
-      Narrow Cols
-    </button>
-    <button
-      onclick={() => {
-        min_col_width = 400
-        max_col_width = 600
-      }}
-    >
-      Wide Cols
-    </button>
+    {#each presets as { label, action }}
+      <button onclick={action}>{label}</button>
+    {/each}
   </div>
 </section>
 
