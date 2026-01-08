@@ -10,7 +10,6 @@
   const routes: [string, string][] = [
     [`/`, `Home`],
     [`/edge-cases`, `Edge Cases`],
-    [`/stress-test`, `Stress Test`],
     [`/cls-demo`, `CLS Demo`],
     [`/fetch-images-example`, `Fetched Images`],
     [`/changelog`, `Changelog`],

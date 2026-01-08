@@ -16,6 +16,17 @@
   let masonry_width = $state(0)
   let masonry_height = $state(0)
 
+  // Stress test state
+  type TestMode =
+    | 'rapid-add'
+    | 'rapid-remove'
+    | 'resize-spam'
+    | 'shuffle-chaos'
+    | 'idle'
+  let test_mode = $state<TestMode>(`idle`)
+  let interval_id = $state<ReturnType<typeof setInterval> | null>(null)
+  let operation_count = $state(0)
+
   const rand_height = () =>
     fixed_height
       ? min_height
@@ -27,26 +38,54 @@
     color: rand_color(),
   })
 
+  let next_id = $state(20)
   let items = $state(Array.from({ length: 20 }, (_, idx) => make_item(idx)))
 
   function regenerate() {
     items = Array.from({ length: n_items }, (_, idx) => make_item(idx))
+    next_id = n_items
   }
 
   const add_item = () => {
-    const new_id = items.length > 0
-      ? Math.max(...items.map((item) => item.id)) + 1
-      : 0
-    items = [...items, make_item(new_id)]
+    items = [...items, make_item(next_id++)]
+  }
+  const add_items = (count: number) => {
+    items = [...items, ...Array.from({ length: count }, () => make_item(next_id++))]
   }
   const remove_last = () => (items = items.slice(0, -1))
   const remove_random = () => {
     if (items.length > 0) {
-      const idx = Math.floor(Math.random() * items.length)
-      items = items.toSpliced(idx, 1)
+      items = items.toSpliced(Math.floor(Math.random() * items.length), 1)
     }
   }
   const shuffle = () => (items = [...items].sort(() => Math.random() - 0.5))
+  const clear_all = () => {
+    items = []
+    next_id = 0
+  }
+
+  // Stress test controls
+  function stop_test() {
+    if (interval_id) clearInterval(interval_id)
+    interval_id = null
+    test_mode = `idle`
+  }
+
+  function start_test(
+    mode: TestMode,
+    setup: () => void,
+    tick: () => void,
+    interval: number,
+  ) {
+    stop_test()
+    setup()
+    test_mode = mode
+    operation_count = 0
+    interval_id = setInterval(() => {
+      tick()
+      operation_count++
+    }, interval)
+  }
 
   const presets: { label: string; action: () => void }[] = [
     {
@@ -116,6 +155,20 @@
         max_col_width = 600
       },
     },
+    {
+      label: `No Gap`,
+      action: () => {
+        gap = 0
+      },
+    },
+    {
+      label: `200 Items`,
+      action: () => {
+        n_items = 200
+        min_col_width = 80
+        regenerate()
+      },
+    },
   ]
 
   let expected_cols = $derived(
@@ -135,8 +188,8 @@
 <h1>Edge Cases & Stress Tests</h1>
 
 <p class="description">
-  Interactive demo to test the masonry layout with various edge cases. Use the controls
-  below to adjust parameters and observe how the layout handles different scenarios.
+  Interactive demo to test the masonry layout with various edge cases and automated stress
+  tests. Use the controls to adjust parameters and observe layout behavior.
 </p>
 
 <div class="controls-grid">
@@ -164,6 +217,7 @@
       <button onclick={remove_last}>- Remove</button>
       <button onclick={remove_random}>🎲 Random</button>
       <button onclick={shuffle}>🔀 Shuffle</button>
+      <button onclick={clear_all}>🗑 Clear</button>
     </div>
   </section>
 
@@ -217,10 +271,68 @@
   </div>
 </section>
 
+<section class="stress-tests">
+  <h3>🔥 Automated Stress Tests</h3>
+  <div class="button-row">
+    <button
+      onclick={() => start_test(`rapid-add`, () => {}, () => add_items(1), 50)}
+      class:active={test_mode === `rapid-add`}
+      disabled={test_mode !== `idle` && test_mode !== `rapid-add`}
+    >
+      ⚡ Rapid Add
+    </button>
+    <button
+      onclick={() =>
+      start_test(`rapid-remove`, () => {
+        if (items.length < 50) add_items(100)
+      }, () => {
+        if (items.length > 0) remove_random()
+        else stop_test()
+      }, 50)}
+      class:active={test_mode === `rapid-remove`}
+      disabled={test_mode !== `idle` && test_mode !== `rapid-remove`}
+    >
+      💥 Rapid Remove
+    </button>
+    <button
+      onclick={() =>
+      start_test(`resize-spam`, () => {}, () => {
+        container_width = 30 + Math.floor(Math.random() * 70)
+      }, 100)}
+      class:active={test_mode === `resize-spam`}
+      disabled={test_mode !== `idle` && test_mode !== `resize-spam`}
+    >
+      📐 Resize Spam
+    </button>
+    <button
+      onclick={() =>
+      start_test(`shuffle-chaos`, () => {
+        if (items.length < 30) add_items(50)
+      }, () => {
+        shuffle()
+        if (Math.random() > 0.7) add_items(1)
+        if (Math.random() > 0.7 && items.length > 5) remove_random()
+      }, 150)}
+      class:active={test_mode === `shuffle-chaos`}
+      disabled={test_mode !== `idle` && test_mode !== `shuffle-chaos`}
+    >
+      🌀 Shuffle Chaos
+    </button>
+    {#if test_mode !== `idle`}
+      <button onclick={stop_test} class="stop">⏹ Stop</button>
+    {/if}
+  </div>
+  {#if test_mode !== `idle`}
+    <p class="test-status">
+      Running: <strong>{test_mode}</strong> — Operations: <code>{operation_count}</code>
+    </p>
+  {/if}
+</section>
+
 <div class="stats">
-  <span>Measured width: <code>{masonry_width}px</code></span>
-  <span>Measured height: <code>{masonry_height}px</code></span>
-  <span>Expected columns: <code>{expected_cols}</code></span>
+  <span>Width: <code>{masonry_width}px</code></span>
+  <span>Height: <code>{masonry_height}px</code></span>
+  <span>Columns: <code>{expected_cols}</code></span>
   <span>Items: <code>{items.length}</code></span>
 </div>
 
@@ -327,20 +439,39 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.85rem;
-    transition: background 0.2s;
+    transition: all 0.2s;
   }
-  button:hover {
+  button:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.2);
   }
-  .presets {
+  button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  button.active {
+    background: rgba(0, 200, 100, 0.3);
+    border-color: rgba(0, 200, 100, 0.5);
+  }
+  button.stop {
+    background: rgba(255, 50, 50, 0.3);
+    border-color: rgba(255, 50, 50, 0.5);
+  }
+  button.stop:hover {
+    background: rgba(255, 50, 50, 0.5);
+  }
+  .presets, .stress-tests {
     max-width: 1200px;
-    margin: 0 auto 2em;
+    margin: 0 auto 1.5em;
     padding: 0 1em;
   }
-  .presets h3 {
+  .presets h3, .stress-tests h3 {
     margin: 0 0 0.5em;
     font-size: 1rem;
     color: #aaa;
+  }
+  .test-status {
+    margin-top: 0.8em;
+    font-size: 0.9rem;
   }
   .stats {
     display: flex;
@@ -362,6 +493,7 @@
     background: rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     min-height: 200px;
+    transition: width 0.1s ease-out;
   }
   .item {
     display: flex;
