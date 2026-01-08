@@ -20,11 +20,11 @@ repos:
         args: [--check-filenames]
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.39.0
+    rev: v1.42.0
     hooks:
       - id: typos
         types: [text]
-        args: []
+        exclude: changelog\.md
 
   - repo: local
     hooks:
