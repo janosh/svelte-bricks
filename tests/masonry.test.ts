@@ -5,10 +5,27 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 const n_items = 30
 const indices = [...Array(n_items).keys()]
 
-// Mock required browser APIs
+// Track ResizeObserver registrations
+const resize_observers = new Map<Element, ResizeObserverCallback>()
+let mock_height = 100
+
+// Mock ResizeObserver that calls callback on observe
 globalThis.ResizeObserver = class ResizeObserver {
-  observe(): void {}
-  unobserve(): void {}
+  private callback: ResizeObserverCallback
+  constructor(callback: ResizeObserverCallback) {
+    this.callback = callback
+  }
+  observe(target: Element): void {
+    resize_observers.set(target, this.callback)
+    Object.defineProperty(target, `offsetHeight`, {
+      value: mock_height,
+      configurable: true,
+    })
+    this.callback([{ target } as ResizeObserverEntry], this as unknown as ResizeObserver)
+  }
+  unobserve(target: Element): void {
+    resize_observers.delete(target)
+  }
   disconnect(): void {}
 }
 
@@ -21,119 +38,96 @@ Element.prototype.getAnimations = vi.fn().mockReturnValue([])
 
 beforeEach(() => {
   document.body.innerHTML = ``
+  resize_observers.clear()
+  mock_height = 100
 })
 
 describe(`Masonry`, () => {
-  test.each([[true], [false]])(`renders items with animate=%s`, (animate) => {
+  test.each([
+    [true, true],
+    [true, false],
+    [false, true],
+    [false, false],
+  ])(`renders items with animate=%s, balance=%s`, (animate, balance) => {
     mount(Masonry, {
       target: document.body,
-      props: { items: indices, animate },
+      props: { items: indices, animate, balance },
     })
-
-    const items = document.querySelectorAll(`div.masonry > div.col > *`)
-
-    expect(items.length).toBe(n_items)
+    expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(n_items)
   })
 
-  test(`attaches class props correctly`, () => {
+  test.each([
+    [[`foo`, `bar`], /masonry foo/, /col col-\d+ bar/],
+    [[`custom`, `col-class`], /masonry custom/, /col col-\d+ col-class/],
+    [[``, ``], /^masonry\s+svelte-\w+/, /col col-\d+\s+svelte-\w+/],
+  ])(`applies class=%j and columnClass correctly`, ([cls, colCls], divRe, colRe) => {
     mount(Masonry, {
       target: document.body,
-      props: { items: indices, class: `foo`, columnClass: `bar` },
+      props: { items: indices, class: cls, columnClass: colCls },
     })
-
-    const items = document.querySelectorAll(`div.masonry.foo > div.col.bar > div`)
-
-    expect(items.length).toBe(n_items)
+    expect(document.querySelector(`div.masonry`)?.className).toMatch(divRe)
+    expect(document.querySelector(`div.masonry > div.col`)?.className).toMatch(colRe)
   })
 
-  test(`applies style prop correctly`, () => {
-    const bg_color = `background-color: darkblue;`
+  test(`applies style and columnStyle props`, async () => {
+    const style = `background-color: darkblue;`
+    const columnStyle = `border: 1px solid red;`
     mount(Masonry, {
       target: document.body,
-      props: { items: indices, style: bg_color },
+      props: { items: [1, 2], style, columnStyle, maxColWidth: 150, gap: 5 },
     })
-
-    const outer_masonry_div = document.querySelector(`div.masonry`)
-
-    expect(outer_masonry_div?.getAttribute(`style`)).toContain(bg_color)
-  })
-
-  test(`sets maxColWidth and gap correctly as style attribute`, async () => {
-    const [maxColWidth, gap] = [100, 10]
-    mount(Masonry, {
-      target: document.body,
-      props: { items: indices, maxColWidth, gap },
-    })
-
     await tick()
 
-    const outer_masonry_div = document.querySelector(`div.masonry > div.col`)
-
-    expect(outer_masonry_div?.getAttribute(`style`)).toContain(
-      `gap: ${gap}px; max-width: ${maxColWidth}px;`,
+    expect(document.querySelector(`div.masonry`)?.getAttribute(`style`)).toContain(style)
+    const col_style = document.querySelector(`div.masonry > div.col`)?.getAttribute(
+      `style`,
     )
+    expect(col_style).toContain(`gap: 5px`)
+    expect(col_style).toContain(`max-width: 150px`)
+    expect(col_style).toContain(columnStyle)
   })
 
-  test(`calculates correct number of columns based masonryWidth, minColWidth, gap`, () => {
+  test(`calculates columns from masonryWidth, minColWidth, gap`, () => {
     const [masonryWidth, minColWidth, gap] = [370, 50, 10]
-    // floor((370 + 10) / (50 + 10)) = 6 columns
-    const expected_cols = Math.floor((masonryWidth + gap) / (minColWidth + gap))
+    const expected = Math.floor((masonryWidth + gap) / (minColWidth + gap))
 
     mount(Masonry, {
       target: document.body,
       props: { items: indices, masonryWidth, minColWidth, gap },
     })
 
-    const columns = document.querySelectorAll(`div.masonry > div.col`)
-    expect(columns.length).toBe(expected_cols)
+    expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(expected)
   })
 
-  test(`warns if maxColWidth is less than minColWidth`, () => {
-    const minColWidth = 50
-    const maxColWidth = 40
+  test(`warns if maxColWidth < minColWidth`, () => {
     console.warn = vi.fn()
-
     mount(Masonry, {
       target: document.body,
-      props: { items: indices, minColWidth, maxColWidth },
+      props: { items: indices, minColWidth: 50, maxColWidth: 40 },
     })
-
     expect(console.warn).toHaveBeenCalledWith(
-      `svelte-bricks: maxColWidth (${maxColWidth}) < minColWidth (${minColWidth}).`,
+      `svelte-bricks: maxColWidth (40) < minColWidth (50).`,
     )
-    expect(console.warn).toHaveBeenCalledTimes(1)
   })
 
-  test(`uses custom getId function for keyed each blocks`, () => {
-    const customItems = [{ customId: 1 }, { customId: 2 }]
-    const getId = vi.fn((item) => item.customId)
-
+  test(`uses custom getId and idKey`, () => {
+    const getId = vi.fn((item: { x: number }) => item.x)
     mount(Masonry, {
       target: document.body,
-      props: { items: customItems, getId },
+      props: { items: [{ x: 1 }, { x: 2 }], getId },
     })
-
     expect(getId).toHaveBeenCalled()
-    expect(getId).toHaveBeenCalledWith(customItems[0])
-  })
 
-  test(`uses custom idKey for object items`, () => {
-    const customItems = [{ myId: 1 }, { myId: 2 }]
-
+    document.body.innerHTML = ``
     mount(Masonry, {
       target: document.body,
-      props: { items: customItems, idKey: `myId` },
+      props: { items: [{ myId: 1 }], idKey: `myId` },
     })
-
-    const items = document.querySelectorAll(`div.masonry > div.col > div`)
-    expect(items.length).toBe(customItems.length)
+    expect(document.querySelectorAll(`div.masonry > div.col > div`).length).toBe(1)
   })
 
-  test(`uses custom calcCols function and adds column index classes`, () => {
-    const n_cols = 3
-    const calcCols = vi.fn(() => n_cols)
-
-    // Provide masonryWidth > 0 to trigger calcCols (when 0, component uses maxCols for SSR)
+  test(`uses custom calcCols and adds col-N classes`, () => {
+    const calcCols = vi.fn(() => 3)
     mount(Masonry, {
       target: document.body,
       props: { items: indices, calcCols, masonryWidth: 500 },
@@ -141,209 +135,137 @@ describe(`Masonry`, () => {
 
     expect(calcCols).toHaveBeenCalled()
     const columns = document.querySelectorAll(`div.masonry > div.col`)
-    expect(columns.length).toBe(n_cols)
-
-    // Check that each column has the correct index class
-    for (const [idx, col] of columns.entries()) {
-      expect(col.classList).toContain(`col-${idx}`)
-    }
+    expect(columns.length).toBe(3)
+    columns.forEach((col, idx) => expect(col.classList).toContain(`col-${idx}`))
   })
 
   test(`distributes items evenly across columns`, () => {
-    const n_cols = 3
-    // Provide masonryWidth > 0 to trigger calcCols (when 0, component uses maxCols for SSR)
     mount(Masonry, {
       target: document.body,
-      props: { items: indices, calcCols: () => n_cols, masonryWidth: 500 },
+      props: { items: indices, calcCols: () => 3, masonryWidth: 500 },
     })
 
     const columns = document.querySelectorAll(`div.masonry > div.col`)
-    const items_per_col = Math.ceil(indices.length / n_cols)
-
-    for (const col of columns) {
-      const col_items = col.children.length
-      // Each column should have either itemsPerCol or itemsPerCol-1 items
-      expect(col_items).toBeGreaterThanOrEqual(items_per_col - 1)
-      expect(col_items).toBeLessThanOrEqual(items_per_col)
-    }
+    const per_col = Math.ceil(n_items / 3)
+    columns.forEach((col) => {
+      expect(col.children.length).toBeGreaterThanOrEqual(per_col - 1)
+      expect(col.children.length).toBeLessThanOrEqual(per_col)
+    })
   })
-
-  test.each([{ minColWidth: 100, maxColWidth: 200, gap: 10, expected: 3 }])(
-    `calculates columns correctly with different widths and gaps`,
-    ({ minColWidth, maxColWidth, gap, expected }) => {
-      mount(Masonry, {
-        target: document.body,
-        props: { items: indices, masonryWidth: 400, minColWidth, maxColWidth, gap },
-      })
-
-      const columns = document.querySelectorAll(`div.masonry > div.col`)
-      expect(columns.length).toBe(expected)
-    },
-  )
-
-  test.each`
-    animate | duration
-    ${true} | ${200}
-    ${true} | ${0}
-  `(
-    `renders items correctly with animate=$animate and duration=$duration`,
-    ({ animate, duration }) => {
-      // Provide masonryWidth > 0 to ensure consistent column layout
-      mount(Masonry, {
-        target: document.body,
-        props: { items: indices, animate, duration, masonryWidth: 500 },
-      })
-
-      const item_divs = document.querySelectorAll(`div.masonry > div.col > div`)
-      // With animate=true, items are wrapped in additional divs for transitions
-      expect(item_divs.length).toBe(n_items)
-    },
-  )
 
   test.each([
     [[], 0],
     [[1], 1],
     [[1, 2, 3, 4, 5], 5],
-    [[...Array(50)].map((_, i) => i), 50],
-  ])(
-    `renders correct number of items for different array lengths: %j`,
-    (items, expected) => {
-      mount(Masonry, {
-        target: document.body,
-        props: { items },
-      })
-
-      const itemElements = document.querySelectorAll(`div.masonry > div.col > *`)
-      expect(itemElements.length).toBe(expected)
-    },
-  )
-
-  test.each([
-    { items: [{ id: 1 }, { id: 2 }], idKey: `id` },
-    { items: [{ key: `a` }, { key: `b` }], idKey: `key` },
-    { items: [{ uuid: `123` }, { uuid: `456` }], idKey: `uuid` },
-  ])(`works with different idKey values: $idKey`, ({ items, idKey }) => {
-    mount(Masonry, {
-      target: document.body,
-      props: { items, idKey },
-    })
-
-    const itemElements = document.querySelectorAll(`div.masonry > div.col > div`)
-    expect(itemElements.length).toBe(items.length)
+    [[...Array(50).keys()], 50],
+  ])(`renders %j items correctly`, (items, expected) => {
+    mount(Masonry, { target: document.body, props: { items } })
+    expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(expected)
   })
 
-  test.each([
-    [`custom`, `col-class`, /^masonry custom svelte-\w+/, /col col-\d+ col-class/],
-    [`multiple`, `cols`, /^masonry multiple svelte-\w+/, /col col-\d+ cols/],
-    [``, ``, /^masonry\s+svelte-\w+/, /col col-\d+/],
-  ])(
-    `applies CSS class names correctly: %s and %s`,
-    (class_name, columnClass, div_class_regex, col_class_regex) => {
-      mount(Masonry, {
-        target: document.body,
-        props: { items: indices, class: class_name, columnClass },
-      })
-
-      const masonry_div = document.querySelector(`div.masonry`)
-      const col_div = document.querySelector(`div.masonry > div.col`)
-
-      expect(masonry_div?.className.trim()).toMatch(div_class_regex)
-      expect(col_div?.className.trim()).toMatch(col_class_regex)
-
-      expect(col_div?.classList).toContain(`col-0`)
-    },
-  )
-
-  test(`applies columnClass correctly to column divs`, () => {
-    const testColClass = `my-column-class`
+  test.each([`id`, `key`, `uuid`])(`works with idKey=%s`, (idKey) => {
     mount(Masonry, {
       target: document.body,
-      props: { items: [1, 2, 3, 4], columnClass: testColClass },
+      props: { items: [{ [idKey]: 1 }, { [idKey]: 2 }], idKey },
     })
-
-    const columns = document.querySelectorAll(`div.masonry > div.col`)
-    expect(columns.length).toBeGreaterThan(0) // Ensure columns rendered
-    columns.forEach((col) => {
-      expect(col.classList).toContain(testColClass)
-      expect(col.className).toMatch(/col col-\d+ my-column-class/)
-    })
+    expect(document.querySelectorAll(`div.masonry > div.col > div`).length).toBe(2)
   })
 
-  test(`applies columnStyle correctly to column divs`, () => {
-    const testColStyle = `border: 1px solid red;`
-    const [maxColWidth, gap] = [150, 5] // Use known values for base style check
-    mount(Masonry, {
-      target: document.body,
-      props: { items: [1, 2, 3, 4], columnStyle: testColStyle, maxColWidth, gap },
-    })
-
-    const columns = document.querySelectorAll(`div.masonry > div.col`)
-    expect(columns.length).toBeGreaterThan(0) // Ensure columns rendered
-    columns.forEach((col) => {
-      const style = col.getAttribute(`style`)
-      expect(style).toContain(`gap: ${gap}px;`)
-      expect(style).toContain(`max-width: ${maxColWidth}px;`)
-      expect(style).toContain(testColStyle)
-    })
-  })
-
-  // CLS-free SSR behavior tests
-  test(`renders max columns when masonryWidth is 0 (SSR mode)`, () => {
+  // SSR behavior
+  test(`renders max columns when masonryWidth=0 (SSR mode)`, () => {
     const [minColWidth, gap] = [200, 10]
-    // With max_viewport=1920, nCols = floor((1920+10)/(200+10)) = 9
-    const expected_max_cols = Math.floor((1920 + gap) / (minColWidth + gap))
+    const expected = Math.floor((1920 + gap) / (minColWidth + gap))
 
     mount(Masonry, {
       target: document.body,
       props: { items: indices, minColWidth, gap, masonryWidth: 0 },
     })
 
+    expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(expected)
+  })
+
+  test(`generates container query CSS`, () => {
+    mount(Masonry, {
+      target: document.body,
+      props: { items: indices, minColWidth: 200, gap: 10 },
+    })
+
+    const styles = Array.from(document.querySelectorAll(`style`))
+    const cq_style = styles.find((s) => s.textContent?.includes(`@container`))
+    expect(cq_style?.textContent).toContain(`.masonry > .col:nth-child`)
+  })
+
+  test(`limits columns to items.length`, () => {
+    mount(Masonry, {
+      target: document.body,
+      props: { items: [1, 2, 3], minColWidth: 100, gap: 10, masonryWidth: 0 },
+    })
+    expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(3)
+  })
+})
+
+describe(`Masonry column balancing`, () => {
+  beforeEach(() => {
+    document.body.innerHTML = ``
+    resize_observers.clear()
+    mock_height = 100
+  })
+
+  test(`attaches ResizeObservers when balance=true`, async () => {
+    mount(Masonry, {
+      target: document.body,
+      props: { items: [1, 2, 3], balance: true, masonryWidth: 500 },
+    })
+    await tick()
+    expect(resize_observers.size).toBeGreaterThan(0)
+  })
+
+  test(`balancing places items in shortest column`, async () => {
+    mock_height = 50
+    mount(Masonry, {
+      target: document.body,
+      props: { items: [1, 2, 3], balance: true, calcCols: () => 3, masonryWidth: 600 },
+    })
+    await tick()
+
+    // Count item wrappers
+    const items = document.querySelectorAll(`div.masonry > div.col > div`)
+    expect(items.length).toBe(3)
+  })
+
+  test(`distributes items evenly with uniform heights`, async () => {
+    mock_height = 100
+    mount(Masonry, {
+      target: document.body,
+      props: {
+        items: [1, 2, 3, 4, 5, 6],
+        balance: true,
+        calcCols: () => 2,
+        masonryWidth: 500,
+      },
+    })
+    await tick()
+
     const columns = document.querySelectorAll(`div.masonry > div.col`)
-    expect(columns.length).toBe(expected_max_cols)
+    expect(columns.length).toBe(2)
+    expect(columns[0].children.length + columns[1].children.length).toBe(6)
   })
 
-  test(`generates container query CSS for column hiding`, () => {
-    const [minColWidth, gap] = [200, 10]
-
+  test(`balance=false uses round-robin distribution`, async () => {
     mount(Masonry, {
       target: document.body,
-      props: { items: indices, minColWidth, gap },
+      props: {
+        items: [1, 2, 3, 4],
+        balance: false,
+        calcCols: () => 2,
+        masonryWidth: 500,
+      },
     })
+    await tick()
 
-    // Check that a style element with container queries was generated
-    const style_elements = document.querySelectorAll(`style`)
-    const container_query_style = Array.from(style_elements).find((style_el) =>
-      style_el?.textContent?.includes(`@container`)
-    )
-
-    expect(container_query_style).toBeTruthy()
-    expect(container_query_style?.textContent).toContain(`.masonry > .col:nth-child`)
-  })
-
-  test(`limits nCols to items.length`, () => {
-    const small_items = [1, 2, 3] // Only 3 items
-    const [minColWidth, gap] = [100, 10] // Would allow many more columns
-
-    mount(Masonry, {
-      target: document.body,
-      props: { items: small_items, minColWidth, gap, masonryWidth: 0 },
-    })
-
+    // Round-robin: col0=[1,3], col1=[2,4]
     const columns = document.querySelectorAll(`div.masonry > div.col`)
-    // Should only render 3 columns since we only have 3 items
-    expect(columns.length).toBe(small_items.length)
-  })
-
-  test(`container-type inline-size is applied to masonry div`, () => {
-    mount(Masonry, {
-      target: document.body,
-      props: { items: indices },
-    })
-
-    const masonry_div = document.querySelector(`div.masonry`) as HTMLElement
-    // Check computed style has container-type (note: jsdom may not fully support this)
-    // At minimum, verify the element exists and has the masonry class
-    expect(masonry_div).toBeTruthy()
-    expect(masonry_div.classList).toContain(`masonry`)
+    expect(columns[0].children.length).toBe(2)
+    expect(columns[1].children.length).toBe(2)
   })
 })

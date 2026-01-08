@@ -1,5 +1,6 @@
 <script lang="ts" generics="Item">
   import type { Snippet } from 'svelte'
+  import type { Action } from 'svelte/action'
   import { flip } from 'svelte/animate'
   import type { HTMLAttributes } from 'svelte/elements'
   import { fade } from 'svelte/transition'
@@ -7,6 +8,7 @@
   // On non-primitive types, we need a property to tell masonry items apart. The name of this attribute can be customized with idKey which defaults to 'id'. See https://svelte.dev/tutorial/svelte/keyed-each-blocks.
   let {
     animate = true,
+    balance = true,
     calcCols = (masonryWidth: number, minColWidth: number, gap: number): number => {
       return Math.min(
         items.length,
@@ -33,6 +35,7 @@
     ...rest
   }: Omit<HTMLAttributes<HTMLDivElement>, `children`> & {
     animate?: boolean
+    balance?: boolean
     calcCols?: (masonryWidth: number, minColWidth: number, gap: number) => number
     duration?: number
     gap?: number
@@ -50,6 +53,40 @@
     children?: Snippet<[{ idx: number; item: Item }]>
     div?: HTMLDivElement
   } = $props()
+
+  // Height tracking for column balancing
+  let item_heights = $state(new Map<string | number, number>())
+  let measured_count = $state(0) // trigger reactivity on height updates
+
+  // Measure item heights via ResizeObserver
+  const measure_height: Action<HTMLElement, string | number> = (node, item_id) => {
+    if (!balance) return {}
+    const observer = new ResizeObserver(() => {
+      const height = node.offsetHeight
+      if (height > 0 && item_heights.get(item_id) !== height) {
+        item_heights.set(item_id, height)
+        measured_count = item_heights.size
+      }
+    })
+    observer.observe(node)
+    return { destroy: () => observer.disconnect() }
+  }
+
+  // Derive if we have enough measurements
+  let can_balance = $derived(balance && measured_count >= items.length)
+
+  // Distribute items to shortest column
+  function balance_to_cols(num_cols: number): [Item, number][][] {
+    const cols: [Item, number][][] = Array.from({ length: num_cols }, () => [])
+    const heights: number[] = Array(num_cols).fill(0)
+
+    for (const [idx, item] of items.entries()) {
+      const shortest = heights.indexOf(Math.min(...heights))
+      cols[shortest].push([item, idx])
+      heights[shortest] += (item_heights.get(getId(item)) ?? 0) + gap
+    }
+    return cols
+  }
 
   $effect.pre(() => {
     if (maxColWidth < minColWidth) {
@@ -79,15 +116,15 @@
     }).join(`\n`),
   )
 
-  let itemsToCols = $derived(
-    items.reduce<[Item, number][][]>(
-      (cols, item, idx) => {
-        cols[idx % cols.length].push([item, idx])
-        return cols
-      },
-      Array(nCols).fill(null).map(() => []),
-    ),
-  )
+  // Balanced distribution when measured, naive round-robin for SSR
+  let itemsToCols = $derived.by(() => {
+    if (can_balance) return balance_to_cols(nCols)
+    // SSR/initial: round-robin distribution
+    return items.reduce<[Item, number][][]>(
+      (cols, item, idx) => (cols[idx % nCols].push([item, idx]), cols),
+      Array.from({ length: nCols }, () => []),
+    )
+  })
 </script>
 
 <!-- Dynamic container query styles for CLS-free SSR -->
@@ -108,22 +145,25 @@
       style="gap: {gap}px; max-width: {maxColWidth}px; {columnStyle}"
     >
       {#if animate}
-        {#each col as [item, idx] (getId(item))}
+        {#each col as [item, item_idx] (getId(item))}
           <div
+            use:measure_height={getId(item)}
             in:fade={{ delay: 100, duration }}
             out:fade={{ delay: 0, duration }}
             animate:flip={{ duration }}
           >
-            {#if children}{@render children({ idx, item })}{:else}
+            {#if children}{@render children({ idx: item_idx, item })}{:else}
               <span>{item}</span>
             {/if}
           </div>
         {/each}
       {:else}
-        {#each col as [item, idx] (getId(item))}
-          {#if children}{@render children({ idx, item })}{:else}
-            <span>{item}</span>
-          {/if}
+        {#each col as [item, item_idx] (getId(item))}
+          <div use:measure_height={getId(item)}>
+            {#if children}{@render children({ idx: item_idx, item })}{:else}
+              <span>{item}</span>
+            {/if}
+          </div>
         {/each}
       {/if}
     </div>
