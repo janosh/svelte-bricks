@@ -168,6 +168,55 @@ Additional optional props are:
 
    Inline styles that will be applied to the top-level `div.masonry`.
 
+## Virtual Scrolling
+
+For large lists (1000+ items), enable virtual scrolling to render only visible items:
+
+```svelte
+<Masonry
+  {items}
+  virtualize={true}
+  height={600}
+  getEstimatedHeight={(item) => item.height ?? 150}
+  overscan={5}
+>
+  {#snippet children({ item })}
+    <Card {item} />
+  {/snippet}
+</Masonry>
+```
+
+### Virtualization Props
+
+1. ```ts
+   virtualize: boolean = false
+   ```
+
+   Enable virtual scrolling. When `true`, only visible items are rendered. Requires the `height` prop.
+
+1. ```ts
+   height: number | string
+   ```
+
+   Required when `virtualize=true`. Sets the scroll container height (e.g., `500` for pixels or `"80vh"`).
+
+1. ```ts
+   getEstimatedHeight: (item: Item) => number = () => 150
+   ```
+
+   Function that returns an estimated height for items before they're measured. Better estimates = less layout shift.
+
+1. ```ts
+   overscan: number = 5
+   ```
+
+   Number of items to render above and below the visible area. Higher values reduce flicker during fast scrolling but render more items.
+
+**Notes:**
+- FLIP animations are automatically disabled when virtualizing
+- Balance mode works with estimated heights until items are measured
+- The masonry div becomes a scroll container (`overflow-y: auto`)
+
 ## Styling
 
 Besides inline CSS which you can apply through the `style` prop, the following `:global()` CSS selectors can be used for fine-grained control of wrapper and column styles:
