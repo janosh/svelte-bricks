@@ -15,6 +15,10 @@
   let constrained_width = $state(false)
   let masonry_width = $state(0)
   let masonry_height = $state(0)
+  // Virtualization state
+  let virtualize = $state(false)
+  let virtual_height = $state(500)
+  let overscan = $state(5)
 
   // Stress test state
   type TestMode =
@@ -260,6 +264,48 @@
       <span>Constrained max-width (800px)</span>
     </label>
   </section>
+
+  <section class="control-group">
+    <h3>Virtualization</h3>
+    <label class="checkbox">
+      <input type="checkbox" bind:checked={virtualize} />
+      <span>Enable virtual scrolling</span>
+    </label>
+    <label>
+      <span>Scroll height: <code>{virtual_height}px</code></span>
+      <input
+        type="range"
+        bind:value={virtual_height}
+        min={200}
+        max={800}
+        disabled={!virtualize}
+      />
+    </label>
+    <label>
+      <span>Overscan: <code>{overscan}</code></span>
+      <input type="range" bind:value={overscan} min={1} max={20} disabled={!virtualize} />
+    </label>
+    <div class="button-row">
+      <button
+        onclick={() => {
+          virtualize = true
+          n_items = 1000
+          regenerate()
+        }}
+      >
+        🚀 1000 Items
+      </button>
+      <button
+        onclick={() => {
+          virtualize = true
+          n_items = 5000
+          regenerate()
+        }}
+      >
+        🔥 5000 Items
+      </button>
+    </div>
+  </section>
 </div>
 
 <section class="presets">
@@ -334,6 +380,9 @@
   <span>Height: <code>{masonry_height}px</code></span>
   <span>Columns: <code>{expected_cols}</code></span>
   <span>Items: <code>{items.length}</code></span>
+  {#if virtualize}
+    <span>Mode: <code>virtualized</code></span>
+  {/if}
 </div>
 
 <div
@@ -348,6 +397,10 @@
     {gap}
     {animate}
     {duration}
+    {virtualize}
+    {overscan}
+    height={virtualize ? virtual_height : undefined}
+    getEstimatedHeight={(item) => item.height}
     bind:masonryWidth={masonry_width}
     bind:masonryHeight={masonry_height}
   >

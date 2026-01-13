@@ -1,6 +1,9 @@
 :root {
   --page-bg: #090019;
 }
+html {
+  background: var(--page-bg);
+}
 body {
   background: var(--page-bg);
   padding: 2em;
@@ -8,6 +11,7 @@ body {
   color: white;
   max-width: 70em;
   margin: 0 auto 3em;
+  min-height: 100vh;
 }
 a {
   color: cornflowerblue;
