@@ -10,6 +10,11 @@
 <Toc headingSelector="main > :where(h3, h4)" breakpoint={1250} />
 
 <style>
+  main {
+    max-width: 50em;
+    margin-inline: auto;
+    padding-inline: 1em;
+  }
   :global(aside.toc.desktop) {
     position: fixed;
     top: 3em;
