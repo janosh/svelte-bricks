@@ -1,12 +1,20 @@
-### Changelog
+# Changelog
+
+## [v0.4.0](https://github.com/janosh/svelte-bricks/compare/v0.3.2...v0.4.0)
+
+> 13 January 2026
+
+- CLS-free SSR using CSS container queries by @janosh in https://github.com/janosh/svelte-bricks/pull/45
+- Add height-based column balancing with SSR support by @janosh in https://github.com/janosh/svelte-bricks/pull/46
+
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
-#### [v0.3.2](https://github.com/janosh/svelte-bricks/compare/v0.3.1...v0.3.2)
+## [v0.3.2](https://github.com/janosh/svelte-bricks/compare/v0.3.1...v0.3.2)
 
 - Masonry.svelte add columnStyle prop (closes #44) [`#44`](https://github.com/janosh/svelte-bricks/issues/44)
 
-#### [v0.3.1](https://github.com/janosh/svelte-bricks/compare/v0.3.0...v0.3.1)
+## [v0.3.1](https://github.com/janosh/svelte-bricks/compare/v0.3.0...v0.3.1)
 
 > 8 March 2025
 
@@ -16,7 +24,7 @@ All notable changes to this project will be documented in this file. Dates are d
 - Migrate project from node to Deno [`#38`](https://github.com/janosh/svelte-bricks/pull/38)
 - Type `children` `Snippet` params (#41) [`#39`](https://github.com/janosh/svelte-bricks/issues/39)
 
-#### [v0.3.0](https://github.com/janosh/svelte-bricks/compare/v0.2.1...v0.3.0)
+## [v0.3.0](https://github.com/janosh/svelte-bricks/compare/v0.2.1...v0.3.0)
 
 > 15 February 2025
 
@@ -24,14 +32,14 @@ All notable changes to this project will be documented in this file. Dates are d
 - Warn if `maxColWidth &lt; minColWidth` [`#33`](https://github.com/janosh/svelte-bricks/pull/33)
 - Fix `nCols` formula missing `gap` in numerator [`#31`](https://github.com/janosh/svelte-bricks/pull/31)
 
-#### [v0.2.1](https://github.com/janosh/svelte-bricks/compare/v0.2.0...v0.2.1)
+## [v0.2.1](https://github.com/janosh/svelte-bricks/compare/v0.2.0...v0.2.1)
 
 > 22 September 2023
 
 - Add `types` field to `package.json` [`#26`](https://github.com/janosh/svelte-bricks/pull/26)
 - Fixed misleading binding in usage example snippet [`#24`](https://github.com/janosh/svelte-bricks/pull/24)
 
-#### [v0.2.0](https://github.com/janosh/svelte-bricks/compare/v0.1.7...v0.2.0)
+## [v0.2.0](https://github.com/janosh/svelte-bricks/compare/v0.1.7...v0.2.0)
 
 > 23 May 2023
 
@@ -53,26 +61,26 @@ All notable changes to this project will be documented in this file. Dates are d
 - tweak CSS for fetch-images-example.svelte [`5a1754c`](https://github.com/janosh/svelte-bricks/commit/5a1754c5f5e17a5387dca9cc1675c5e1dc00e325)
 - sveltekit routes auto migration [`54d2a44`](https://github.com/janosh/svelte-bricks/commit/54d2a4494b61ebd9543b715eec0294ba8eb47b6c)
 
-#### [v0.1.7](https://github.com/janosh/svelte-bricks/compare/v0.1.6...v0.1.7)
+## [v0.1.7](https://github.com/janosh/svelte-bricks/compare/v0.1.6...v0.1.7)
 
 > 10 May 2022
 
 - Add props `idKey: string` and `getId = (item) =&gt; string | number` [`#11`](https://github.com/janosh/svelte-bricks/pull/11)
 - Add props `idKey: string` and `getId = (item) =&gt; string | number` (#11) [`#10`](https://github.com/janosh/svelte-bricks/issues/10)
 
-#### [v0.1.6](https://github.com/janosh/svelte-bricks/compare/v0.1.5...v0.1.6)
+## [v0.1.6](https://github.com/janosh/svelte-bricks/compare/v0.1.5...v0.1.6)
 
 > 11 April 2022
 
 - Add class props for use with CSS frameworks like Tailwind [`#9`](https://github.com/janosh/svelte-bricks/pull/9)
 
-#### [v0.1.5](https://github.com/janosh/svelte-bricks/compare/v0.1.4...v0.1.5)
+## [v0.1.5](https://github.com/janosh/svelte-bricks/compare/v0.1.4...v0.1.5)
 
 > 4 March 2022
 
 - Testing [`#6`](https://github.com/janosh/svelte-bricks/pull/6)
 
-#### [v0.1.4](https://github.com/janosh/svelte-bricks/compare/v0.1.3...v0.1.4)
+## [v0.1.4](https://github.com/janosh/svelte-bricks/compare/v0.1.3...v0.1.4)
 
 > 17 January 2022
 
@@ -81,14 +89,14 @@ All notable changes to this project will be documented in this file. Dates are d
 - drop deprecated svelteBracketNewLine [`46e84cb`](https://github.com/janosh/svelte-bricks/commit/46e84cbfb363a34708cf7229a340f0e21bcf7c28)
 - Masonry make crossfade transition local [`4debb8f`](https://github.com/janosh/svelte-bricks/commit/4debb8f4161faa82ccac242f206a9f6b6e159235)
 
-#### [v0.1.3](https://github.com/janosh/svelte-bricks/compare/v0.1.2...v0.1.3)
+## [v0.1.3](https://github.com/janosh/svelte-bricks/compare/v0.1.2...v0.1.3)
 
 > 3 November 2021
 
 - auto-generate demo-site docs [`0a5f0da`](https://github.com/janosh/svelte-bricks/commit/0a5f0da2826a519bb691f20fc4ef06acb2fa944f)
 - add inline css style prop, add eslint pre-commit [`2cb9e2d`](https://github.com/janosh/svelte-bricks/commit/2cb9e2dbe20a163f8c4d5aeaeedec8ac11867f88)
 
-#### [v0.1.2](https://github.com/janosh/svelte-bricks/compare/v0.1.1...v0.1.2)
+## [v0.1.2](https://github.com/janosh/svelte-bricks/compare/v0.1.1...v0.1.2)
 
 > 20 October 2021
 
@@ -98,13 +106,13 @@ All notable changes to this project will be documented in this file. Dates are d
 - fix Item type [`65cd139`](https://github.com/janosh/svelte-bricks/commit/65cd1391ba1050f223948cd96fb1cf992e925d79)
 - update readme [`74ba715`](https://github.com/janosh/svelte-bricks/commit/74ba715d3ba77e2be6bb206cc86f686eb66c2efd)
 
-#### [v0.1.1](https://github.com/janosh/svelte-bricks/compare/v0.1.0...v0.1.1)
+## [v0.1.1](https://github.com/janosh/svelte-bricks/compare/v0.1.0...v0.1.1)
 
 > 13 July 2021
 
 - fix item type [`2dc4dfc`](https://github.com/janosh/svelte-bricks/commit/2dc4dfcd02e6cd5243e64de9cf0316c5c3faee8d)
 
-#### v0.1.0
+## v0.1.0
 
 > 13 July 2021
 

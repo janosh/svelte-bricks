@@ -52,6 +52,7 @@
     justify-content: center;
     gap: 0.5em 1em;
     padding: 0.8em 1em;
+    background: var(--page-bg);
   }
   :global(nav a) {
     color: #8cf;
@@ -66,5 +67,11 @@
   :global(nav a[aria-current='page']) {
     background: rgba(100, 180, 255, 0.2);
     color: #fff;
+  }
+  :global(nav button.burger) {
+    border: none;
+  }
+  :global(nav button.burger span) {
+    background-color: white !important;
   }
 </style>
