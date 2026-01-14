@@ -5,7 +5,7 @@
   import type { HTMLAttributes } from 'svelte/elements'
   import { fade } from 'svelte/transition'
 
-  // On non-primitive types, we need a property to tell masonry items apart. The name of this attribute can be customized with idKey which defaults to 'id'. See https://svelte.dev/tutorial/svelte/keyed-each-blocks.
+  // On non-primitive types, we need a property to tell masonry items apart. The name of this attribute can be customized with idKey which defaults to 'id'. See https://svelte.dev/docs/svelte/each#Keyed-each-blocks.
   let {
     animate = true,
     balance = true,

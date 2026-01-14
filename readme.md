@@ -21,7 +21,7 @@ Svelte masonry component with SSR support (via CSS container queries) and automa
 ## Installation
 
 ```sh
-npm install --dev svelte-bricks
+pnpm add -D svelte-bricks
 ```
 
 ## Usage
@@ -57,7 +57,7 @@ Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; 
 </Masonry>
 ```
 
-**Note**: If `items` is an array of objects, this component tries to access an `id` property on each item. This value is used to tell items apart in the keyed `{#each}` block that creates the masonry layout. Without it, Svelte could not avoid duplicates when new items are added or existing ones rearranged. Read the [Svelte docs](https://svelte.dev/tutorial/keyed-each-blocks) for details. To change the name of the identifier key, pass `idKey="some-uniq-key`. Or pass a function `getId = (item: Item) => string | number` that maps items to unique IDs.
+**Note**: If `items` is an array of objects, this component tries to access an `id` property on each item. This value is used to tell items apart in the keyed `{#each}` block that creates the masonry layout. Without it, Svelte could not avoid duplicates when new items are added or existing ones rearranged. Read the [Svelte docs](https://svelte.dev/docs/svelte/each#Keyed-each-blocks) for details. To change the name of the identifier key, pass `idKey="some-uniq-key`. Or pass a function `getId = (item: Item) => string | number` that maps items to unique IDs.
 
 ## Props
 
@@ -69,7 +69,7 @@ Additional optional props are:
    animate: boolean = true
    ```
 
-   Whether to [FLIP-animate](https://svelte.dev/tutorial/animate) masonry items when viewport resizing or other events cause `items` to rearrange.
+   Whether to [FLIP-animate](https://svelte.dev/docs/svelte/svelte-animate) masonry items when viewport resizing or other events cause `items` to rearrange.
 
 1. ```ts
    balance: boolean = true
@@ -136,7 +136,7 @@ Additional optional props are:
    items: Item[]
    ```
 
-   The only required prop are the list of items to render where `Item = $$Generic` is a generic type which usually will be `object` but can also be simple types `string` or `number`.
+   The only required prop is the list of items to render where `Item` is a generic type (via `generics="Item"`) which usually will be `object` but can also be simple types `string` or `number`.
 
 1. ```ts
    masonryHeight: number = 0
@@ -201,10 +201,10 @@ For large lists (1000+ items), enable virtual scrolling to render only visible i
    Required when `virtualize=true`. Sets the scroll container height (e.g., `500` for pixels or `"80vh"`).
 
 1. ```ts
-   getEstimatedHeight: (item: Item) => number = () => 150
+   getEstimatedHeight?: (item: Item) => number
    ```
 
-   Function that returns an estimated height for items before they're measured. Better estimates = less layout shift.
+   Optional function that returns an estimated height for items before they're measured. Defaults to 150px if not provided. Better estimates = less layout shift.
 
 1. ```ts
    overscan: number = 5
@@ -213,6 +213,7 @@ For large lists (1000+ items), enable virtual scrolling to render only visible i
    Number of items to render above and below the visible area. Higher values reduce flicker during fast scrolling but render more items.
 
 **Notes:**
+
 - FLIP animations are automatically disabled when virtualizing
 - Balance mode works with estimated heights until items are measured
 - The masonry div becomes a scroll container (`overflow-y: auto`)
