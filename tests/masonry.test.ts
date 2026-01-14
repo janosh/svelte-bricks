@@ -304,6 +304,20 @@ describe(`Masonry default rendering`, () => {
       expect.arrayContaining([`apple`, `banana`, `cherry`]),
     )
   })
+
+  test(`passes rest props to container div`, () => {
+    mount(Masonry, {
+      target: document.body,
+      props: {
+        items: [1, 2],
+        'data-testid': `my-masonry`,
+        'aria-label': `Image gallery`,
+      } as Record<string, unknown>,
+    })
+    const masonry = document.querySelector(`div.masonry`)
+    expect(masonry?.getAttribute(`data-testid`)).toBe(`my-masonry`)
+    expect(masonry?.getAttribute(`aria-label`)).toBe(`Image gallery`)
+  })
 })
 
 describe(`Masonry animations`, () => {
@@ -343,16 +357,6 @@ describe(`Masonry virtualization`, () => {
     expect(masonry.style.height).toBe(expected)
   })
 
-  test(`disables animations when virtualize=true`, async () => {
-    mount(Masonry, {
-      target: document.body,
-      props: { items: indices, virtualize: true, height: 500, animate: true },
-    })
-    await tick()
-    expect(document.querySelectorAll(`div.masonry > div.col > div`).length)
-      .toBeGreaterThan(0)
-  })
-
   test(`calls getEstimatedHeight and applies column padding`, async () => {
     const getEstimatedHeight = vi.fn(() => 120)
     mount(Masonry, {
@@ -370,14 +374,6 @@ describe(`Masonry virtualization`, () => {
     expect(getEstimatedHeight).toHaveBeenCalled()
     const col = document.querySelector(`div.masonry > div.col`) as HTMLElement
     expect(col.getAttribute(`style`)).toMatch(/padding-top:.*padding-bottom:/)
-  })
-
-  test(`renders only visible items (subset of total)`, async () => {
-    mount_virtualized(100, { getEstimatedHeight: () => 100, overscan: 2 })
-    await tick()
-    const count = document.querySelectorAll(`div.masonry > div.col > div`).length
-    expect(count).toBeGreaterThan(0)
-    expect(count).toBeLessThan(50)
   })
 
   test(`respects overscan prop`, async () => {
@@ -401,35 +397,15 @@ describe(`Masonry virtualization`, () => {
   })
 
   test.each([
-    [true, 2, 50, `with balance`],
-    [false, 3, 50, `without balance`],
-  ])(`virtualization works %s`, async (balance, cols, count, _desc) => {
-    mount_virtualized(count, { balance, calcCols: () => cols, height: 400 })
+    [true, 2, `with balance`],
+    [false, 3, `without balance`],
+  ])(`renders subset of items %s`, async (balance, cols, _desc) => {
+    mount_virtualized(100, { balance, calcCols: () => cols })
     await tick()
     expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(cols)
     const rendered = document.querySelectorAll(`div.masonry > div.col > div`).length
     expect(rendered).toBeGreaterThan(0)
-    expect(rendered).toBeLessThan(count)
-  })
-
-  test.each([
-    [() => 150, `custom returning 150`],
-    [undefined, `undefined (uses fallback)`],
-  ])(`works with getEstimatedHeight=%s`, async (getEstimatedHeight, _desc) => {
-    mount(Masonry, {
-      target: document.body,
-      props: {
-        items: indices,
-        virtualize: true,
-        height: 500,
-        getEstimatedHeight,
-        calcCols: () => 2,
-        masonryWidth: 500,
-      },
-    })
-    await tick()
-    expect(document.querySelectorAll(`div.masonry > div.col > div`).length)
-      .toBeGreaterThan(0)
+    expect(rendered).toBeLessThan(100)
   })
 
   test(`warning count stays constant after initial mount`, async () => {
@@ -473,17 +449,18 @@ describe(`Masonry virtualization`, () => {
     if (original) Object.defineProperty(HTMLElement.prototype, `clientHeight`, original)
   })
 
-  test(`does not add padding styles when virtualize=false`, async () => {
+  test(`virtualize=false skips padding and overflow styles`, async () => {
     mount(Masonry, {
       target: document.body,
       props: { items: indices, virtualize: false },
     })
     await tick()
+    const masonry = document.querySelector(`div.masonry`) as HTMLElement
     const col_style = document.querySelector(`div.masonry > div.col`)?.getAttribute(
       `style`,
     )
+    expect(masonry.style.overflowY).toBe(``)
     expect(col_style).not.toContain(`padding-top:`)
-    expect(col_style).not.toContain(`padding-bottom:`)
   })
 })
 
