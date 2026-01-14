@@ -3,24 +3,18 @@
 
   // Item generation
   let item_count = $state(2000)
-  let min_height = $state(80)
-  let max_height = $state(300)
+  let height = $state({ min: 80, max: 300 })
 
   type Item = { id: number; height: number; hue: number }
 
-  function generate_items(count: number): Item[] {
-    return Array.from({ length: count }, (_, idx) => ({
+  const generate_items = (count: number): Item[] =>
+    Array.from({ length: count }, (_, idx) => ({
       id: idx,
-      height: min_height + Math.floor(Math.random() * (max_height - min_height)),
+      height: height.min + Math.floor(Math.random() * (height.max - height.min)),
       hue: Math.floor(Math.random() * 360),
     }))
-  }
 
   let items = $state(generate_items(2000))
-
-  function regenerate() {
-    items = generate_items(item_count)
-  }
 
   // Masonry settings
   let virtualize = $state(true)
@@ -29,7 +23,6 @@
   let min_col_width = $state(180)
   let gap = $state(12)
   let balance = $state(true)
-  const max_col_width = 350
 
   // Stats
   let masonry_width = $state(0)
@@ -37,7 +30,7 @@
     if (!virtualize) return items.length
     // Estimate based on viewport
     const cols = Math.floor((masonry_width + gap) / (min_col_width + gap)) || 1
-    const avg_height = (min_height + max_height) / 2
+    const avg_height = (height.min + height.max) / 2
     const items_per_col = Math.ceil(scroll_height / avg_height) + overscan * 2
     return Math.min(items.length, cols * items_per_col)
   })
@@ -69,7 +62,7 @@
         <button
           onclick={() => {
             item_count = count
-            regenerate()
+            items = generate_items(item_count)
           }}
           class:active={item_count === count}
         >
@@ -81,7 +74,9 @@
       <span>Count: <code>{item_count.toLocaleString()}</code></span>
       <input type="range" bind:value={item_count} min={100} max={20000} step={100} />
     </label>
-    <button class="regenerate" onclick={regenerate}>🔄 Regenerate Items</button>
+    <button class="regenerate" onclick={() => items = generate_items(item_count)}>
+      🔄 Regenerate Items
+    </button>
   </section>
 
   <section class="control-group">
@@ -145,7 +140,7 @@
     {overscan}
     height={scroll_height}
     minColWidth={min_col_width}
-    maxColWidth={max_col_width}
+    maxColWidth={350}
     getEstimatedHeight={(item) => item.height}
     bind:masonryWidth={masonry_width}
   >

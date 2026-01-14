@@ -286,24 +286,17 @@
       <input type="range" bind:value={overscan} min={1} max={20} disabled={!virtualize} />
     </label>
     <div class="button-row">
-      <button
-        onclick={() => {
-          virtualize = true
-          n_items = 1000
-          regenerate()
-        }}
-      >
-        🚀 1000 Items
-      </button>
-      <button
-        onclick={() => {
-          virtualize = true
-          n_items = 5000
-          regenerate()
-        }}
-      >
-        🔥 5000 Items
-      </button>
+      {#each [[`🚀`, 1000], [`🔥`, 5000]] as const as [icon, count]}
+        <button
+          onclick={() => {
+            virtualize = true
+            n_items = count
+            regenerate()
+          }}
+        >
+          {icon} {count.toLocaleString()} Items
+        </button>
+      {/each}
     </div>
   </section>
 </div>
