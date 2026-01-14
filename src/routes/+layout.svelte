@@ -9,6 +9,7 @@
 
   const routes: [string, string][] = [
     [`/`, `Home`],
+    [`/virtual-scroll`, `Virtual Scroll`],
     [`/edge-cases`, `Edge Cases`],
     [`/cls-demo`, `CLS Demo`],
     [`/fetch-images-example`, `Fetched Images`],
