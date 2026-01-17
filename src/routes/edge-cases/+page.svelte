@@ -1,6 +1,26 @@
 <script lang="ts">
   import Masonry from '$lib'
 
+  // CSS Reset test state
+  let css_reset_active = $state(false)
+  let reset_style_el: HTMLStyleElement | null = null
+
+  $effect(() => {
+    if (css_reset_active) {
+      reset_style_el = document.createElement(`style`)
+      reset_style_el.textContent = `
+        /* Simulated CSS Reset - like Tailwind Preflight */
+        div { display: block; }
+        *, ::before, ::after { box-sizing: border-box; }
+      `
+      document.head.appendChild(reset_style_el)
+    } else if (reset_style_el) {
+      reset_style_el.remove()
+      reset_style_el = null
+    }
+    return () => reset_style_el?.remove()
+  })
+
   // State
   let n_items = $state(20)
   let min_height = $state(50)
@@ -310,6 +330,26 @@
   </div>
 </section>
 
+<section class="css-reset-test">
+  <h3>🛡️ CSS Reset Compatibility</h3>
+  <p>
+    Test that Masonry resists CSS resets like
+    <a href="https://tailwindcss.com/docs/preflight">Tailwind Preflight</a>. Toggle the
+    reset to inject <code>div {'{'} display: block {'}'}</code> into the page. Layout
+    should remain intact due to inline styles. (<a
+      href="https://github.com/janosh/svelte-bricks/issues/48"
+    >issue #48</a>)
+  </p>
+  <div class="button-row">
+    <button
+      onclick={() => (css_reset_active = !css_reset_active)}
+      class:active={css_reset_active}
+    >
+      {css_reset_active ? `✓ CSS Reset Active` : `Apply CSS Reset`}
+    </button>
+  </div>
+</section>
+
 <section class="stress-tests">
   <h3>🔥 Automated Stress Tests</h3>
   <div class="button-row">
@@ -415,76 +455,78 @@
 <style>
   h1 {
     text-align: center;
-    margin-bottom: 0.5em;
+    margin-bottom: 0.4em;
+    font-size: 1.5rem;
   }
   .description {
     text-align: center;
     color: #888;
     max-width: 600px;
-    margin: 0 auto 2em;
+    margin: 0 auto 1.2em;
+    font-size: 0.875rem;
   }
   .controls-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5em;
-    margin: 0 auto 2em;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1em;
+    margin: 0 auto 1.2em;
     max-width: 1200px;
-    padding: 0 1em;
+    padding: 0 0.75em;
   }
   .control-group {
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    padding: 1em;
+    border-radius: 6px;
+    padding: 0.6em 0.75em;
   }
   .control-group h3 {
-    margin: 0 0 1em;
-    font-size: 1rem;
+    margin: 0 0 0.5em;
+    font-size: 0.85rem;
     color: #aaa;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 0.5em;
+    padding-bottom: 0.35em;
   }
   label {
     display: flex;
     flex-direction: column;
-    gap: 0.3em;
-    margin-bottom: 1em;
+    gap: 0.2em;
+    margin-bottom: 0.6em;
   }
   label.checkbox {
     flex-direction: row;
     align-items: center;
-    gap: 0.5em;
+    gap: 0.4em;
   }
   label span {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
   }
   input[type='range'] {
     width: 100%;
     cursor: pointer;
   }
   input[type='checkbox'] {
-    width: 1.2em;
-    height: 1.2em;
+    width: 1em;
+    height: 1em;
     cursor: pointer;
   }
   code {
     background: rgba(0, 120, 255, 0.3);
-    padding: 0.1em 0.4em;
-    border-radius: 4px;
-    font-size: 0.9em;
+    padding: 0.05em 0.35em;
+    border-radius: 3px;
+    font-size: 0.85em;
   }
   .button-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5em;
+    gap: 0.35em;
   }
   button {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: inherit;
-    padding: 0.4em 0.8em;
+    padding: 0.3em 0.6em;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     transition: all 0.2s;
   }
   button:hover:not(:disabled) {
@@ -505,33 +547,41 @@
   button.stop:hover {
     background: rgba(255, 50, 50, 0.5);
   }
-  .presets, .stress-tests {
+  .presets, .stress-tests, .css-reset-test {
     max-width: 1200px;
-    margin: 0 auto 1.5em;
-    padding: 0 1em;
+    margin: 0 auto 1em;
+    padding: 0 0.75em;
   }
-  .presets h3, .stress-tests h3 {
-    margin: 0 0 0.5em;
-    font-size: 1rem;
+  .css-reset-test p {
+    font-size: 0.8rem;
+    color: #aaa;
+    margin: 0.35em 0;
+  }
+  .css-reset-test a {
+    color: cornflowerblue;
+  }
+  .presets h3, .stress-tests h3, .css-reset-test h3 {
+    margin: 0 0 0.4em;
+    font-size: 0.85rem;
     color: #aaa;
   }
   .test-status {
-    margin-top: 0.8em;
-    font-size: 0.9rem;
+    margin-top: 0.5em;
+    font-size: 0.8rem;
   }
   .stats {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 1em 2em;
-    margin: 0 auto 1.5em;
-    padding: 0.8em;
+    gap: 0.6em 1.5em;
+    margin: 0 auto 1em;
+    padding: 0.5em 0.75em;
     background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
+    border-radius: 6px;
     max-width: fit-content;
   }
   .stats span {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
   }
   .masonry-container {
     margin: 0 auto;

@@ -5,7 +5,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [sveltekit()],
 
   test: {
-    environment: `jsdom`,
+    environment: `happy-dom`,
     css: true,
     coverage: {
       provider: `v8`,
