@@ -7,13 +7,22 @@
 
   let { children }: { children?: Snippet<[]> } = $props()
 
-  const routes: [string, string][] = [
-    [`/`, `Home`],
-    [`/virtual-scroll`, `Virtual Scroll`],
-    [`/edge-cases`, `Edge Cases`],
-    [`/cls-demo`, `CLS Demo`],
-    [`/fetch-images-example`, `Fetched Images`],
-    [`/changelog`, `Changelog`],
+  // Auto-discover all demo pages via import.meta.glob
+  const page_modules = import.meta.glob(`./*/+page.svelte`, { eager: true })
+
+  // Custom labels for nav links (url -> label)
+  const labels: Record<string, string> = {
+    '/': `Home`,
+    '/cls-demo': `CLS Demo`,
+    '/css-reset-compat': `CSS Reset Compat`,
+    '/fetch-images-example': `Fetched Images`,
+  }
+
+  const routes: string[] = [
+    `/`,
+    ...Object.keys(page_modules)
+      .map((path) => `/${path.replace(`./`, ``).replace(`/+page.svelte`, ``)}`)
+      .sort((a, b) => (labels[a] ?? a).localeCompare(labels[b] ?? b)),
   ]
 </script>
 
@@ -23,7 +32,7 @@
   --gh-corner-bg="white"
 />
 
-<Nav {routes} {page} />
+<Nav {routes} {page} {labels} />
 
 {@render children?.()}
 

@@ -281,6 +281,10 @@
   style:gap="{gap}px"
   style:overflow-y={virtualize ? `auto` : undefined}
   style:height={virtualize ? (typeof height === `number` ? `${height}px` : height ?? `400px`) : undefined}
+  style:display="flex"
+  style:width="100%"
+  style:justify-content="center"
+  style:box-sizing="border-box"
   {...rest}
   class="masonry {rest.class ?? ``}"
 >
@@ -289,7 +293,7 @@
     {@const visible_items = col.slice(start, end)}
     <div
       class="col col-{col_idx} {columnClass}"
-      style="gap: {gap}px; max-width: {maxColWidth}px;{can_virtualize ? ` padding-top: ${col_padding_top[col_idx]}px; padding-bottom: ${col_padding_bottom[col_idx]}px;` : ``} {columnStyle}"
+      style="display: grid; flex: 1 1 0; min-width: 0; gap: {gap}px; max-width: {maxColWidth}px;{can_virtualize ? ` padding-top: ${col_padding_top[col_idx]}px; padding-bottom: ${col_padding_bottom[col_idx]}px;` : ``} {columnStyle}"
     >
       {#if effective_animate}
         {#each visible_items as [item, item_idx] (getId(item))}
@@ -318,16 +322,18 @@
 </div>
 
 <style>
-  :where(div.masonry) {
+  div.masonry {
     container-type: inline-size;
     display: flex;
     justify-content: center;
     overflow-wrap: anywhere;
     box-sizing: border-box;
+    width: 100%;
   }
-  :where(div.masonry div.col) {
+  div.masonry div.col {
     display: grid;
     height: max-content;
-    width: 100%;
+    flex: 1 1 0;
+    min-width: 0;
   }
 </style>
