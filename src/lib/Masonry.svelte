@@ -272,15 +272,17 @@
 <!-- Dynamic container query styles for CLS-free SSR -->
 <svelte:element this={`style`}>{container_query_css}</svelte:element>
 
-<!-- deno-fmt-ignore -->
 <div
   bind:clientWidth={masonryWidth}
   bind:clientHeight={masonryHeight}
   bind:this={div}
   onscroll={virtualize ? on_scroll : undefined}
+  style="display: flex; width: 100%; justify-content: center; box-sizing: border-box"
   style:gap="{gap}px"
   style:overflow-y={virtualize ? `auto` : undefined}
-  style:height={virtualize ? (typeof height === `number` ? `${height}px` : height ?? `400px`) : undefined}
+  style:height={virtualize
+  ? (typeof height === `number` ? `${height}px` : height ?? `400px`)
+  : undefined}
   {...rest}
   class="masonry {rest.class ?? ``}"
 >
@@ -289,7 +291,14 @@
     {@const visible_items = col.slice(start, end)}
     <div
       class="col col-{col_idx} {columnClass}"
-      style="gap: {gap}px; max-width: {maxColWidth}px;{can_virtualize ? ` padding-top: ${col_padding_top[col_idx]}px; padding-bottom: ${col_padding_bottom[col_idx]}px;` : ``} {columnStyle}"
+      style:display="grid"
+      style:flex="1 1 0"
+      style:min-width="0"
+      style:gap="{gap}px"
+      style:max-width="{maxColWidth}px"
+      style:padding-top={can_virtualize ? `${col_padding_top[col_idx]}px` : undefined}
+      style:padding-bottom={can_virtualize ? `${col_padding_bottom[col_idx]}px` : undefined}
+      style={columnStyle || undefined}
     >
       {#if effective_animate}
         {#each visible_items as [item, item_idx] (getId(item))}
@@ -318,16 +327,18 @@
 </div>
 
 <style>
-  :where(div.masonry) {
+  div.masonry {
     container-type: inline-size;
     display: flex;
     justify-content: center;
     overflow-wrap: anywhere;
     box-sizing: border-box;
+    width: 100%;
   }
-  :where(div.masonry div.col) {
+  div.masonry div.col {
     display: grid;
     height: max-content;
-    width: 100%;
+    flex: 1 1 0;
+    min-width: 0;
   }
 </style>

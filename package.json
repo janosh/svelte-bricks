@@ -5,19 +5,19 @@
   "homepage": "https://janosh.github.io/svelte-bricks",
   "repository": "https://github.com/janosh/svelte-bricks",
   "license": "MIT",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "type": "module",
   "svelte": "./dist/index.js",
   "bugs": "https://github.com/janosh/svelte-bricks/issues",
   "dependencies": {
-    "svelte": "^5.46.1"
+    "svelte": "^5.46.4"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.10",
-    "@sveltejs/kit": "^2.49.3",
+    "@sveltejs/kit": "^2.49.5",
     "@sveltejs/package": "^2.5.7",
-    "@vitest/coverage-v8": "^4.0.16",
-    "jsdom": "^27.4.0",
+    "@vitest/coverage-v8": "^4.0.17",
+    "happy-dom": "^18.0.1",
     "mdsvex": "^0.12.6",
     "svelte-check": "^4.3.5",
     "svelte-multiselect": "^11.5.1",
@@ -25,7 +25,7 @@
     "svelte-toc": "^0.6.2",
     "svelte2tsx": "^0.7.46",
     "vite": "^7.3.1",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.17"
   },
   "keywords": [
     "svelte",

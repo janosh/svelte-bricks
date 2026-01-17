@@ -1,5 +1,5 @@
 import Masonry from '$lib'
-import { mount, tick, unmount } from 'svelte'
+import { mount, tick } from 'svelte'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 const n_items = 30
@@ -96,16 +96,24 @@ describe(`Masonry`, () => {
     expect(col_style).toContain(columnStyle)
   })
 
-  test(`calculates columns from masonryWidth, minColWidth, gap`, () => {
-    const [masonryWidth, minColWidth, gap] = [370, 50, 10]
-    mount(Masonry, {
-      target: document.body,
-      props: { items: indices, masonryWidth, minColWidth, gap },
-    })
-    expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(
-      Math.floor((masonryWidth + gap) / (minColWidth + gap)),
-    )
-  })
+  test.each([
+    [370, 50, 10, 6], // normal case
+    [100, 50, 0, 2], // gap=0
+    [200, 100, 50, 1], // large gap forces single column
+    [500, 100, 10, 4], // exact fit
+    [109, 100, 10, 1], // just under 2 columns
+    [110, 100, 10, 1], // exactly at boundary (needs 220 for 2 cols)
+    [220, 100, 10, 2], // exactly 2 columns
+  ])(
+    `calculates columns: width=%d, minCol=%d, gap=%d -> %d cols`,
+    (width, minCol, gap, expected) => {
+      mount(Masonry, {
+        target: document.body,
+        props: { items: indices, masonryWidth: width, minColWidth: minCol, gap },
+      })
+      expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(expected)
+    },
+  )
 
   test(`warns if maxColWidth < minColWidth`, () => {
     console.warn = vi.fn()
@@ -156,6 +164,17 @@ describe(`Masonry`, () => {
   test.each([0, 1, 5, 50])(`renders %d items`, (count) => {
     mount(Masonry, { target: document.body, props: { items: [...Array(count).keys()] } })
     expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(count)
+  })
+
+  test.each([
+    [[1, 2, 3], `number array`],
+    [[`a`, `b`, `c`], `string array`],
+    [[{ id: 1 }, { id: 2 }], `object array`],
+  ])(`handles %s items`, (items, _desc) => {
+    mount(Masonry, { target: document.body, props: { items } })
+    expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(
+      items.length,
+    )
   })
 
   test.each([`id`, `key`, `uuid`])(`works with idKey=%s`, (idKey) => {
@@ -466,15 +485,11 @@ describe(`Masonry virtualization`, () => {
 
 describe(`Masonry item cleanup`, () => {
   test.each([
-    [50, 10, `numeric items`],
-    [20, 20, `object items`],
-  ])(`handles %d->%d item changes (%s)`, async (initial, final, _desc) => {
-    const make_items = (n: number) =>
-      _desc === `object items`
-        ? Array.from({ length: n }, (_, idx) => ({ id: idx, value: `item-${idx}` }))
-        : [...Array(n).keys()]
-
-    const component = mount(Masonry, {
+    [50, 10],
+    [30, 5],
+  ])(`handles item count change %d->%d`, async (initial, final) => {
+    const make_items = (n: number) => [...Array(n).keys()]
+    mount(Masonry, {
       target: document.body,
       props: {
         items: make_items(initial),
@@ -486,20 +501,56 @@ describe(`Masonry item cleanup`, () => {
     await tick()
     expect(document.querySelectorAll(`div.masonry > div.col > div`).length).toBe(initial)
 
-    if (initial !== final) {
-      unmount(component)
-      document.body.innerHTML = ``
-      mount(Masonry, {
-        target: document.body,
-        props: {
-          items: make_items(final),
-          balance: true,
-          calcCols: () => 2,
-          masonryWidth: 500,
-        },
-      })
-      await tick()
-      expect(document.querySelectorAll(`div.masonry > div.col > div`).length).toBe(final)
-    }
+    document.body.innerHTML = ``
+    mount(Masonry, {
+      target: document.body,
+      props: {
+        items: make_items(final),
+        balance: true,
+        calcCols: () => 2,
+        masonryWidth: 500,
+      },
+    })
+    await tick()
+    expect(document.querySelectorAll(`div.masonry > div.col > div`).length).toBe(final)
+  })
+
+  test(`works with object items`, async () => {
+    const items = Array.from(
+      { length: 10 },
+      (_, idx) => ({ id: idx, value: `item-${idx}` }),
+    )
+    mount(Masonry, {
+      target: document.body,
+      props: { items, balance: true, calcCols: () => 2, masonryWidth: 500 },
+    })
+    await tick()
+    expect(document.querySelectorAll(`div.masonry > div.col > div`).length).toBe(10)
+  })
+})
+
+describe(`Masonry CSS reset compatibility`, () => {
+  // Regression tests for https://github.com/janosh/svelte-bricks/issues/48
+  // Inline styles have highest specificity (except !important), so they resist all CSS resets
+
+  test(`masonry has display:flex inline style`, async () => {
+    mount(Masonry, {
+      target: document.body,
+      props: { items: [1, 2, 3], masonryWidth: 500 },
+    })
+    await tick()
+    const masonry = document.querySelector(`div.masonry`) as HTMLElement
+    // Check inline style attribute directly - this is what protects against CSS resets
+    expect(masonry.style.display).toBe(`flex`)
+  })
+
+  test(`columns have display:grid inline style`, async () => {
+    mount(Masonry, {
+      target: document.body,
+      props: { items: [1, 2, 3], masonryWidth: 500 },
+    })
+    await tick()
+    const col = document.querySelector(`div.masonry > div.col`) as HTMLElement
+    expect(col.style.display).toBe(`grid`)
   })
 })

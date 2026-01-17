@@ -1,12 +1,17 @@
 # Changelog
 
+## [v0.4.1](https://github.com/janosh/svelte-bricks/compare/v0.4.0...v0.4.1)
+
+> 17 January 2026
+
+- Use inline styles to resist CSS reset overrides by @janosh in https://github.com/janosh/svelte-bricks/pull/49
+
 ## [v0.4.0](https://github.com/janosh/svelte-bricks/compare/v0.3.2...v0.4.0)
 
 > 13 January 2026
 
 - CLS-free SSR using CSS container queries by @janosh in https://github.com/janosh/svelte-bricks/pull/45
 - Add height-based column balancing with SSR support by @janosh in https://github.com/janosh/svelte-bricks/pull/46
-
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
