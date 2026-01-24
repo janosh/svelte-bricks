@@ -4,14 +4,7 @@
   import { flip } from 'svelte/animate'
   import type { HTMLAttributes } from 'svelte/elements'
   import { fade } from 'svelte/transition'
-
-  // Order modes for item distribution across columns
-  type MasonryOrder =
-    | `balanced` // Rebalances all items to shortest columns (items may jump)
-    | `balanced-stable` // New items go to shortest column, existing items never move
-    | `row-first` // Round-robin: 1→2→3→1→2→3...
-    | `column-sequential` // Purely sequential: first N items in col 1, next N in col 2
-    | `column-balanced` // Height-aware: fill col 1 to target height, then col 2, etc.
+  import type { MasonryOrder } from '.'
 
   // On non-primitive types, we need a property to tell masonry items apart. The name of this attribute can be customized with idKey which defaults to 'id'. See https://svelte.dev/docs/svelte/each#Keyed-each-blocks.
   let {
@@ -120,9 +113,10 @@
     return 150
   }
 
-  // Check if current order mode needs height measurements
+  // Check if current order mode needs height measurements before distributing items
+  // balanced-stable is excluded: it uses estimates for new items to avoid the round-robin fallback
   const needs_measurement = (mode: MasonryOrder): boolean =>
-    mode === `balanced` || mode === `balanced-stable` || mode === `column-balanced`
+    mode === `balanced` || mode === `column-balanced`
 
   // Measure item heights via ResizeObserver
   // Always attach observers for non-virtualizing cases, even for modes that don't
@@ -253,13 +247,16 @@
 
   // Distribute items based on order mode
   let itemsToCols = $derived.by(() => {
-    // For height-dependent modes, fall back to round-robin until items are measured
+    // balanced-stable should NEVER fall back - it uses stable assignments + estimates for new items
+    // This prevents existing items from jumping columns when new items are added
+    if (effective_order === `balanced-stable`) return balanced_stable_to_cols(nCols)
+
+    // For other height-dependent modes, fall back to round-robin until items are measured
     if (needs_measurement(effective_order) && measured_count < items.length) {
       return round_robin(nCols)
     }
 
     if (effective_order === `balanced`) return balance_to_cols(nCols)
-    if (effective_order === `balanced-stable`) return balanced_stable_to_cols(nCols)
     if (effective_order === `column-sequential`) {
       return column_sequential_to_cols(nCols)
     }

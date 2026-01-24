@@ -17,4 +17,3 @@ jobs:
       test-cmd: npx vitest
       e2e-install-cmd: npx svelte-kit sync && npx playwright install chromium
       e2e-test-cmd: npx playwright test
-      e2e-continue-on-error: false

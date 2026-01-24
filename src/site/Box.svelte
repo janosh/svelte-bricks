@@ -6,9 +6,13 @@
 
   const random_color = () => Math.random().toString(16).slice(-6)
   function flip(event: MouseEvent | KeyboardEvent) {
-    if (event instanceof MouseEvent || [` `, `Enter`].includes(event.key)) {
+    if (event instanceof MouseEvent) {
       flipped = !flipped
+      return
     }
+    if (event.key === ` `) event.preventDefault() // prevent page scroll (even on repeat)
+    if (event.repeat) return // ignore key repeat to prevent rapid toggling
+    if (event.key === ` ` || event.key === `Enter`) flipped = !flipped
   }
 
   const bg = `linear-gradient(45deg, #${random_color()}, #${random_color()})`
@@ -18,10 +22,11 @@
 <div
   style="min-height: {height}px;"
   onclick={flip}
-  onkeyup={flip}
+  onkeydown={flip}
   class:flipped
   class:slide-flip={slide_flip}
   role="button"
+  aria-pressed={flipped}
   tabindex="0"
 >
   <!-- background: {bg} must be applied to the p tags, not the div as backface-visibility: hidden would hide text on backface -->
