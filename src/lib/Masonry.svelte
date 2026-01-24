@@ -328,7 +328,6 @@
 
 <style>
   div.masonry {
-    container-type: inline-size;
     display: flex;
     justify-content: center;
     overflow-wrap: anywhere;
