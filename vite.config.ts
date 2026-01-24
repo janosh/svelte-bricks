@@ -12,6 +12,8 @@ export default defineConfig(({ mode }) => ({
       reporter: [`text`, `json-summary`],
       include: [`src/lib/*`],
     },
+    include: [`tests/**/*.test.ts`],
+    exclude: [`tests/playwright/**`], // Playwright tests run separately
   },
 
   resolve: {

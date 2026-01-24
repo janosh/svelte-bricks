@@ -6,5 +6,6 @@ node_modules
 build
 dist
 
-# coverage
+# test coverage + artifacts
 coverage
+test-results

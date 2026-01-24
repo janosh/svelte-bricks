@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Masonry from '$lib'
+  import Masonry, { type MasonryOrder, order_options } from '$lib'
 
   // CSS Reset test state
   let css_reset_active = $state(false)
@@ -31,6 +31,7 @@
   let gap = $state(15)
   let animate = $state(true)
   let duration = $state(200)
+  let order = $state<MasonryOrder>(`balanced`)
   let container_width = $state(100)
   let constrained_width = $state(false)
   let masonry_width = $state(0)
@@ -218,7 +219,7 @@
 
 <div class="controls-grid">
   <section class="control-group">
-    <h3>Item Settings</h3>
+    <h2>Item Settings</h2>
     <label>
       <span>Number of items: <code>{n_items}</code></span>
       <input type="range" bind:value={n_items} min={0} max={200} />
@@ -246,7 +247,7 @@
   </section>
 
   <section class="control-group">
-    <h3>Column Settings</h3>
+    <h2>Column Settings</h2>
     <label>
       <span>minColWidth: <code>{min_col_width}px</code></span>
       <input type="range" bind:value={min_col_width} min={50} max={600} />
@@ -262,7 +263,15 @@
   </section>
 
   <section class="control-group">
-    <h3>Animation Settings</h3>
+    <h2>Layout & Animation</h2>
+    <label>
+      <span>Order mode: <code>{order}</code></span>
+      <select bind:value={order}>
+        {#each order_options as opt}
+          <option value={opt}>{opt}</option>
+        {/each}
+      </select>
+    </label>
     <label class="checkbox">
       <input type="checkbox" bind:checked={animate} />
       <span>Animate transitions</span>
@@ -274,7 +283,7 @@
   </section>
 
   <section class="control-group">
-    <h3>Container Settings</h3>
+    <h2>Container Settings</h2>
     <label>
       <span>Container width: <code>{container_width}%</code></span>
       <input type="range" bind:value={container_width} min={20} max={100} />
@@ -286,7 +295,7 @@
   </section>
 
   <section class="control-group">
-    <h3>Virtualization</h3>
+    <h2>Virtualization</h2>
     <label class="checkbox">
       <input type="checkbox" bind:checked={virtualize} />
       <span>Enable virtual scrolling</span>
@@ -322,7 +331,7 @@
 </div>
 
 <section class="presets">
-  <h3>Quick Presets</h3>
+  <h2>Quick Presets</h2>
   <div class="button-row">
     {#each presets as { label, action }}
       <button onclick={action}>{label}</button>
@@ -331,7 +340,7 @@
 </section>
 
 <section class="css-reset-test">
-  <h3>🛡️ CSS Reset Compatibility</h3>
+  <h2>🛡️ CSS Reset Compatibility</h2>
   <p>
     Test that Masonry resists CSS resets like
     <a href="https://tailwindcss.com/docs/preflight">Tailwind Preflight</a>. Toggle the
@@ -351,7 +360,7 @@
 </section>
 
 <section class="stress-tests">
-  <h3>🔥 Automated Stress Tests</h3>
+  <h2>🔥 Automated Stress Tests</h2>
   <div class="button-row">
     <button
       onclick={() => start_test(`rapid-add`, () => {}, () => add_items(1), 50)}
@@ -413,9 +422,7 @@
   <span>Height: <code>{masonry_height}px</code></span>
   <span>Columns: <code>{expected_cols}</code></span>
   <span>Items: <code>{items.length}</code></span>
-  {#if virtualize}
-    <span>Mode: <code>virtualized</code></span>
-  {/if}
+  <span>Order: <code>{virtualize ? `row-first (forced)` : order}</code></span>
 </div>
 
 <div
@@ -430,6 +437,7 @@
     {gap}
     {animate}
     {duration}
+    {order}
     {virtualize}
     {overscan}
     height={virtualize ? virtual_height : undefined}
@@ -478,7 +486,7 @@
     border-radius: 6px;
     padding: 0.6em 0.75em;
   }
-  .control-group h3 {
+  .control-group h2 {
     margin: 0 0 0.5em;
     font-size: 0.85rem;
     color: #aaa;
@@ -506,6 +514,15 @@
   input[type='checkbox'] {
     width: 1em;
     height: 1em;
+    cursor: pointer;
+  }
+  select {
+    width: 100%;
+    padding: 0.3em;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: inherit;
     cursor: pointer;
   }
   code {
@@ -560,7 +577,7 @@
   .css-reset-test a {
     color: cornflowerblue;
   }
-  .presets h3, .stress-tests h3, .css-reset-test h3 {
+  .presets h2, .stress-tests h2, .css-reset-test h2 {
     margin: 0 0 0.4em;
     font-size: 0.85rem;
     color: #aaa;

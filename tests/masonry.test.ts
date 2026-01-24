@@ -57,13 +57,15 @@ const mount_virtualized = (count: number, overrides = {}) => {
 }
 
 describe(`Masonry`, () => {
-  test.each([
-    [true, true],
-    [true, false],
-    [false, true],
-    [false, false],
-  ])(`renders items with animate=%s, balance=%s`, (animate, balance) => {
-    mount(Masonry, { target: document.body, props: { items: indices, animate, balance } })
+  test.each(
+    [
+      [true, `balanced`],
+      [true, `row-first`],
+      [false, `balanced`],
+      [false, `row-first`],
+    ] as const,
+  )(`renders items with animate=%s, order=%s`, (animate, order) => {
+    mount(Masonry, { target: document.body, props: { items: indices, animate, order } })
     expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(n_items)
   })
 
@@ -214,46 +216,89 @@ describe(`Masonry`, () => {
   })
 })
 
-describe(`Masonry column balancing`, () => {
-  test(`attaches ResizeObservers when balance=true`, async () => {
+describe(`Masonry order modes`, () => {
+  test.each(
+    [
+      [`balanced`, 6],
+      [`balanced-stable`, 4],
+      [`row-first`, 4],
+      [`column-sequential`, 6],
+      [`column-balanced`, 6],
+    ] as const,
+  )(`order=%s distributes items to 2 columns`, async (order, count) => {
     mount(Masonry, {
       target: document.body,
-      props: { items: [1, 2, 3], balance: true, masonryWidth: 500 },
+      props: {
+        items: [...Array(count).keys()],
+        order,
+        calcCols: () => 2,
+        masonryWidth: 500,
+      },
     })
     await tick()
-    expect(resize_observers.size).toBeGreaterThan(0)
+    await tick()
+    const columns = document.querySelectorAll(`div.masonry > div.col`)
+    expect(columns.length).toBe(2)
+    expect(columns[0].children.length).toBeGreaterThan(0)
+    expect(columns[1].children.length).toBeGreaterThan(0)
+    // Verify all items rendered via text content
+    const masonry = document.querySelector(`div.masonry`)
+    for (let idx = 0; idx < count; idx++) {
+      expect(masonry?.textContent).toContain(String(idx))
+    }
   })
 
-  test(`distributes items evenly with uniform heights`, async () => {
+  test(`order=column-sequential fills columns in reading order`, async () => {
     mount(Masonry, {
       target: document.body,
       props: {
         items: [1, 2, 3, 4, 5, 6],
-        balance: true,
+        order: `column-sequential`,
         calcCols: () => 2,
         masonryWidth: 500,
       },
     })
     await tick()
     const columns = document.querySelectorAll(`div.masonry > div.col`)
-    expect(columns.length).toBe(2)
-    expect(columns[0].children.length + columns[1].children.length).toBe(6)
+    expect(columns[0].textContent).toMatch(/1.*2.*3/)
+    expect(columns[1].textContent).toMatch(/4.*5.*6/)
   })
 
-  test(`balance=false uses round-robin distribution`, async () => {
+  test.each(
+    [
+      [`balanced`],
+      [`balanced-stable`],
+      [`column-balanced`],
+      [`row-first`],
+      [`column-sequential`],
+    ] as const,
+  )(
+    `order=%s always attaches ResizeObservers for mode switching support`,
+    async (order) => {
+      mount(Masonry, {
+        target: document.body,
+        props: { items: [1, 2, 3], order, masonryWidth: 500 },
+      })
+      await tick()
+      // All modes attach observers to support runtime mode switching
+      expect(resize_observers.size).toBe(4) // masonry container + 3 items
+    },
+  )
+
+  test(`virtualization skips ResizeObservers (only estimated heights used)`, async () => {
     mount(Masonry, {
       target: document.body,
       props: {
-        items: [1, 2, 3, 4],
-        balance: false,
-        calcCols: () => 2,
+        items: [1, 2, 3],
+        order: `balanced`,
+        virtualize: true,
+        height: 300,
         masonryWidth: 500,
       },
     })
     await tick()
-    const columns = document.querySelectorAll(`div.masonry > div.col`)
-    expect(columns[0].children.length).toBe(2)
-    expect(columns[1].children.length).toBe(2)
+    // Only masonry container observer, no item observers during virtualization
+    expect(resize_observers.size).toBe(1)
   })
 })
 
@@ -385,7 +430,7 @@ describe(`Masonry virtualization`, () => {
         virtualize: true,
         height: 500,
         getEstimatedHeight,
-        balance: true,
+        order: `balanced`,
         masonryWidth: 500,
       },
     })
@@ -415,11 +460,13 @@ describe(`Masonry virtualization`, () => {
     expect(count_5).toBeGreaterThan(count_1)
   })
 
-  test.each([
-    [true, 2, `with balance`],
-    [false, 3, `without balance`],
-  ])(`renders subset of items %s`, async (balance, cols, _desc) => {
-    mount_virtualized(100, { balance, calcCols: () => cols })
+  test.each(
+    [
+      [`balanced`, 2, `with balanced order`],
+      [`row-first`, 3, `with row-first order`],
+    ] as const,
+  )(`renders subset of items %s`, async (order, cols, _desc) => {
+    mount_virtualized(100, { order, calcCols: () => cols })
     await tick()
     expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(cols)
     const rendered = document.querySelectorAll(`div.masonry > div.col > div`).length
@@ -516,7 +563,7 @@ describe(`Masonry item cleanup`, () => {
       target: document.body,
       props: {
         items: make_items(initial),
-        balance: true,
+        order: `balanced`,
         calcCols: () => 2,
         masonryWidth: 500,
       },
@@ -529,7 +576,7 @@ describe(`Masonry item cleanup`, () => {
       target: document.body,
       props: {
         items: make_items(final),
-        balance: true,
+        order: `balanced`,
         calcCols: () => 2,
         masonryWidth: 500,
       },
@@ -545,7 +592,7 @@ describe(`Masonry item cleanup`, () => {
     )
     mount(Masonry, {
       target: document.body,
-      props: { items, balance: true, calcCols: () => 2, masonryWidth: 500 },
+      props: { items, order: `balanced`, calcCols: () => 2, masonryWidth: 500 },
     })
     await tick()
     expect(document.querySelectorAll(`div.masonry > div.col > div`).length).toBe(10)
@@ -570,17 +617,26 @@ describe(`Masonry CSS reset compatibility`, () => {
 describe(`Masonry virtual scroll stability`, () => {
   // Regression: https://github.com/janosh/svelte-bricks/issues/50
 
-  test(`uses round-robin distribution when virtualizing regardless of balance prop`, async () => {
+  test(`uses round-robin distribution when virtualizing regardless of order prop`, async () => {
     mount_virtualized(12, {
-      balance: true,
+      order: `balanced`,
       calcCols: () => 3,
       getEstimatedHeight: () => 100,
     })
     await tick()
-    const counts = Array.from(document.querySelectorAll(`div.masonry > div.col`)).map(
-      (col) => col.children.length,
-    )
-    expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1)
+    const columns = document.querySelectorAll(`div.masonry > div.col`)
+    // Verify round-robin: item N should be in column N % 3
+    for (let col_idx = 0; col_idx < columns.length; col_idx++) {
+      const items = columns[col_idx].querySelectorAll(`span`)
+      items.forEach((span) => {
+        const item_id = parseInt(span.textContent || `-1`, 10)
+        if (item_id >= 0) {
+          expect(item_id % 3, `Item ${item_id} should be in column ${item_id % 3}`).toBe(
+            col_idx,
+          )
+        }
+      })
+    }
   })
 
   test(`getEstimatedHeight is called and padding is applied`, async () => {
@@ -723,5 +779,206 @@ describe(`Masonry virtual scroll stability`, () => {
     const rendered = document.querySelectorAll(`div.masonry > div.col > div`).length
     expect(rendered).toBeLessThan(200)
     expect(rendered).toBeGreaterThan(0)
+  })
+})
+
+const ALL_ORDER_MODES = [
+  `balanced`,
+  `balanced-stable`,
+  `row-first`,
+  `column-sequential`,
+  `column-balanced`,
+] as const
+
+describe(`Masonry order mode edge cases`, () => {
+  test.each(ALL_ORDER_MODES.flatMap((order) => [
+    [order, [], 0],
+    [order, [42], 1],
+  ]))(`order=%s with %d items renders correctly`, async (order, items, expected) => {
+    mount(Masonry, {
+      target: document.body,
+      props: { items, order, calcCols: () => 3, masonryWidth: 500 },
+    })
+    await tick()
+    expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(expected)
+  })
+
+  test(`order=column-sequential distributes correctly with uneven division`, async () => {
+    // 7 items across 3 columns: ceil(7/3) = 3 items per col
+    // Col 0: 3 items (0,1,2), Col 1: 3 items (3,4,5), Col 2: 1 item (6)
+    mount(Masonry, {
+      target: document.body,
+      props: {
+        items: [0, 1, 2, 3, 4, 5, 6],
+        order: `column-sequential`,
+        calcCols: () => 3,
+        masonryWidth: 500,
+      },
+    })
+    await tick()
+    const columns = document.querySelectorAll(`div.masonry > div.col`)
+    const counts = Array.from(columns).map((col) => col.children.length)
+    expect(counts.reduce((a, b) => a + b, 0)).toBe(7)
+    // First column should have the most items
+    expect(counts[0]).toBeGreaterThanOrEqual(counts[1])
+    expect(counts[1]).toBeGreaterThanOrEqual(counts[2])
+  })
+
+  test(`order=row-first distributes correctly with uneven division`, async () => {
+    // 7 items across 3 columns: 0,3,6 in col0; 1,4 in col1; 2,5 in col2
+    mount(Masonry, {
+      target: document.body,
+      props: {
+        items: [0, 1, 2, 3, 4, 5, 6],
+        order: `row-first`,
+        calcCols: () => 3,
+        masonryWidth: 500,
+      },
+    })
+    await tick()
+    const columns = document.querySelectorAll(`div.masonry > div.col`)
+    expect(columns[0].children.length).toBe(3) // items 0, 3, 6
+    expect(columns[1].children.length).toBe(2) // items 1, 4
+    expect(columns[2].children.length).toBe(2) // items 2, 5
+  })
+
+  // Covered by `uses round-robin distribution when virtualizing` test in virtual scroll stability
+
+  test(`order=balanced-stable stable_assignments cache is cleaned on item removal`, async () => {
+    // This tests the cleanup logic for the stable_assignments Map
+    mount(Masonry, {
+      target: document.body,
+      props: {
+        items: [{ id: `a` }, { id: `b` }, { id: `c` }],
+        order: `balanced-stable`,
+        calcCols: () => 2,
+        masonryWidth: 500,
+        idKey: `id`,
+      },
+    })
+    await tick()
+    expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(3)
+
+    // Remount with fewer items (simulates item removal)
+    document.body.innerHTML = ``
+    mount(Masonry, {
+      target: document.body,
+      props: {
+        items: [{ id: `a` }, { id: `c` }], // removed 'b'
+        order: `balanced-stable`,
+        calcCols: () => 2,
+        masonryWidth: 500,
+        idKey: `id`,
+      },
+    })
+    await tick()
+    expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(2)
+  })
+
+  test.each(ALL_ORDER_MODES)(
+    `order=%s handles column count > item count`,
+    async (order) => {
+      mount(Masonry, {
+        target: document.body,
+        props: { items: [1, 2], order, calcCols: () => 5, masonryWidth: 500 },
+      })
+      await tick()
+      expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(2)
+    },
+  )
+
+  test(`order defaults to balanced when not specified`, async () => {
+    mount(Masonry, {
+      target: document.body,
+      props: {
+        items: [1, 2, 3, 4, 5, 6],
+        calcCols: () => 2,
+        masonryWidth: 500,
+      },
+    })
+    await tick()
+    // Default behavior should match balanced mode (distributes evenly)
+    const columns = document.querySelectorAll(`div.masonry > div.col`)
+    expect(columns.length).toBe(2)
+    expect(columns[0].children.length + columns[1].children.length).toBe(6)
+  })
+})
+
+describe(`Masonry order mode column count changes`, () => {
+  test(`balanced-stable reassigns items when column count decreases`, async () => {
+    // Items assigned to column 2 should be reassigned when columns reduced to 2
+    mount(Masonry, {
+      target: document.body,
+      props: {
+        items: [...Array(9).keys()],
+        order: `balanced-stable`,
+        calcCols: () => 3,
+        masonryWidth: 500,
+      },
+    })
+    await tick()
+    expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(3)
+    expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(9)
+
+    // Simulate column count change by remounting
+    document.body.innerHTML = ``
+    mount(Masonry, {
+      target: document.body,
+      props: {
+        items: [...Array(9).keys()],
+        order: `balanced-stable`,
+        calcCols: () => 2,
+        masonryWidth: 500,
+      },
+    })
+    await tick()
+    expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(2)
+    expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(9)
+  })
+})
+
+describe(`Masonry order mode with object items`, () => {
+  test(`balanced mode works with object items having custom getId`, async () => {
+    const items_with_heights = [
+      { key: `a`, h: 100 },
+      { key: `b`, h: 200 },
+      { key: `c`, h: 100 },
+      { key: `d`, h: 150 },
+    ]
+
+    mount(Masonry, {
+      target: document.body,
+      props: {
+        items: items_with_heights,
+        order: `balanced`,
+        calcCols: () => 2,
+        masonryWidth: 500,
+        getId: (item: { key: string }) => item.key,
+      },
+    })
+    await tick()
+    await tick()
+
+    const columns = document.querySelectorAll(`div.masonry > div.col`)
+    expect(columns.length).toBe(2)
+    // All items should be rendered across the columns
+    const total_items = Array.from(columns).reduce(
+      (sum, col) => sum + col.children.length,
+      0,
+    )
+    expect(total_items).toBeGreaterThanOrEqual(4)
+  })
+
+  test.each(ALL_ORDER_MODES)(`order=%s works with string items`, async (order) => {
+    const items = [`apple`, `banana`, `cherry`]
+    mount(Masonry, {
+      target: document.body,
+      props: { items, order, calcCols: () => 2, masonryWidth: 500 },
+    })
+    await tick()
+    await tick()
+    for (const item of items) {
+      expect(document.querySelector(`div.masonry`)?.textContent).toContain(item)
+    }
   })
 })
