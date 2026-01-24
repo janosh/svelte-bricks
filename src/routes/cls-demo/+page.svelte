@@ -94,7 +94,7 @@
 </p>
 
 <section class="info-panel">
-  <h3>Hydration Status</h3>
+  <h2>Hydration Status</h2>
   <div class="status-grid">
     <div class="status-item">
       <span class="label">Hydrated:</span>
@@ -131,13 +131,13 @@
 
 {#if cls_events.length > 0}
   <section class="cls-log">
-    <h3>Layout Shift Events</h3>
+    <h2>Layout Shift Events</h2>
     <ul>{#each cls_events as event}<li>{event}</li>{/each}</ul>
   </section>
 {/if}
 
 <section class="controls">
-  <h3>Controls</h3>
+  <h2>Controls</h2>
   <div class="control-row">
     <label>
       <span>minColWidth: <code>{min_col_width}px</code></span>
@@ -201,7 +201,7 @@
 </div>
 
 <section class="explanation">
-  <h3>How CLS Prevention Works</h3>
+  <h2>How CLS Prevention Works</h2>
   <div class="explanation-content">
     <div class="step">
       <span class="step-num">1</span>
@@ -255,7 +255,7 @@
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
   }
-  h3 {
+  h2 {
     margin: 0 0 0.8em;
     font-size: 1rem;
     color: #bbb;
