@@ -484,6 +484,29 @@ describe(`Masonry virtualization`, () => {
 })
 
 describe(`Masonry item cleanup`, () => {
+  test(`updates when items array is replaced with same length`, async () => {
+    // Verify itemsToCols recalculates when items changes (uses string items for easy verification)
+    const items_v1 = [`apple`, `banana`]
+    const items_v2 = [`X-ray`, `Yankee`] // same length, different content
+
+    mount(Masonry, {
+      target: document.body,
+      props: { items: items_v1, masonryWidth: 500 },
+    })
+    await tick()
+    expect(document.querySelector(`div.masonry`)?.textContent).toContain(`apple`)
+
+    document.body.innerHTML = ``
+    mount(Masonry, {
+      target: document.body,
+      props: { items: items_v2, masonryWidth: 500 },
+    })
+    await tick()
+    const content = document.querySelector(`div.masonry`)?.textContent
+    expect(content).toContain(`X-ray`)
+    expect(content).not.toContain(`apple`)
+  })
+
   test.each([
     [50, 10],
     [30, 5],
@@ -530,27 +553,175 @@ describe(`Masonry item cleanup`, () => {
 })
 
 describe(`Masonry CSS reset compatibility`, () => {
-  // Regression tests for https://github.com/janosh/svelte-bricks/issues/48
-  // Inline styles have highest specificity (except !important), so they resist all CSS resets
-
-  test(`masonry has display:flex inline style`, async () => {
+  // Regression: https://github.com/janosh/svelte-bricks/issues/48
+  test.each([
+    [`div.masonry`, `flex`],
+    [`div.masonry > div.col`, `grid`],
+  ])(`%s has inline display:%s style`, async (selector, display) => {
     mount(Masonry, {
       target: document.body,
       props: { items: [1, 2, 3], masonryWidth: 500 },
     })
     await tick()
-    const masonry = document.querySelector(`div.masonry`) as HTMLElement
-    // Check inline style attribute directly - this is what protects against CSS resets
-    expect(masonry.style.display).toBe(`flex`)
+    expect((document.querySelector(selector) as HTMLElement).style.display).toBe(display)
+  })
+})
+
+describe(`Masonry virtual scroll stability`, () => {
+  // Regression: https://github.com/janosh/svelte-bricks/issues/50
+
+  test(`uses round-robin distribution when virtualizing regardless of balance prop`, async () => {
+    mount_virtualized(12, {
+      balance: true,
+      calcCols: () => 3,
+      getEstimatedHeight: () => 100,
+    })
+    await tick()
+    const counts = Array.from(document.querySelectorAll(`div.masonry > div.col`)).map(
+      (col) => col.children.length,
+    )
+    expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1)
   })
 
-  test(`columns have display:grid inline style`, async () => {
-    mount(Masonry, {
-      target: document.body,
-      props: { items: [1, 2, 3], masonryWidth: 500 },
+  test(`getEstimatedHeight is called and padding is applied`, async () => {
+    const getEstimatedHeight = vi.fn(() => 150)
+    mount_virtualized(100, {
+      calcCols: () => 1,
+      getEstimatedHeight,
+      height: 300,
+      overscan: 2,
     })
     await tick()
+    expect(getEstimatedHeight).toHaveBeenCalled()
+    expect(document.querySelector(`div.masonry > div.col`)?.getAttribute(`style`))
+      .toContain(
+        `padding-bottom:`,
+      )
+  })
+
+  test(`padding uses estimated heights, not measured`, async () => {
+    const estimated = 100, gap = 10, item_count = 100
+    mock_height = 200 // 2x the estimate
+
+    mount(Masonry, {
+      target: document.body,
+      props: {
+        items: [...Array(item_count).keys()],
+        virtualize: true,
+        height: 300,
+        calcCols: () => 1,
+        gap,
+        getEstimatedHeight: () => estimated,
+        masonryWidth: 500,
+      },
+    })
+    await tick()
+
     const col = document.querySelector(`div.masonry > div.col`) as HTMLElement
-    expect(col.style.display).toBe(`grid`)
+    const rendered = col.children.length
+    const padding = parseInt(col.style.paddingBottom || `0`, 10)
+
+    // Should match estimated calculation, not measured
+    const expected_estimated = (item_count - rendered) * (estimated + gap)
+    const expected_measured = (item_count - rendered) * (mock_height + gap)
+    expect(padding).toBeLessThan(expected_measured * 0.8)
+    expect(padding).toBeGreaterThan(expected_estimated * 0.5)
+  })
+
+  test.each([
+    { estimated: 100, measured: 80 },
+    { estimated: 200, measured: 150 },
+  ])(
+    `padding stable after measurements (est=$estimated, meas=$measured)`,
+    async ({ estimated, measured }) => {
+      mock_height = measured
+      mount_virtualized(50, {
+        calcCols: () => 1,
+        getEstimatedHeight: () => estimated,
+        height: 200,
+        gap: 10,
+      })
+      await tick()
+
+      const col = document.querySelector(`div.masonry > div.col`) as HTMLElement
+      const initial_style = col.getAttribute(`style`)
+
+      // Trigger all ResizeObserver callbacks
+      document.querySelectorAll(`div.masonry > div.col > div`).forEach((item) => {
+        resize_observers.get(item)?.(
+          [{ target: item } as ResizeObserverEntry],
+          {} as ResizeObserver,
+        )
+      })
+      await tick()
+
+      expect(col.getAttribute(`style`)).toBe(initial_style)
+    },
+  )
+
+  test(`column distribution stable after measurements`, async () => {
+    mount_virtualized(100, {
+      calcCols: () => 3,
+      getEstimatedHeight: () => 100,
+      height: 300,
+    })
+    await tick()
+
+    const get_dist = () =>
+      Array.from(document.querySelectorAll(`div.masonry > div.col`)).map((col) =>
+        Array.from(col.children).map((c) => c.textContent)
+      )
+    const before = get_dist()
+
+    document.querySelectorAll(`div.masonry > div.col > div`).forEach((item) => {
+      resize_observers.get(item)?.(
+        [{ target: item } as ResizeObserverEntry],
+        {} as ResizeObserver,
+      )
+    })
+    await tick()
+
+    expect(get_dist()).toEqual(before)
+  })
+
+  test(`handles height mismatch gracefully`, async () => {
+    const items = Array.from(
+      { length: 100 },
+      (_, idx) => ({ id: idx, height: 100 + (idx % 50) }),
+    )
+    mock_height = 150
+
+    mount(Masonry, {
+      target: document.body,
+      props: {
+        items,
+        virtualize: true,
+        height: 300,
+        calcCols: () => 2,
+        gap: 10,
+        getEstimatedHeight: (item: { height: number }) => item.height,
+        masonryWidth: 500,
+      },
+    })
+    await tick()
+
+    const rendered = document.querySelectorAll(`div.masonry > div.col > div`).length
+    expect(rendered).toBeGreaterThan(0)
+    expect(rendered).toBeLessThan(100)
+  })
+
+  test(`10k items render under 500ms`, async () => {
+    const start = performance.now()
+    mount_virtualized(10000, {
+      calcCols: () => 4,
+      getEstimatedHeight: () => 100,
+      height: 500,
+    })
+    await tick()
+
+    expect(performance.now() - start).toBeLessThan(500)
+    const rendered = document.querySelectorAll(`div.masonry > div.col > div`).length
+    expect(rendered).toBeLessThan(200)
+    expect(rendered).toBeGreaterThan(0)
   })
 })

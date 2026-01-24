@@ -1,5 +1,6 @@
 :root {
   --page-bg: #090019;
+  color-scheme: dark;
 }
 html {
   background: var(--page-bg);
