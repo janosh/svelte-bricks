@@ -5,10 +5,18 @@
   import type { HTMLAttributes } from 'svelte/elements'
   import { fade } from 'svelte/transition'
 
+  // Order modes for item distribution across columns
+  type MasonryOrder =
+    | `balanced` // Rebalances all items to shortest columns (items may jump)
+    | `balanced-stable` // New items go to shortest column, existing items never move
+    | `row-first` // Round-robin: 1→2→3→1→2→3...
+    | `column-sequential` // Purely sequential: first N items in col 1, next N in col 2
+    | `column-balanced` // Height-aware: fill col 1 to target height, then col 2, etc.
+
   // On non-primitive types, we need a property to tell masonry items apart. The name of this attribute can be customized with idKey which defaults to 'id'. See https://svelte.dev/docs/svelte/each#Keyed-each-blocks.
   let {
     animate = true,
-    balance = true,
+    order = `balanced` as MasonryOrder,
     calcCols = (masonryWidth: number, minColWidth: number, gap: number): number => {
       return Math.min(
         items.length,
@@ -40,7 +48,7 @@
     ...rest
   }: Omit<HTMLAttributes<HTMLDivElement>, `children`> & {
     animate?: boolean
-    balance?: boolean
+    order?: MasonryOrder
     calcCols?: (masonryWidth: number, minColWidth: number, gap: number) => number
     duration?: number
     gap?: number
@@ -74,7 +82,10 @@
     measured_count > 0 ? measured_sum / measured_count : null,
   )
 
-  // Clean up stale heights when items change (prevents memory leak)
+  // Tracks which column each item was assigned to (for balanced-stable mode)
+  const stable_assignments = new Map<string | number, number>()
+
+  // Clean up stale heights and stable assignments when items change (prevents memory leak)
   $effect(() => {
     const current_ids = new Set(items.map(getId))
     let removed_sum = 0
@@ -87,6 +98,10 @@
     if (removed_sum > 0) {
       measured_sum -= removed_sum
       measured_count = item_heights_cache.size
+    }
+    // Clean up stable_assignments for removed items
+    for (const id of stable_assignments.keys()) {
+      if (!current_ids.has(id)) stable_assignments.delete(id)
     }
   })
 
@@ -105,17 +120,24 @@
     return 150
   }
 
+  // Check if current order mode needs height measurements
+  const needs_measurement = (mode: MasonryOrder): boolean =>
+    mode === `balanced` || mode === `balanced-stable` || mode === `column-balanced`
+
   // Measure item heights via ResizeObserver
+  // Always attach observers for non-virtualizing cases, even for modes that don't
+  // need measurement initially, because the user may switch modes at runtime.
+  // Skip entirely during virtualization - only estimated heights are used there.
   const measure_height: Action<HTMLElement, string | number> = (node, item_id) => {
-    if (!balance && !virtualize) return {}
+    if (virtualize) return {}
     const observer = new ResizeObserver(() => {
       const new_height = node.offsetHeight
       if (new_height > 0 && item_heights_cache.get(item_id) !== new_height) {
         const old_height = item_heights_cache.get(item_id) ?? 0
         measured_sum += new_height - old_height
         item_heights_cache.set(item_id, new_height)
-        // Keep measured_count in sync with cache for accurate can_balance checks
-        // Safe during virtualization: can_balance has !virtualize guard, itemsToCols short-circuits
+        // Keep measured_count in sync with cache for accurate measurement checks
+        // Safe during virtualization: itemsToCols short-circuits for virtualize
         measured_count = item_heights_cache.size
       }
     })
@@ -123,8 +145,8 @@
     return { destroy: () => observer.disconnect() }
   }
 
-  // Balance columns only when all items measured and NOT virtualizing
-  let can_balance = $derived(balance && !virtualize && measured_count >= items.length)
+  // Effective order: virtualization forces row-first
+  let effective_order = $derived(virtualize ? `row-first` : order)
 
   // Distribute items to shortest column (uses get_height for estimates when not fully measured)
   function balance_to_cols(num_cols: number): [Item, number][][] {
@@ -135,6 +157,64 @@
       const shortest = heights.indexOf(Math.min(...heights))
       cols[shortest].push([item, idx])
       heights[shortest] += get_height(item) + gap
+    }
+    return cols
+  }
+
+  // Stable balancing: new items go to shortest column, existing items keep their column
+  // NOTE: This function intentionally mutates stable_assignments Map during $derived computation.
+  // This is safe because the Map is a non-reactive cache for persistence across renders,
+  // not a reactive dependency. The derived recomputes based on items/nCols/order changes.
+  function balanced_stable_to_cols(num_cols: number): [Item, number][][] {
+    const cols: [Item, number][][] = Array.from({ length: num_cols }, () => [])
+    const heights: number[] = Array(num_cols).fill(0)
+
+    for (const [idx, item] of items.entries()) {
+      const id = getId(item)
+      let col = stable_assignments.get(id)
+
+      if (col === undefined || col >= num_cols) {
+        // New item or column count reduced - assign to shortest
+        col = heights.indexOf(Math.min(...heights))
+        stable_assignments.set(id, col)
+      }
+
+      cols[col].push([item, idx])
+      heights[col] += get_height(item) + gap
+    }
+    return cols
+  }
+
+  // Purely sequential column-first: first N items in col 1, next N in col 2, etc.
+  function column_sequential_to_cols(num_cols: number): [Item, number][][] {
+    const cols: [Item, number][][] = Array.from({ length: num_cols }, () => [])
+    const items_per_col = Math.ceil(items.length / num_cols)
+
+    for (const [idx, item] of items.entries()) {
+      const col = Math.min(Math.floor(idx / items_per_col), num_cols - 1)
+      cols[col].push([item, idx])
+    }
+    return cols
+  }
+
+  // Height-aware column-first: fill col 1 to target height, then col 2, etc.
+  function column_balanced_to_cols(num_cols: number): [Item, number][][] {
+    const cols: [Item, number][][] = Array.from({ length: num_cols }, () => [])
+    const total_height = items.reduce((sum, item) => sum + get_height(item) + gap, 0)
+    const target_per_col = total_height / num_cols
+
+    let col = 0
+    let col_height = 0
+
+    for (const [idx, item] of items.entries()) {
+      cols[col].push([item, idx])
+      col_height += get_height(item) + gap
+
+      // Move to next column if exceeded target and not on last column
+      if (col_height >= target_per_col && col < num_cols - 1) {
+        col++
+        col_height = 0
+      }
     }
     return cols
   }
@@ -164,19 +244,27 @@
     }).join(`\n`),
   )
 
-  // Round-robin distribution (used for SSR/initial and virtualization)
+  // Round-robin distribution (used for row-first order and SSR fallback)
   const round_robin = (num_cols: number): [Item, number][][] =>
     items.reduce<[Item, number][][]>(
       (cols, item, idx) => (cols[idx % num_cols].push([item, idx]), cols),
       Array.from({ length: num_cols }, () => []),
     )
 
-  // Balanced distribution when measured, round-robin for SSR/virtualization
-  // Short-circuit virtualize check to avoid tracking can_balance reactivity
+  // Distribute items based on order mode
   let itemsToCols = $derived.by(() => {
-    if (virtualize) return round_robin(nCols)
-    if (can_balance) return balance_to_cols(nCols)
-    return round_robin(nCols)
+    // For height-dependent modes, fall back to round-robin until items are measured
+    if (needs_measurement(effective_order) && measured_count < items.length) {
+      return round_robin(nCols)
+    }
+
+    if (effective_order === `balanced`) return balance_to_cols(nCols)
+    if (effective_order === `balanced-stable`) return balanced_stable_to_cols(nCols)
+    if (effective_order === `column-sequential`) {
+      return column_sequential_to_cols(nCols)
+    }
+    if (effective_order === `column-balanced`) return column_balanced_to_cols(nCols)
+    return round_robin(nCols) // row-first (default)
   })
 
   // Virtualization logic
