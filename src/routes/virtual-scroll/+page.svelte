@@ -309,6 +309,7 @@
     border-radius: 8px;
     color: white;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    box-sizing: border-box; /* Ensures height includes padding, matching getEstimatedHeight */
   }
   .card-id {
     font-size: 1.1rem;

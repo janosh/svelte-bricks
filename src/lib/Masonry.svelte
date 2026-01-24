@@ -65,8 +65,10 @@
   } = $props()
 
   // Height tracking for column balancing and virtualization
-  let item_heights = $state(new Map<string | number, number>())
-  let measured_count = $state(0) // trigger reactivity on height updates
+  // Use plain Map (not reactive) to avoid triggering re-renders on every measurement
+  // Only measured_count is reactive to trigger column balancing when needed
+  const item_heights_cache = new Map<string | number, number>()
+  let measured_count = $state(0) // trigger reactivity for column balancing
   let measured_sum = $state(0) // running sum for average calculation
   let avg_measured_height = $derived(
     measured_count > 0 ? measured_sum / measured_count : null,
@@ -76,23 +78,24 @@
   $effect(() => {
     const current_ids = new Set(items.map(getId))
     let removed_sum = 0
-    for (const [id, height] of item_heights.entries()) {
+    for (const [id, height] of item_heights_cache.entries()) {
       if (!current_ids.has(id)) {
         removed_sum += height
-        item_heights.delete(id)
+        item_heights_cache.delete(id)
       }
     }
     if (removed_sum > 0) {
       measured_sum -= removed_sum
-      measured_count = item_heights.size
+      measured_count = item_heights_cache.size
     }
   })
 
   // Unified height getter with fallback chain
+  // Reads from non-reactive cache, so won't trigger re-renders
   const get_height = (item: Item): number => {
     const id = getId(item)
     // 1. Actual measured height (most accurate)
-    const measured = item_heights.get(id)
+    const measured = item_heights_cache.get(id)
     if (measured !== undefined) return measured
     // 2. User-provided estimate (if custom function provided)
     if (getEstimatedHeight) return getEstimatedHeight(item)
@@ -107,19 +110,21 @@
     if (!balance && !virtualize) return {}
     const observer = new ResizeObserver(() => {
       const new_height = node.offsetHeight
-      if (new_height > 0 && item_heights.get(item_id) !== new_height) {
-        const old_height = item_heights.get(item_id) ?? 0
+      if (new_height > 0 && item_heights_cache.get(item_id) !== new_height) {
+        const old_height = item_heights_cache.get(item_id) ?? 0
         measured_sum += new_height - old_height
-        item_heights.set(item_id, new_height)
-        measured_count = item_heights.size
+        item_heights_cache.set(item_id, new_height)
+        // Keep measured_count in sync with cache for accurate can_balance checks
+        // Safe during virtualization: can_balance has !virtualize guard, itemsToCols short-circuits
+        measured_count = item_heights_cache.size
       }
     })
     observer.observe(node)
     return { destroy: () => observer.disconnect() }
   }
 
-  // Derive if we have enough measurements
-  let can_balance = $derived(balance && measured_count >= items.length)
+  // Balance columns only when all items measured and NOT virtualizing
+  let can_balance = $derived(balance && !virtualize && measured_count >= items.length)
 
   // Distribute items to shortest column (uses get_height for estimates when not fully measured)
   function balance_to_cols(num_cols: number): [Item, number][][] {
@@ -159,14 +164,19 @@
     }).join(`\n`),
   )
 
-  // Balanced distribution when measured, naive round-robin for SSR
-  let itemsToCols = $derived.by(() => {
-    if (can_balance) return balance_to_cols(nCols)
-    // SSR/initial: round-robin distribution
-    return items.reduce<[Item, number][][]>(
-      (cols, item, idx) => (cols[idx % nCols].push([item, idx]), cols),
-      Array.from({ length: nCols }, () => []),
+  // Round-robin distribution (used for SSR/initial and virtualization)
+  const round_robin = (num_cols: number): [Item, number][][] =>
+    items.reduce<[Item, number][][]>(
+      (cols, item, idx) => (cols[idx % num_cols].push([item, idx]), cols),
+      Array.from({ length: num_cols }, () => []),
     )
+
+  // Balanced distribution when measured, round-robin for SSR/virtualization
+  // Short-circuit virtualize check to avoid tracking can_balance reactivity
+  let itemsToCols = $derived.by(() => {
+    if (virtualize) return round_robin(nCols)
+    if (can_balance) return balance_to_cols(nCols)
+    return round_robin(nCols)
   })
 
   // Virtualization logic
@@ -193,21 +203,8 @@
     return lo
   }
 
-  // Prefix height arrays per column: prefix_heights[col][i] = cumulative height of items 0..i
-  let prefix_heights = $derived(
-    itemsToCols.map((col) => {
-      let sum = 0
-      return col.map(([item]) => {
-        sum += get_height(item) + gap
-        return sum
-      })
-    }),
-  )
-
-  // Total height per column (for padding calculation)
-  let col_total_heights = $derived(prefix_heights.map((ph) => ph.at(-1) ?? 0))
-
   // Scroll state with requestAnimationFrame throttling
+  // Declared early because prefix_heights depends on it for virtualization
   let scroll_top = $state(0)
   let ticking = false
 
@@ -219,6 +216,26 @@
       ticking = false
     })
   }
+
+  // Stable height for virtualization - ONLY estimates (no measured heights = no drift)
+  const get_estimated_height = (item: Item): number =>
+    getEstimatedHeight ? getEstimatedHeight(item) : 150
+
+  // Prefix height arrays per column: prefix_heights[col][i] = cumulative height of items 0..i
+  // When virtualizing: use ONLY estimates (stable, no drift)
+  // When not virtualizing: use measured heights (accurate balancing)
+  let prefix_heights = $derived(
+    itemsToCols.map((col) => {
+      let sum = 0
+      return col.map(([item]) => {
+        sum += (virtualize ? get_estimated_height(item) : get_height(item)) + gap
+        return sum
+      })
+    }),
+  )
+
+  // Total height per column (for padding calculation)
+  let col_total_heights = $derived(prefix_heights.map((ph) => ph.at(-1) ?? 0))
 
   // Container height for virtualization viewport
   // For numeric height, use directly; for string (CSS units like "80vh"), use measured clientHeight
@@ -247,14 +264,13 @@
   )
 
   // Padding to replace culled items (only when actively virtualizing)
-  const zero_padding = () => itemsToCols.map(() => 0)
   let col_padding_top = $derived(
     can_virtualize
       ? visible_ranges.map((
         [start],
         idx,
       ) => (start > 0 ? prefix_heights[idx][start - 1] : 0))
-      : zero_padding(),
+      : itemsToCols.map(() => 0),
   )
   let col_padding_bottom = $derived(
     can_virtualize
@@ -262,7 +278,7 @@
         const visible_end = end > 0 ? (prefix_heights[idx][end - 1] ?? 0) : 0
         return Math.max(0, col_total_heights[idx] - visible_end)
       })
-      : zero_padding(),
+      : itemsToCols.map(() => 0),
   )
 
   // Auto-disable animations when actively virtualizing (FLIP doesn't work well)
