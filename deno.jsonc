@@ -32,7 +32,8 @@
         "no-throw-literal",
         "no-useless-rename",
         "prefer-ascii"
-      ]
+      ],
+      "exclude": ["no-sloppy-imports"]
     }
   },
   "fmt": {

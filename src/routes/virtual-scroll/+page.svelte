@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Masonry from '$lib'
+  import Masonry, { type MasonryOrder, order_options } from '$lib'
 
   // Item generation
   let item_count = $state(2000)
@@ -22,7 +22,7 @@
   let overscan = $state(5)
   let min_col_width = $state(180)
   let gap = $state(12)
-  let balance = $state(true)
+  let order = $state<MasonryOrder>(`balanced`)
 
   // Stats
   let masonry_width = $state(0)
@@ -56,7 +56,7 @@
 
 <div class="controls">
   <section class="control-group">
-    <h3>Items</h3>
+    <h2>Items</h2>
     <div class="preset-row">
       {#each presets as { label, count }}
         <button
@@ -80,7 +80,7 @@
   </section>
 
   <section class="control-group">
-    <h3>Virtualization</h3>
+    <h2>Virtualization</h2>
     <label class="checkbox">
       <input type="checkbox" bind:checked={virtualize} />
       <span>Enable (compare performance!)</span>
@@ -96,7 +96,7 @@
   </section>
 
   <section class="control-group">
-    <h3>Layout</h3>
+    <h2>Layout</h2>
     <label>
       <span>minColWidth: <code>{min_col_width}px</code></span>
       <input type="range" bind:value={min_col_width} min={100} max={400} />
@@ -105,9 +105,13 @@
       <span>gap: <code>{gap}px</code></span>
       <input type="range" bind:value={gap} min={0} max={30} />
     </label>
-    <label class="checkbox">
-      <input type="checkbox" bind:checked={balance} />
-      <span>Balance columns</span>
+    <label>
+      <span>Order: <code>{virtualize ? `row-first (forced)` : order}</code></span>
+      <select bind:value={order} disabled={virtualize}>
+        {#each order_options as opt}
+          <option value={opt}>{opt}</option>
+        {/each}
+      </select>
     </label>
   </section>
 </div>
@@ -135,7 +139,7 @@
   <Masonry
     {items}
     {virtualize}
-    {balance}
+    {order}
     {gap}
     {overscan}
     height={scroll_height}
@@ -158,7 +162,7 @@
 </div>
 
 <section class="info">
-  <h3>How it works</h3>
+  <h2>How it works</h2>
   <ul>
     <li>
       <strong>Per-column virtualization</strong> — Each column independently tracks
@@ -207,7 +211,7 @@
     border-radius: 10px;
     padding: 1em;
   }
-  .control-group h3 {
+  .control-group h2 {
     margin: 0 0 0.8em;
     font-size: 0.95rem;
     color: #aaa;
@@ -232,6 +236,19 @@
   input[type='checkbox'] {
     width: 1.1em;
     height: 1.1em;
+  }
+  select {
+    width: 100%;
+    padding: 0.4em;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: inherit;
+    cursor: pointer;
+  }
+  select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
   code {
     background: rgba(0, 150, 255, 0.25);
@@ -326,7 +343,7 @@
     background: rgba(255, 255, 255, 0.03);
     border-radius: 10px;
   }
-  .info h3 {
+  .info h2 {
     margin: 0 0 0.6em;
     font-size: 1rem;
     color: #bbb;

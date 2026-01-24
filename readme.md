@@ -72,10 +72,16 @@ Additional optional props are:
    Whether to [FLIP-animate](https://svelte.dev/docs/svelte/svelte-animate) masonry items when viewport resizing or other events cause `items` to rearrange.
 
 1. ```ts
-   balance: boolean = true
+   order: 'balanced' | 'balanced-stable' | 'row-first' | 'column-sequential' | 'column-balanced' = 'balanced'
    ```
 
-   Enable height-based column balancing. Items are distributed to the shortest column for a more even layout. Set to `false` for simple round-robin distribution.
+   Controls how items are distributed across columns:
+
+   - `balanced` (default): Items are placed in the shortest column for optimal visual balance. Items may jump between columns when the list changes.
+   - `balanced-stable`: Like `balanced`, but existing items never move. New items go to the shortest column. Ideal for infinite scroll.
+   - `row-first`: Round-robin distribution (1→2→3→1→2→3...). Predictable row-major order.
+   - `column-sequential`: Fills columns sequentially (first N items in column 1, next N in column 2, etc.). Strict column-major order.
+   - `column-balanced`: Height-aware column-first. Fills column 1 until it reaches target height, then column 2, etc. Maintains reading order while balancing heights.
 
 1. ```ts
    calcCols = (
@@ -215,7 +221,8 @@ For large lists (1000+ items), enable virtual scrolling to render only visible i
 **Notes:**
 
 - FLIP animations are automatically disabled when virtualizing
-- Balance mode works with estimated heights until items are measured
+- Virtualization forces `row-first` order mode for stability
+- Height-dependent order modes (`balanced`, `balanced-stable`, `column-balanced`) use estimated heights until items are measured
 - The masonry div becomes a scroll container (`overflow-y: auto`)
 
 ## Styling

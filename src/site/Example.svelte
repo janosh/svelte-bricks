@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Masonry } from '$lib'
+  import { Masonry, type MasonryOrder } from '$lib'
   import { Toggle } from 'svelte-multiselect'
   import { Box } from '.'
 
@@ -12,9 +12,20 @@
   let masonryHeight: number = $state(0)
 
   let slide_flip = $state(false)
+  let order = $state<MasonryOrder>(`balanced`)
 </script>
 
 <div class="controls">
+  <label>
+    <code>order</code>
+    <select bind:value={order}>
+      <option value="balanced">balanced</option>
+      <option value="balanced-stable">balanced-stable</option>
+      <option value="row-first">row-first</option>
+      <option value="column-sequential">column-sequential</option>
+      <option value="column-balanced">column-balanced</option>
+    </select>
+  </label>
   <label>
     <code>nItems</code> = {nItems}
     <input type="range" bind:value={nItems} min={1} max={100} />
@@ -43,6 +54,7 @@
   {minColWidth}
   {maxColWidth}
   {gap}
+  {order}
   bind:masonryWidth
   bind:masonryHeight
 >
