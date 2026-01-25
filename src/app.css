@@ -1,3 +1,6 @@
+/* GitHub-style syntax highlighting (dark theme) */
+@import '@wooorm/starry-night/style/dark';
+
 :root {
   --page-bg: #090019;
   color-scheme: dark;
