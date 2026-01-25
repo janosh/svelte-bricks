@@ -1,12 +1,27 @@
 import adapter from '@sveltejs/adapter-static'
 import { mdsvex } from 'mdsvex'
-import { sveltePreprocess } from 'svelte-preprocess'
+import {
+  mdsvex_transform,
+  starry_night_highlighter,
+  sveltePreprocess,
+} from 'svelte-multiselect/live-examples'
+import pkg from './package.json' with { type: 'json' }
+
+const defaults = { repo: pkg.repository, hideStyle: true }
+const remarkPlugins = [[mdsvex_transform, { defaults }]]
 
 /** @type {import('@sveltejs/kit').Config} */
 export default {
   extensions: [`.svelte`, `.svx`, `.md`],
 
-  preprocess: [sveltePreprocess(), mdsvex({ extensions: [`.svx`, `.md`] })],
+  preprocess: [
+    sveltePreprocess(), // wrapped version that skips markdown files
+    mdsvex({
+      remarkPlugins,
+      extensions: [`.svx`, `.md`],
+      highlight: { highlighter: starry_night_highlighter },
+    }),
+  ],
 
   kit: {
     adapter: adapter(),
