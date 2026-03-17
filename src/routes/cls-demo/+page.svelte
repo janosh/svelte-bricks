@@ -65,7 +65,7 @@
         for (const entry of list.getEntries()) {
           const value = (entry as PerformanceEntry & { value?: number }).value
           if (value) {
-            cls_events = [...cls_events, `CLS: ${(value * 1000).toFixed(2)}ms`]
+            cls_events.push(`CLS: ${(value * 1000).toFixed(2)}ms`)
           }
         }
       })

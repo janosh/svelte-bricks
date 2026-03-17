@@ -21,7 +21,7 @@ Svelte masonry component with SSR support (via CSS container queries) and automa
 ## Installation
 
 ```sh
-pnpm add -D svelte-bricks
+npm add -D svelte-bricks
 ```
 
 ## Usage
@@ -76,7 +76,6 @@ Additional optional props are:
    ```
 
    Controls how items are distributed across columns:
-
    - `balanced` (default): Items are placed in the shortest column for optimal visual balance. Items may jump between columns when the list changes.
    - `balanced-stable`: Like `balanced`, but existing items never move. New items go to the shortest column. Ideal for infinite scroll.
    - `row-first`: Round-robin distribution (1→2→3→1→2→3...). Predictable row-major order.
@@ -84,11 +83,7 @@ Additional optional props are:
    - `column-balanced`: Height-aware column-first. Fills column 1 until it reaches target height, then column 2, etc. Maintains reading order while balancing heights.
 
 1. ```ts
-   calcCols = (
-     masonryWidth: number,
-     minColWidth: number,
-     gap: number,
-   ): number => {
+   calcCols = (masonryWidth: number, minColWidth: number, gap: number): number => {
      return Math.min(
        items.length,
        Math.floor((masonryWidth + gap) / (minColWidth + gap)) || 1,

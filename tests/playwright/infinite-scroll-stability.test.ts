@@ -40,7 +40,9 @@ test.describe(`Infinite Scroll Stability (Issue #53)`, () => {
     await wait_for_masonry_stable(page)
   })
 
-  test(`balanced-stable mode: items never jump when adding new items`, async ({ page }) => {
+  test(`balanced-stable mode: items never jump when adding new items`, async ({
+    page,
+  }) => {
     await set_order_mode(page, `balanced-stable`)
     await wait_for_masonry_stable(page)
 
@@ -127,7 +129,9 @@ test.describe(`Infinite Scroll Stability (Issue #53)`, () => {
     )
   })
 
-  test(`balanced-stable mode handles item removal without affecting other items`, async ({ page }) => {
+  test(`balanced-stable mode handles item removal without affecting other items`, async ({
+    page,
+  }) => {
     await set_order_mode(page, `balanced-stable`)
     await wait_for_masonry_stable(page)
 

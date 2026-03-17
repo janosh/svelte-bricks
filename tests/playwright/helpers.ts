@@ -102,5 +102,5 @@ export async function get_all_item_ids(page: Page): Promise<number[]> {
     const id_str = await items.nth(idx).getAttribute(`data-item-id`)
     if (id_str) ids.push(parseInt(id_str, 10))
   }
-  return ids.sort((a, b) => a - b)
+  return ids.toSorted((a, b) => a - b)
 }

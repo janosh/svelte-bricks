@@ -13,14 +13,14 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+    rev: v2.4.2
     hooks:
       - id: codespell
         stages: [pre-commit, commit-msg]
         args: [--check-filenames]
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.42.1
+    rev: v1.44.0
     hooks:
       - id: typos
         types: [text]
@@ -28,21 +28,21 @@ repos:
 
   - repo: local
     hooks:
-      - id: deno-fmt
-        name: Deno format
-        entry: deno fmt
-        types: [file]
+      - id: vp-fmt
+        name: Format (oxfmt)
+        entry: vp fmt --write
+        types_or: [file]
         language: system
-        args: [--config, deno.jsonc, --permit-no-files]
-      - id: deno-lint
-        name: Deno lint
-        entry: deno lint
-        types: [file]
+        pass_filenames: false
+      - id: vp-lint
+        name: Lint (oxlint)
+        entry: vp lint --fix
+        types_or: [file]
         language: system
-        args: [--config, deno.jsonc, --permit-no-files, --fix]
+        pass_filenames: false
       - id: svelte-check
         name: Svelte type check
-        entry: bash -c 'deno install && deno run -A --node-modules-dir npm:@sveltejs/kit sync && deno run -A --node-modules-dir npm:svelte-check-rs@latest --fail-on-warnings --threshold error'
+        entry: bash -c 'npx svelte-kit sync && npx svelte-check-rs --threshold error'
         language: system
         types_or: [ts, svelte]
         pass_filenames: false

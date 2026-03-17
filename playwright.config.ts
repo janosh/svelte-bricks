@@ -2,7 +2,7 @@ import type { PlaywrightTestConfig } from '@playwright/test'
 
 export default {
   webServer: {
-    command: `vite dev --port 3005`,
+    command: `npx vp dev --port 3005`,
     port: 3005,
     reuseExistingServer: true,
     timeout: 60_000, // Allow 1 min for dev server to start on CI
