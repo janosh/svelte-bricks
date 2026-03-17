@@ -73,7 +73,9 @@ test.describe(`Masonry Order Modes`, () => {
       expect(max_diff).toBeLessThanOrEqual(1)
     })
 
-    test(`existing items stay in their columns when new items are added`, async ({ page }) => {
+    test(`existing items stay in their columns when new items are added`, async ({
+      page,
+    }) => {
       await set_order_mode(page, `balanced-stable`)
       await wait_for_masonry_stable(page)
 
@@ -160,7 +162,9 @@ test.describe(`Masonry Order Modes`, () => {
   })
 
   test.describe(`order=column-sequential`, () => {
-    test(`fills columns sequentially (first N in col 1, next N in col 2)`, async ({ page }) => {
+    test(`fills columns sequentially (first N in col 1, next N in col 2)`, async ({
+      page,
+    }) => {
       await set_order_mode(page, `column-sequential`)
       await wait_for_masonry_stable(page)
 
@@ -180,7 +184,9 @@ test.describe(`Masonry Order Modes`, () => {
   })
 
   test.describe(`order=column-balanced`, () => {
-    test(`fills columns by target height while maintaining reading order`, async ({ page }) => {
+    test(`fills columns by target height while maintaining reading order`, async ({
+      page,
+    }) => {
       await set_order_mode(page, `column-balanced`)
       await wait_for_masonry_stable(page)
 
@@ -215,15 +221,13 @@ test.describe(`Masonry Order Modes`, () => {
 
   test.describe(`mode switching`, () => {
     test(`can switch between all order modes`, async ({ page }) => {
-      for (
-        const mode of [
-          `balanced`,
-          `balanced-stable`,
-          `row-first`,
-          `column-sequential`,
-          `column-balanced`,
-        ]
-      ) {
+      for (const mode of [
+        `balanced`,
+        `balanced-stable`,
+        `row-first`,
+        `column-sequential`,
+        `column-balanced`,
+      ]) {
         await set_order_mode(page, mode)
         await wait_for_masonry_stable(page)
 
@@ -240,24 +244,26 @@ test.describe(`Masonry Order Modes`, () => {
     test(`preserves all items when switching modes`, async ({ page }) => {
       const initial_ids = await get_all_item_ids(page)
 
-      for (
-        const mode of [
-          `row-first`,
-          `column-sequential`,
-          `balanced`,
-          `column-balanced`,
-          `balanced-stable`,
-        ]
-      ) {
+      for (const mode of [
+        `row-first`,
+        `column-sequential`,
+        `balanced`,
+        `column-balanced`,
+        `balanced-stable`,
+      ]) {
         await set_order_mode(page, mode)
         await wait_for_masonry_stable(page)
 
         const current_ids = await get_all_item_ids(page)
-        expect(current_ids.sort()).toEqual(initial_ids.sort())
+        expect(current_ids.toSorted((a, b) => a - b)).toEqual(
+          initial_ids.toSorted((a, b) => a - b),
+        )
       }
     })
 
-    test(`switching from row-first to balanced actually balances columns`, async ({ page }) => {
+    test(`switching from row-first to balanced actually balances columns`, async ({
+      page,
+    }) => {
       // Start with row-first mode
       await set_order_mode(page, `row-first`)
       await wait_for_masonry_stable(page)
@@ -285,8 +291,8 @@ test.describe(`Masonry Order Modes`, () => {
       expect(max_diff).toBeLessThanOrEqual(2)
 
       // Verify all items still present
-      const all_ids = balanced_cols.flat().sort((a, b) => a - b)
-      const expected_ids = row_first_cols.flat().sort((a, b) => a - b)
+      const all_ids = balanced_cols.flat().toSorted((a, b) => a - b)
+      const expected_ids = row_first_cols.flat().toSorted((a, b) => a - b)
       expect(all_ids).toEqual(expected_ids)
     })
   })

@@ -21,7 +21,7 @@
     `/`,
     ...Object.keys(page_modules)
       .map((path) => `/${path.replace(`./`, ``).replace(`/+page.svelte`, ``)}`)
-      .sort((a, b) => (labels[a] ?? a).localeCompare(labels[b] ?? b)),
+      .toSorted((a, b) => (labels[a] ?? a).localeCompare(labels[b] ?? b)),
   ]
 </script>
 

@@ -3,7 +3,6 @@ import { mdsvex } from 'mdsvex'
 import {
   mdsvex_transform,
   starry_night_highlighter,
-  sveltePreprocess,
 } from 'svelte-multiselect/live-examples'
 import pkg from './package.json' with { type: 'json' }
 
@@ -15,7 +14,6 @@ export default {
   extensions: [`.svelte`, `.svx`, `.md`],
 
   preprocess: [
-    sveltePreprocess(), // wrapped version that skips markdown files
     mdsvex({
       remarkPlugins,
       extensions: [`.svx`, `.md`],

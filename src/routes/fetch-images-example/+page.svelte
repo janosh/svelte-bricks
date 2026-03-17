@@ -19,7 +19,7 @@
     if (response.ok) {
       return response.json()
     } else {
-      throw `failed to fetch GitHub data`
+      throw new Error(`failed to fetch GitHub data`)
     }
   }
 

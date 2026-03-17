@@ -13,7 +13,7 @@
         div { display: block; }
         *, ::before, ::after { box-sizing: border-box; }
       `
-      document.head.appendChild(reset_style_el)
+      document.head.append(reset_style_el)
     } else if (reset_style_el) {
       reset_style_el.remove()
       reset_style_el = null
@@ -83,7 +83,7 @@
       items = items.toSpliced(Math.floor(Math.random() * items.length), 1)
     }
   }
-  const shuffle = () => (items = [...items].sort(() => Math.random() - 0.5))
+  const shuffle = () => (items = items.toSorted(() => Math.random() - 0.5))
   const clear_all = () => {
     items = []
     next_id = 0
