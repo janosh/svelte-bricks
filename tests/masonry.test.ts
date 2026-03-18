@@ -3,7 +3,7 @@ import { mount, tick } from 'svelte'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 const n_items = 30
-const indices = [...Array(n_items).keys()]
+const indices = Array.from({ length: n_items }, (_, idx) => idx)
 
 // Track ResizeObserver registrations
 const resize_observers = new Map<Element, ResizeObserverCallback>()
@@ -61,7 +61,7 @@ const mount_virtualized = (count: number, overrides = {}) => {
   mount(Masonry, {
     target: document.body,
     props: {
-      items: [...Array(count).keys()],
+      items: Array.from({ length: count }, (_, idx) => idx),
       virtualize: true,
       height: 300,
       calcCols: () => 2,
@@ -177,7 +177,10 @@ describe(`Masonry`, () => {
   })
 
   test.each([0, 1, 5, 50])(`renders %d items`, (count) => {
-    mount(Masonry, { target: document.body, props: { items: [...Array(count).keys()] } })
+    mount(Masonry, {
+      target: document.body,
+      props: { items: Array.from({ length: count }, (_, idx) => idx) },
+    })
     expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(count)
   })
 
@@ -241,7 +244,7 @@ describe(`Masonry order modes`, () => {
     mount(Masonry, {
       target: document.body,
       props: {
-        items: [...Array(count).keys()],
+        items: Array.from({ length: count }, (_, idx) => idx),
         order,
         calcCols: () => 2,
         masonryWidth: 500,
@@ -509,7 +512,7 @@ describe(`Masonry virtualization`, () => {
     mount(Masonry, {
       target: document.body,
       props: {
-        items: [...Array(100).keys()],
+        items: Array.from({ length: 100 }, (_, idx) => idx),
         virtualize: true,
         height: `500px`,
         calcCols: () => 2,
@@ -566,7 +569,7 @@ describe(`Masonry item cleanup`, () => {
     [50, 10],
     [30, 5],
   ])(`handles item count change %d->%d`, async (initial, final) => {
-    const make_items = (n: number) => [...Array(n).keys()]
+    const make_items = (n: number) => Array.from({ length: n }, (_, idx) => idx)
     mount(Masonry, {
       target: document.body,
       props: {
@@ -667,7 +670,7 @@ describe(`Masonry virtual scroll stability`, () => {
     mount(Masonry, {
       target: document.body,
       props: {
-        items: [...Array(item_count).keys()],
+        items: Array.from({ length: item_count }, (_, idx) => idx),
         virtualize: true,
         height: 300,
         calcCols: () => 1,
@@ -680,7 +683,7 @@ describe(`Masonry virtual scroll stability`, () => {
 
     const col = document.querySelector<HTMLElement>(`div.masonry > div.col`)
     const rendered = col?.children.length ?? 0
-    const padding = parseInt(col?.style.paddingBottom || `0`, 10)
+    const padding = parseInt(col?.style.paddingBottom ?? `0`, 10)
 
     // Should match estimated calculation, not measured
     const expected_estimated = (item_count - rendered) * (estimated + gap)
@@ -911,7 +914,7 @@ describe(`Masonry order mode column count changes`, () => {
     mount(Masonry, {
       target: document.body,
       props: {
-        items: [...Array(9).keys()],
+        items: Array.from({ length: 9 }, (_, idx) => idx),
         order: `balanced-stable`,
         calcCols: () => 3,
         masonryWidth: 500,
@@ -926,7 +929,7 @@ describe(`Masonry order mode column count changes`, () => {
     mount(Masonry, {
       target: document.body,
       props: {
-        items: [...Array(9).keys()],
+        items: Array.from({ length: 9 }, (_, idx) => idx),
         order: `balanced-stable`,
         calcCols: () => 2,
         masonryWidth: 500,
