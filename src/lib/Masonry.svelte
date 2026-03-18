@@ -35,9 +35,9 @@
     div = $bindable(),
     // Virtualization props
     virtualize = false,
-    getEstimatedHeight = undefined,
+    getEstimatedHeight,
     overscan = 5,
-    height = undefined,
+    height,
     ...rest
   }: Omit<HTMLAttributes<HTMLDivElement>, `children`> & {
     animate?: boolean
@@ -145,7 +145,7 @@
   // Distribute items to shortest column (uses get_height for estimates when not fully measured)
   function balance_to_cols(num_cols: number): [Item, number][][] {
     const cols: [Item, number][][] = Array.from({ length: num_cols }, () => [])
-    const heights: number[] = Array(num_cols).fill(0)
+    const heights: number[] = Array.from({ length: num_cols }, () => 0)
 
     for (const [idx, item] of items.entries()) {
       const shortest = heights.indexOf(Math.min(...heights))
@@ -161,7 +161,7 @@
   // not a reactive dependency. The derived recomputes based on items/nCols/order changes.
   function balanced_stable_to_cols(num_cols: number): [Item, number][][] {
     const cols: [Item, number][][] = Array.from({ length: num_cols }, () => [])
-    const heights: number[] = Array(num_cols).fill(0)
+    const heights: number[] = Array.from({ length: num_cols }, () => 0)
 
     for (const [idx, item] of items.entries()) {
       const id = getId(item)

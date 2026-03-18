@@ -4,7 +4,7 @@
   import { Box } from '.'
 
   let nItems = $state(30)
-  let indices = $derived([...Array(nItems).keys()])
+  let indices = $derived(Array.from({ length: nItems }, (_, idx) => idx))
 
   let [minColWidth, maxColWidth] = $state([330, 500])
   let gap = $state(20)

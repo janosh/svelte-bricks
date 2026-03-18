@@ -18,9 +18,8 @@
 
     if (response.ok) {
       return response.json()
-    } else {
-      throw new Error(`failed to fetch GitHub data`)
     }
+    throw new Error(`failed to fetch GitHub data`)
   }
 
   const example_code_url =
