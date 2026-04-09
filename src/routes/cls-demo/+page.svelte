@@ -129,13 +129,6 @@
   </div>
 </section>
 
-{#if cls_events.length > 0}
-  <section class="cls-log">
-    <h2>Layout Shift Events</h2>
-    <ul>{#each cls_events as event}<li>{event}</li>{/each}</ul>
-  </section>
-{/if}
-
 <section class="controls">
   <h2>Controls</h2>
   <div class="control-row">
@@ -199,6 +192,13 @@
     {/snippet}
   </Masonry>
 </div>
+
+{#if cls_events.length > 0}
+  <section class="cls-log">
+    <h2>Layout Shift Events</h2>
+    <ul>{#each cls_events as event}<li>{event}</li>{/each}</ul>
+  </section>
+{/if}
 
 <section class="explanation">
   <h2>How CLS Prevention Works</h2>
