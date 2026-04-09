@@ -198,7 +198,8 @@ test.describe(`Masonry Order Modes`, () => {
         const prev = col_ids[col_idx - 1]
         const curr = col_ids[col_idx]
         if (curr.length > 0 && prev.length > 0) {
-          expect(curr[0]).toBeGreaterThan(prev.at(-1)!)
+          const prev_last = prev.at(-1)
+          if (prev_last !== undefined) expect(curr[0]).toBeGreaterThan(prev_last)
         }
       }
     })

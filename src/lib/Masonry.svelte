@@ -82,9 +82,9 @@
   $effect(() => {
     const current_ids = new Set(items.map(getId))
     let removed_sum = 0
-    for (const [id, height] of item_heights_cache.entries()) {
+    for (const [id, item_height] of item_heights_cache.entries()) {
       if (!current_ids.has(id)) {
-        removed_sum += height
+        removed_sum += item_height
         item_heights_cache.delete(id)
       }
     }
@@ -232,7 +232,7 @@
       const min_w = col === 1
         ? ``
         : `(min-width: ${(minColWidth + gap) * col - gap}px) and `
-      return `@container ${min_w}(max-width: ${max_w}px) { .masonry > .col:nth-child(n+${
+      return `@container masonry ${min_w}(max-width: ${max_w}px) { .masonry > .col:nth-child(n+${
         col + 1
       }) { display: none; } }`
     }).join(`\n`),
@@ -370,8 +370,10 @@
   let effective_animate = $derived(animate && !can_virtualize)
 </script>
 
-<!-- Dynamic container query styles for CLS-free SSR -->
-<svelte:element this={`style`}>{container_query_css}</svelte:element>
+<!-- Dynamic container query styles in <head> for CLS-free SSR -->
+<svelte:head>
+  <svelte:element this={`style`}>{container_query_css}</svelte:element>
+</svelte:head>
 
 <div
   bind:clientWidth={masonryWidth}
@@ -430,6 +432,7 @@
 <style>
   div.masonry {
     container-type: inline-size;
+    container-name: masonry;
     display: flex;
     justify-content: center;
     overflow-wrap: anywhere;
