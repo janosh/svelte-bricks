@@ -22,41 +22,54 @@ export default defineConfig({
     },
     ignorePatterns: [`build/`, `.svelte-kit/`, `package/`, `dist/`],
     rules: {
-      'no-unused-vars': `off`,
+      // === Explicitly enabled rules (beyond categories) ===
+      'no-unused-vars': `off`, // superseded by type-aware version below
       '@typescript-eslint/no-unused-vars': [
         `error`,
         { argsIgnorePattern: `^_`, varsIgnorePattern: `^_` },
       ],
       'no-console': [`error`, { allow: [`warn`, `error`] }],
-      'no-self-assign': `off`,
-      'no-await-in-loop': `off`,
-      'no-shadow': `off`,
-      'prefer-const': `off`,
-      '@typescript-eslint/no-unnecessary-condition': `off`,
-      '@typescript-eslint/consistent-type-imports': `off`,
-      'eslint-plugin-unicorn/consistent-function-scoping': `off`,
-      '@typescript-eslint/no-unsafe-argument': `off`,
+      eqeqeq: `error`,
+      'no-template-curly-in-string': `error`,
+      'no-constructor-return': `error`,
+      'default-param-last': `error`,
+      'guard-for-in': `error`,
+      'no-useless-computed-key': `error`,
+      '@typescript-eslint/no-non-null-assertion': `error`,
+      '@typescript-eslint/prefer-string-starts-ends-with': `error`,
+      '@typescript-eslint/prefer-readonly': `error`,
+      '@typescript-eslint/prefer-regexp-exec': `error`,
+      '@typescript-eslint/prefer-find': `error`,
+      '@typescript-eslint/no-redundant-type-constituents': `error`,
+      'eslint-plugin-unicorn/prefer-array-find': `error`,
+      'eslint-plugin-unicorn/no-typeof-undefined': `error`,
+      'eslint-plugin-unicorn/prefer-optional-catch-binding': `error`,
+      'eslint-plugin-unicorn/no-length-as-slice-end': `error`,
+      'eslint-plugin-unicorn/prefer-node-protocol': `error`,
+      'eslint-plugin-unicorn/throw-new-error': `error`,
+      'eslint-plugin-unicorn/prefer-type-error': `error`,
+      'eslint-plugin-unicorn/prefer-date-now': `error`,
+      'eslint-plugin-unicorn/require-number-to-fixed-digits-argument': `error`,
+      'eslint-plugin-unicorn/no-useless-promise-resolve-reject': `error`,
+      'eslint-plugin-unicorn/custom-error-definition': `error`,
+      'eslint-plugin-import/no-duplicates': `error`,
+      // === Svelte framework patterns — NOT bugs ===
+      'no-await-in-loop': `off`, // sequential await tick() in tests
+      'prefer-const': `off`, // `let` needed for $state/$derived/$bindable
+      'only-throw-error': `off`, // SvelteKit redirect() throws non-Error objects
+      // === DOM/any propagation — oxlint lacks DOM type stubs ===
       '@typescript-eslint/no-unsafe-assignment': `off`,
       '@typescript-eslint/no-unsafe-call': `off`,
       '@typescript-eslint/no-unsafe-member-access': `off`,
-      '@typescript-eslint/no-unsafe-return': `off`,
+      // === Pedantic rules too noisy for this codebase ===
       'no-inline-comments': `off`,
-      'no-confusing-void-expression': `off`,
-      'no-promise-executor-return': `off`,
-      'strict-boolean-expressions': `off`,
+      'no-confusing-void-expression': `off`, // arrow shorthands returning void are fine
+      'strict-boolean-expressions': `off`, // truthiness checks are idiomatic
       'max-lines-per-function': `off`,
       'max-lines': `off`,
-      'max-depth': `off`,
-      'max-classes-per-file': `off`,
-      'sort-vars': `off`,
-      'eslint-plugin-jest/no-conditional-in-test': `off`,
-      'eslint-plugin-unicorn/no-array-callback-reference': `off`,
-      'eslint-plugin-unicorn/no-useless-undefined': `off`,
-      'eslint-plugin-unicorn/no-object-as-default-parameter': `off`,
-      'eslint-plugin-import/no-self-import': `off`,
-      'eslint-plugin-import/no-unassigned-import': `off`,
-      'eslint-plugin-import/max-dependencies': `off`,
-      'only-throw-error': `off`, // SvelteKit redirect() throws non-Error objects
+      'eslint-plugin-jest/no-conditional-in-test': `off`, // parameterized tests use conditionals
+      'eslint-plugin-unicorn/no-array-callback-reference': `off`, // passing named functions to .map() is cleaner
+      'eslint-plugin-import/no-unassigned-import': `off`, // CSS side-effect imports
     },
   },
   staged: {
