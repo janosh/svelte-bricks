@@ -63,9 +63,11 @@
   "peerDependencies": {
     "svelte": ">=5"
   },
-  "overrides": {
-    "svelte": "$svelte",
-    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
-    "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
+  "pnpm": {
+    "overrides": {
+      "svelte": "$svelte",
+      "vite": "$vite",
+      "vitest": "$vitest"
+    }
   }
 }
