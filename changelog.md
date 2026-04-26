@@ -1,5 +1,16 @@
 # Changelog
 
+## [v0.5.0](https://github.com/janosh/svelte-bricks/compare/v0.4.1...v0.5.0)
+
+> 26 April 2026
+
+- Add order modes (`balanced`, `balanced-stable`, `column-sequential`, `column-balanced`, `row-first`) with stable assignments for infinite scroll by @janosh in https://github.com/janosh/svelte-bricks/pull/54
+- Fix virtual scroll jitter during scrolling by @janosh in https://github.com/janosh/svelte-bricks/pull/52
+- Stable item records prevent child re-renders on append (closes #58) by @janosh in https://github.com/janosh/svelte-bricks/pull/59
+- Named container queries to fix Tailwind v4 conflict (closes #56) by @janosh in https://github.com/janosh/svelte-bricks/pull/57
+- Validate `getId` return type at runtime for fail-fast on missing `idKey`
+- Migrate toolchain from Deno + Prettier to Vite+ (`vp`)
+
 ## [v0.4.1](https://github.com/janosh/svelte-bricks/compare/v0.4.0...v0.4.1)
 
 > 17 January 2026
