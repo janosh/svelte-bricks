@@ -56,16 +56,16 @@
     "svelte-multiselect": "^11.7.0",
     "svelte-preprocess": "^6.0.3",
     "svelte-toc": "^0.6.3",
-    "vite": "npm:@voidzero-dev/vite-plus-core@^0.1.19",
+    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
     "vite-plus": "latest",
-    "vitest": "npm:@voidzero-dev/vite-plus-test@^0.1.19"
+    "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
   },
   "peerDependencies": {
     "svelte": ">=5"
   },
   "overrides": {
     "svelte": "$svelte",
-    "vite": "npm:@voidzero-dev/vite-plus-core@^0.1.19",
-    "vitest": "npm:@voidzero-dev/vite-plus-test@^0.1.19"
+    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
+    "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
   }
 }
