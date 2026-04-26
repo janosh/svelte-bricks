@@ -100,12 +100,11 @@
       measured_sum -= removed_sum
       measured_count = item_heights_cache.size
     }
-    // Clean up stable_assignments for removed items
-    for (const id of stable_assignments.keys()) {
-      if (!current_ids.has(id)) stable_assignments.delete(id)
-    }
-    for (const id of item_records.keys()) {
-      if (!current_ids.has(id)) item_records.delete(id)
+    // Clean up stable_assignments and item_records for removed items
+    for (const map of [stable_assignments, item_records]) {
+      for (const id of map.keys()) {
+        if (!current_ids.has(id)) map.delete(id)
+      }
     }
   })
 

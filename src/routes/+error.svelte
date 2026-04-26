@@ -2,7 +2,7 @@
   import { page } from '$app/state'
   import { homepage, name } from '$root/package.json'
 
-  let online: boolean = $state(true)
+  let online = $state(navigator?.onLine ?? true)
 </script>
 
 <svelte:head>

@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import MasonryAppendHarness from './fixtures/MasonryAppendHarness.svelte'
 
 const n_items = 30
-const indices = Array.from({ length: n_items }, (_, idx) => idx)
 const make_items = (count: number) => Array.from({ length: count }, (_, idx) => idx)
+const indices = make_items(n_items)
 const get_col_dist = () =>
   Array.from(document.querySelectorAll(`div.masonry > div.col`)).map((col) =>
     Array.from(col.children).map((child) => child.textContent),
@@ -74,7 +74,7 @@ const mount_virtualized = (count: number, overrides = {}) => {
   mount(Masonry, {
     target: document.body,
     props: {
-      items: Array.from({ length: count }, (_, idx) => idx),
+      items: make_items(count),
       virtualize: true,
       height: 300,
       calcCols: () => 2,
@@ -267,7 +267,7 @@ describe(`Masonry order modes`, () => {
     mount(Masonry, {
       target: document.body,
       props: {
-        items: Array.from({ length: count }, (_, idx) => idx),
+        items: make_items(count),
         order,
         calcCols: () => 2,
         masonryWidth: 500,
@@ -477,9 +477,9 @@ describe(`Masonry virtualization`, () => {
   })
 
   test.each([
-    [`balanced`, 2, `with balanced order`],
-    [`row-first`, 3, `with row-first order`],
-  ] as const)(`renders subset of items %s`, async (order, cols, _desc) => {
+    [`balanced`, 2],
+    [`row-first`, 3],
+  ] as const)(`renders subset of items %s`, async (order, cols) => {
     mount_virtualized(100, { order, calcCols: () => cols })
     await tick()
     expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(cols)
@@ -515,7 +515,7 @@ describe(`Masonry virtualization`, () => {
     mount(Masonry, {
       target: document.body,
       props: {
-        items: Array.from({ length: 100 }, (_, idx) => idx),
+        items: make_items(100),
         virtualize: true,
         height: `500px`,
         calcCols: () => 2,
@@ -644,7 +644,7 @@ describe(`Masonry virtual scroll stability`, () => {
     mount(Masonry, {
       target: document.body,
       props: {
-        items: Array.from({ length: item_count }, (_, idx) => idx),
+        items: make_items(item_count),
         virtualize: true,
         height: 300,
         calcCols: () => 1,
@@ -826,17 +826,10 @@ describe(`Masonry order mode edge cases`, () => {
   )
 
   test(`balanced mode works with object items having custom getId`, async () => {
-    const items_with_heights = [
-      { key: `a`, h: 100 },
-      { key: `b`, h: 200 },
-      { key: `c`, h: 100 },
-      { key: `d`, h: 150 },
-    ]
-
     mount(Masonry, {
       target: document.body,
       props: {
-        items: items_with_heights,
+        items: [{ key: `a` }, { key: `b` }, { key: `c` }, { key: `d` }],
         order: `balanced`,
         calcCols: () => 2,
         masonryWidth: 500,
@@ -846,14 +839,8 @@ describe(`Masonry order mode edge cases`, () => {
     await tick()
     await tick()
 
-    const columns = document.querySelectorAll(`div.masonry > div.col`)
-    expect(columns.length).toBe(2)
-    // All items should be rendered across the columns
-    const total_items = Array.from(columns).reduce(
-      (sum, col) => sum + col.children.length,
-      0,
-    )
-    expect(total_items).toBe(4)
+    expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(2)
+    expect(document.querySelectorAll(`div.masonry > div.col > div`).length).toBe(4)
   })
 
   test.each(ALL_ORDER_MODES)(`order=%s works with string items`, async (order) => {
