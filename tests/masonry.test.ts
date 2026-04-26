@@ -1,6 +1,7 @@
 import Masonry from '$lib'
 import { mount, tick } from 'svelte'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+import MasonryAppendHarness from './fixtures/MasonryAppendHarness.svelte'
 
 const n_items = 30
 const indices = Array.from({ length: n_items }, (_, idx) => idx)
@@ -234,6 +235,27 @@ describe(`Masonry`, () => {
       props: { items: [1, 2, 3], minColWidth: 100, masonryWidth: 0 },
     })
     expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(3)
+  })
+})
+
+describe(`Masonry append render stability`, () => {
+  // Regression: https://github.com/janosh/svelte-bricks/issues/58
+  test(`balanced-stable append only re-runs effects for new children`, async () => {
+    const events: number[] = []
+    const harness = mount(MasonryAppendHarness, {
+      target: document.body,
+      props: { events },
+    })
+
+    await tick()
+    await tick()
+    events.length = 0
+
+    harness.append([{ id: 5 }, { id: 6 }])
+    await tick()
+    await tick()
+
+    expect(events).toEqual([5, 6])
   })
 })
 
