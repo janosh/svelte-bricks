@@ -24,7 +24,11 @@
     getId = (item: Item): ItemId => {
       if (typeof item === `number`) return item
       if (typeof item === `string`) return item
-      return (item as Record<string, string | number>)[idKey]
+      const resolved = (item as Record<string, unknown>)[idKey]
+      if (typeof resolved === `string` || typeof resolved === `number`) return resolved
+      throw new Error(
+        `svelte-bricks: item[${JSON.stringify(idKey)}] is ${typeof resolved}, expected string | number. Item: ${JSON.stringify(item)}`,
+      )
     },
     idKey = `id`,
     items,
