@@ -10,12 +10,15 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
         with:
-          node-version: 22
-      - run: npm install
+          version: latest
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - run: pnpm install --no-frozen-lockfile
       - name: Lint and format check
-        run: npx vp check
+        run: pnpm exec vp check
       - name: Svelte type check
-        run: npx svelte-kit sync && npx svelte-check-rs --threshold error
+        run: pnpm exec svelte-kit sync && pnpm exec svelte-check-rs --threshold error
