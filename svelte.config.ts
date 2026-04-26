@@ -9,7 +9,6 @@ import pkg from './package.json' with { type: 'json' }
 const defaults = { repo: pkg.repository, hideStyle: true }
 const remarkPlugins = [[mdsvex_transform, { defaults }]]
 
-/** @type {import('@sveltejs/kit').Config} */
 export default {
   extensions: [`.svelte`, `.svx`, `.md`],
 

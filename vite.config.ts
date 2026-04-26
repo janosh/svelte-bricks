@@ -70,6 +70,8 @@ export default defineConfig({
       'eslint-plugin-jest/no-conditional-in-test': `off`, // parameterized tests use conditionals
       'eslint-plugin-unicorn/no-array-callback-reference': `off`, // passing named functions to .map() is cleaner
       'eslint-plugin-import/no-unassigned-import': `off`, // CSS side-effect imports
+      '@typescript-eslint/prefer-readonly-parameter-types': `off`, // too noisy with DOM types and callbacks
+      '@typescript-eslint/strict-void-return': `off`, // flags standard .forEach(() => map.set()) and vi.fn() patterns
     },
   },
   staged: {
