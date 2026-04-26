@@ -5,5 +5,3 @@
     events.push(item.id)
   })
 </script>
-
-<span data-probe-id={item.id}></span>

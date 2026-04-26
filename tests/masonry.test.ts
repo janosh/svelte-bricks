@@ -246,13 +246,10 @@ describe(`Masonry append render stability`, () => {
       target: document.body,
       props: { events },
     })
-
-    await tick()
     await tick()
     events.length = 0
 
-    harness.append([{ id: 5 }, { id: 6 }])
-    await tick()
+    harness.append(5, 6)
     await tick()
 
     expect(events).toEqual([5, 6])

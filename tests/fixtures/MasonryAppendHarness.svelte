@@ -2,14 +2,12 @@
   import Masonry from '$lib'
   import AppendRenderProbe from './AppendRenderProbe.svelte'
 
-  type Item = { id: number }
-
   let { events }: { events: number[] } = $props()
 
-  let items = $state<Item[]>([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }])
+  let items = $state([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }])
 
-  export const append = (new_items: Item[]): void => {
-    items = [...items, ...new_items]
+  export const append = (...ids: number[]): void => {
+    items = [...items, ...ids.map((id) => ({ id }))]
   }
 </script>
 
