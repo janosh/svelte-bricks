@@ -3,6 +3,7 @@
   import { repository } from '$root/package.json'
   import type { Snippet } from 'svelte'
   import { GitHubCorner, Nav } from 'svelte-multiselect'
+  // eslint-disable-next-line import/no-unassigned-import
   import '../app.css'
 
   let { children }: { children?: Snippet<[]> } = $props()

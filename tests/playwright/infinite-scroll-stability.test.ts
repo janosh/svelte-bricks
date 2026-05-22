@@ -1,4 +1,4 @@
-// deno-lint-ignore-file no-await-in-loop
+// eslint-disable no-await-in-loop
 import { expect, test } from '@playwright/test'
 import {
   click_button,
@@ -11,8 +11,17 @@ import {
 // Build a Map of item ID -> column index from column ID arrays
 const build_assignments = (col_ids: number[][]): Map<number, number> => {
   const assignments = new Map<number, number>()
-  col_ids.forEach((ids, col_idx) => ids.forEach((id) => assignments.set(id, col_idx)))
+  for (const [col_idx, ids] of col_ids.entries()) {
+    for (const id of ids) assignments.set(id, col_idx)
+  }
   return assignments
+}
+
+const find_col_idx = (col_ids: number[][], id: number): number => {
+  for (const [col_idx, ids] of col_ids.entries()) {
+    if (ids.includes(id)) return col_idx
+  }
+  return -1
 }
 
 // Verify items stayed in their assigned columns
@@ -22,7 +31,7 @@ const verify_stability = (
   context: string,
 ) => {
   for (const [id, expected_col] of expected.entries()) {
-    const actual_col = col_ids.findIndex((ids) => ids.includes(id))
+    const actual_col = find_col_idx(col_ids, id)
     expect(
       actual_col,
       `${context}: Item ${id} jumped from column ${expected_col} to ${actual_col}`,
@@ -57,11 +66,11 @@ test.describe(`Infinite Scroll Stability (Issue #53)`, () => {
       verify_stability(current_col_ids, assignments, `Round ${round + 1}`)
 
       // Track new items
-      current_col_ids.forEach((ids, col_idx) => {
-        ids.forEach((id) => {
+      for (const [col_idx, ids] of current_col_ids.entries()) {
+        for (const id of ids) {
           if (!assignments.has(id)) assignments.set(id, col_idx)
-        })
-      })
+        }
+      }
     }
   })
 
@@ -91,9 +100,9 @@ test.describe(`Infinite Scroll Stability (Issue #53)`, () => {
       await wait_for_masonry_stable(page)
 
       const col_ids = await get_all_column_item_ids(page)
-      col_ids.forEach((ids, col_idx) => {
-        ids.forEach((id) => expect(id % n_cols).toBe(col_idx))
-      })
+      for (const [col_idx, ids] of col_ids.entries()) {
+        for (const id of ids) expect(id % n_cols).toBe(col_idx)
+      }
     }
   })
 
@@ -148,7 +157,7 @@ test.describe(`Infinite Scroll Stability (Issue #53)`, () => {
     for (const id of after_col_ids.flat()) {
       const expected_col = before.get(id)
       if (expected_col !== undefined) {
-        const actual_col = after_col_ids.findIndex((ids) => ids.includes(id))
+        const actual_col = find_col_idx(after_col_ids, id)
         expect(actual_col).toBe(expected_col)
       }
     }

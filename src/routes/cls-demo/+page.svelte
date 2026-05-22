@@ -28,15 +28,14 @@
 
   const rand_delay = () => 500 + Math.floor(Math.random() * 2000)
 
-  function generate_images(count: number): Image[] {
-    return Array.from({ length: count }, (_, idx) => ({
+  const generate_images = (count: number): Image[] =>
+    Array.from({ length: count }, (_, idx) => ({
       id: idx,
       width: 300,
       height: 150 + Math.floor(Math.random() * 250),
       loaded: !simulate_slow_load,
       load_delay: simulate_slow_load ? rand_delay() : 0,
     }))
-  }
 
   function simulate_loading() {
     images.forEach((img, idx) => {
@@ -196,7 +195,7 @@
 {#if cls_events.length > 0}
   <section class="cls-log">
     <h2>Layout Shift Events</h2>
-    <ul>{#each cls_events as event}<li>{event}</li>{/each}</ul>
+    <ul>{#each cls_events as event, event_idx (`${event_idx}:${event}`)}<li>{event}</li>{/each}</ul>
   </section>
 {/if}
 

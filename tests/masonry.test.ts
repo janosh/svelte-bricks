@@ -56,11 +56,14 @@ globalThis.ResizeObserver = class ResizeObserver implements ResizeObserver {
   disconnect(): void {}
 }
 
-Element.prototype.animate = vi.fn().mockReturnValue({
-  finished: Promise.resolve(),
-  cancel: () => {},
-})
-Element.prototype.getAnimations = vi.fn().mockReturnValue([])
+function create_mock_animation(): Animation {
+  const mock_animation = { cancel: () => {}, finished: Promise.resolve() }
+  // oxlint-disable-next-line no-unsafe-type-assertion -- tests only need cancel() and finished.
+  return mock_animation as unknown as Animation
+}
+
+Element.prototype.animate = vi.fn<typeof Element.prototype.animate>(create_mock_animation)
+Element.prototype.getAnimations = vi.fn<typeof Element.prototype.getAnimations>(() => [])
 
 beforeEach(() => {
   document.body.innerHTML = ``
@@ -91,9 +94,9 @@ describe(`Masonry`, () => {
   })
 
   test.each([
-    [[`foo`, `bar`], /masonry foo/, /col col-\d+ bar/],
-    [[`custom`, `col-class`], /masonry custom/, /col col-\d+ col-class/],
-    [[``, ``], /^masonry\s+svelte-\w+/, /col col-\d+\s+svelte-\w+/],
+    [[`foo`, `bar`], /masonry foo/u, /col col-\d+ bar/u],
+    [[`custom`, `col-class`], /masonry custom/u, /col col-\d+ col-class/u],
+    [[``, ``], /^masonry\s+svelte-\w+/u, /col col-\d+\s+svelte-\w+/u],
   ])(`applies class=%j and columnClass correctly`, ([cls, colCls], divRe, colRe) => {
     mount(Masonry, {
       target: document.body,
@@ -139,7 +142,7 @@ describe(`Masonry`, () => {
   )
 
   test(`warns if maxColWidth < minColWidth`, () => {
-    console.warn = vi.fn()
+    console.warn = vi.fn<typeof console.warn>()
     mount(Masonry, {
       target: document.body,
       props: { items: indices, minColWidth: 50, maxColWidth: 40 },
@@ -150,22 +153,22 @@ describe(`Masonry`, () => {
   })
 
   test(`uses custom getId function`, () => {
-    const getId = vi.fn((item: { x: number }) => item.x)
+    const get_id = vi.fn<(item: { x: number }) => number>((item) => item.x)
     mount(Masonry, {
       target: document.body,
-      props: { items: [{ x: 1 }, { x: 2 }], getId },
+      props: { items: [{ x: 1 }, { x: 2 }], getId: get_id },
     })
-    expect(getId).toHaveBeenCalled()
+    expect(get_id).toHaveBeenCalled()
     expect(document.querySelectorAll(`div.masonry > div.col > div`).length).toBe(2)
   })
 
   test(`uses custom calcCols and adds col-N classes`, () => {
-    const calcCols = vi.fn(() => 3)
+    const calc_cols = vi.fn<() => number>(() => 3)
     mount(Masonry, {
       target: document.body,
-      props: { items: indices, calcCols, masonryWidth: 500 },
+      props: { items: indices, calcCols: calc_cols, masonryWidth: 500 },
     })
-    expect(calcCols).toHaveBeenCalled()
+    expect(calc_cols).toHaveBeenCalled()
     const columns = document.querySelectorAll(`div.masonry > div.col`)
     expect(columns.length).toBe(3)
     columns.forEach((col, idx) => expect(col.classList).toContain(`col-${idx}`))
@@ -203,17 +206,17 @@ describe(`Masonry`, () => {
       props: { items: indices, minColWidth: 200, gap: 10 },
     })
     const head_styles = Array.from(document.head.querySelectorAll(`style`))
-    const container_css = head_styles.find((s) =>
-      s.textContent.includes(`@container masonry`),
+    const container_css = head_styles.find((style_el) =>
+      style_el.textContent.includes(`@container masonry`),
     )?.textContent
     expect(container_css).toContain(`@container masonry`)
     expect(container_css).toContain(`.masonry > .col:nth-child`)
     // no unnamed @container queries should remain (regression guard for #56)
-    expect(container_css).not.toMatch(/@container\s*\(/)
+    expect(container_css).not.toMatch(/@container\s*\(/u)
     // styles must be in <head> not <body> to avoid flash on SSR first paint
     const body_container_styles = Array.from(
       document.body.querySelectorAll(`style`),
-    ).filter((s) => s.textContent.includes(`@container`))
+    ).filter((style_el) => style_el.textContent.includes(`@container`))
     expect(body_container_styles).toHaveLength(0)
   })
 
@@ -298,8 +301,8 @@ describe(`Masonry order modes`, () => {
     })
     await tick()
     const columns = document.querySelectorAll(`div.masonry > div.col`)
-    expect(columns[0].textContent).toMatch(/1.*2.*3/)
-    expect(columns[1].textContent).toMatch(/4.*5.*6/)
+    expect(columns[0].textContent).toMatch(/1.*2.*3/u)
+    expect(columns[1].textContent).toMatch(/4.*5.*6/u)
   })
 
   test.each(ALL_ORDER_MODES)(
@@ -394,7 +397,7 @@ describe(`Masonry default rendering`, () => {
     })
     const spans = document.querySelectorAll(`div.masonry > div.col > div > span`)
     expect(spans.length).toBe(3)
-    expect(Array.from(spans).map((s) => s.textContent)).toEqual(
+    expect(Array.from(spans).map((span) => span.textContent)).toEqual(
       expect.arrayContaining([`apple`, `banana`, `cherry`]),
     )
   })
@@ -416,7 +419,7 @@ describe(`Masonry default rendering`, () => {
 
 describe(`Masonry virtualization`, () => {
   test(`warns if virtualize=true without height prop`, () => {
-    console.warn = vi.fn()
+    console.warn = vi.fn<typeof console.warn>()
     mount(Masonry, { target: document.body, props: { items: indices, virtualize: true } })
     expect(console.warn).toHaveBeenCalledWith(
       `svelte-bricks: virtualize=true requires a height prop. Falling back to 400px.`,
@@ -438,22 +441,22 @@ describe(`Masonry virtualization`, () => {
   })
 
   test(`calls getEstimatedHeight and applies column padding`, async () => {
-    const getEstimatedHeight = vi.fn(() => 120)
+    const get_estimated_height = vi.fn<() => number>(() => 120)
     mount(Masonry, {
       target: document.body,
       props: {
         items: indices,
         virtualize: true,
         height: 500,
-        getEstimatedHeight,
+        getEstimatedHeight: get_estimated_height,
         order: `balanced`,
         masonryWidth: 500,
       },
     })
     await tick()
-    expect(getEstimatedHeight).toHaveBeenCalled()
+    expect(get_estimated_height).toHaveBeenCalled()
     const col = document.querySelector<HTMLElement>(`div.masonry > div.col`)
-    expect(col?.getAttribute(`style`)).toMatch(/padding-top:.*padding-bottom:/)
+    expect(col?.getAttribute(`style`)).toMatch(/padding-top:.*padding-bottom:/u)
   })
 
   test(`respects overscan prop`, async () => {
@@ -492,10 +495,14 @@ describe(`Masonry virtualization`, () => {
     const spy = vi.spyOn(console, `warn`).mockImplementation(() => {})
     mount(Masonry, { target: document.body, props: { items: indices, virtualize: true } })
     await tick()
-    const initial = spy.mock.calls.filter((c) => c[0]?.includes?.(`height prop`)).length
+    const initial = spy.mock.calls.filter((call) =>
+      call[0]?.includes?.(`height prop`),
+    ).length
     await tick()
     await tick()
-    const after = spy.mock.calls.filter((c) => c[0]?.includes?.(`height prop`)).length
+    const after = spy.mock.calls.filter((call) =>
+      call[0]?.includes?.(`height prop`),
+    ).length
     expect(initial).toBeLessThanOrEqual(2)
     expect(after).toBe(initial)
     spy.mockRestore()
@@ -685,9 +692,9 @@ describe(`Masonry virtual scroll stability`, () => {
       const initial_style = col?.getAttribute(`style`)
 
       // Trigger all ResizeObserver callbacks
-      document.querySelectorAll(`div.masonry > div.col > div`).forEach((item) => {
+      for (const item of document.querySelectorAll(`div.masonry > div.col > div`)) {
         resize_observers.get(item)?.([mock_resize_entry(item)], mock_observer)
-      })
+      }
       await tick()
 
       expect(col?.getAttribute(`style`)).toBe(initial_style)
@@ -704,9 +711,9 @@ describe(`Masonry virtual scroll stability`, () => {
 
     const before = get_col_dist()
 
-    document.querySelectorAll(`div.masonry > div.col > div`).forEach((item) => {
+    for (const item of document.querySelectorAll(`div.masonry > div.col > div`)) {
       resize_observers.get(item)?.([mock_resize_entry(item)], mock_observer)
-    })
+    }
     await tick()
 
     expect(get_col_dist()).toEqual(before)

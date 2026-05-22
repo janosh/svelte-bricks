@@ -9,18 +9,14 @@ export default defineConfig({
     printWidth: 90,
   },
   lint: {
-    plugins: [`oxc`, `typescript`, `unicorn`, `import`, `jest`],
-    options: {
-      typeAware: true,
-      typeCheck: true,
-    },
+    plugins: [`oxc`, `typescript`, `unicorn`, `import`, `vitest`],
+    options: { typeAware: true, typeCheck: true },
     categories: {
       correctness: `error`,
       suspicious: `error`,
       perf: `error`,
-      pedantic: `error`,
     },
-    ignorePatterns: [`build/`, `.svelte-kit/`, `package/`, `dist/`],
+    ignorePatterns: [`build/**`, `.svelte-kit/**`, `package/**`, `dist/**`],
     rules: {
       // === Explicitly enabled rules (beyond categories) ===
       'no-unused-vars': `off`, // superseded by type-aware version below
@@ -28,57 +24,61 @@ export default defineConfig({
         `error`,
         { argsIgnorePattern: `^_`, varsIgnorePattern: `^_` },
       ],
-      'no-console': [`error`, { allow: [`warn`, `error`] }],
-      eqeqeq: `error`,
-      'no-template-curly-in-string': `error`,
-      'no-constructor-return': `error`,
-      'default-param-last': `error`,
-      'guard-for-in': `error`,
-      'no-useless-computed-key': `error`,
+      '@typescript-eslint/no-explicit-any': `error`,
+      '@typescript-eslint/no-non-null-asserted-optional-chain': `error`,
       '@typescript-eslint/no-non-null-assertion': `error`,
       '@typescript-eslint/prefer-string-starts-ends-with': `error`,
       '@typescript-eslint/prefer-readonly': `error`,
       '@typescript-eslint/prefer-regexp-exec': `error`,
       '@typescript-eslint/prefer-find': `error`,
       '@typescript-eslint/no-redundant-type-constituents': `error`,
+      '@typescript-eslint/strict-void-return': `error`,
+      'no-eval': `error`,
+      eqeqeq: `error`,
+      'no-var': `error`,
+      'no-throw-literal': `error`,
+      'no-useless-rename': `error`,
+      'no-self-compare': `error`,
+      'no-template-curly-in-string': `error`,
+      'no-constructor-return': `error`,
+      'no-console': [`error`, { allow: [`warn`, `error`] }],
+      'no-inner-declarations': `error`,
+      'default-param-last': `error`,
+      'guard-for-in': `error`,
+      'require-await': `error`,
+      'no-useless-computed-key': `error`,
+      'eslint-plugin-unicorn/no-useless-spread': `error`,
+      'eslint-plugin-unicorn/prefer-string-replace-all': `error`,
+      'eslint-plugin-unicorn/catch-error-name': `error`,
+      'eslint-plugin-unicorn/prefer-set-has': `error`,
       'eslint-plugin-unicorn/prefer-array-find': `error`,
+      'eslint-plugin-unicorn/prefer-dom-node-append': `error`,
+      'eslint-plugin-unicorn/prefer-global-this': `error`,
+      'eslint-plugin-unicorn/no-lonely-if': `error`,
+      'eslint-plugin-unicorn/no-negated-condition': `error`,
       'eslint-plugin-unicorn/no-typeof-undefined': `error`,
       'eslint-plugin-unicorn/prefer-optional-catch-binding': `error`,
       'eslint-plugin-unicorn/no-length-as-slice-end': `error`,
       'eslint-plugin-unicorn/prefer-node-protocol': `error`,
+      'eslint-plugin-unicorn/prefer-regexp-test': `error`,
       'eslint-plugin-unicorn/throw-new-error': `error`,
+      'eslint-plugin-unicorn/prefer-includes': `error`,
       'eslint-plugin-unicorn/prefer-type-error': `error`,
       'eslint-plugin-unicorn/prefer-date-now': `error`,
       'eslint-plugin-unicorn/require-number-to-fixed-digits-argument': `error`,
       'eslint-plugin-unicorn/no-useless-promise-resolve-reject': `error`,
       'eslint-plugin-unicorn/custom-error-definition': `error`,
       'eslint-plugin-import/no-duplicates': `error`,
-      // === Svelte framework patterns — NOT bugs ===
-      'no-await-in-loop': `off`, // sequential await tick() in tests
-      'prefer-const': `off`, // `let` needed for $state/$derived/$bindable
-      'only-throw-error': `off`, // SvelteKit redirect() throws non-Error objects
-      // === DOM/any propagation — oxlint lacks DOM type stubs ===
-      '@typescript-eslint/no-unsafe-assignment': `off`,
-      '@typescript-eslint/no-unsafe-call': `off`,
-      '@typescript-eslint/no-unsafe-member-access': `off`,
-      // === Pedantic rules too noisy for this codebase ===
-      'no-inline-comments': `off`,
-      'no-confusing-void-expression': `off`, // arrow shorthands returning void are fine
-      'strict-boolean-expressions': `off`, // truthiness checks are idiomatic
-      'max-lines-per-function': `off`,
-      'max-lines': `off`,
-      'eslint-plugin-jest/no-conditional-in-test': `off`, // parameterized tests use conditionals
-      'eslint-plugin-unicorn/no-array-callback-reference': `off`, // passing named functions to .map() is cleaner
-      'eslint-plugin-import/no-unassigned-import': `off`, // CSS side-effect imports
-      '@typescript-eslint/prefer-readonly-parameter-types': `off`, // too noisy with DOM types and callbacks
-      '@typescript-eslint/strict-void-return': `off`, // flags standard .forEach(() => map.set()) and vi.fn() patterns
+      'eslint-plugin-vitest/prefer-strict-boolean-matchers': `error`,
+      'eslint-plugin-vitest/prefer-called-exactly-once-with': `error`,
+      'eslint-plugin-vitest/require-awaited-expect-poll': `error`,
+      'eslint-plugin-vitest/valid-expect': [`error`, { maxArgs: 2 }], // Vitest supports expect(actual, message)
     },
   },
   staged: {
     '*.{js,ts,svelte,html,css,md,json,yaml}': `vp check --fix`,
     '*.{ts,svelte}': `sh -c 'npx svelte-kit sync && npx svelte-check-rs --threshold error'`,
     '*.test.ts': `sh -c '! grep -E "(test|describe)\\.only\\(" "$@"' --`,
-    '*': `codespell --ignore-words-list falsy --check-filenames`,
   },
   plugins: [sveltekit(), live_examples()],
 
@@ -95,7 +95,8 @@ export default defineConfig({
   },
 
   resolve: {
-    conditions: process.env.TEST ? [`browser`] : undefined,
+    // Vitest component tests need Svelte's browser build for mount().
+    conditions: [`browser`],
   },
 
   server: {
@@ -105,5 +106,10 @@ export default defineConfig({
 
   preview: {
     port: 3000,
+  },
+
+  build: {
+    // Default cssTarget is chrome111 which doesn't support light-dark(),
+    cssTarget: `esnext`, // causing LightningCSS to polyfill it with broken space toggles
   },
 })
