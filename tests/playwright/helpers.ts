@@ -1,4 +1,4 @@
-// deno-lint-ignore-file no-await-in-loop no-boolean-literal-for-arguments
+// eslint-disable no-await-in-loop
 import { expect, type Locator, type Page } from '@playwright/test'
 
 // Navigate to masonry test page and wait for it to load
@@ -60,7 +60,7 @@ export async function get_current_order(page: Page): Promise<string> {
 // Get the current item count from stats
 export async function get_item_count(page: Page): Promise<number> {
   const text = await page.locator(`[data-testid="stat-items"]`).textContent()
-  const match = text?.match(/Items: (\d+)/)
+  const match = text?.match(/Items: (\d+)/u)
   return match ? parseInt(match[1], 10) : 0
 }
 

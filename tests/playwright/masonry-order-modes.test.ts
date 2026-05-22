@@ -1,4 +1,4 @@
-// deno-lint-ignore-file no-await-in-loop
+// eslint-disable no-await-in-loop
 import { expect, test } from '@playwright/test'
 import {
   assert_row_first_order,
@@ -82,9 +82,9 @@ test.describe(`Masonry Order Modes`, () => {
       // Get initial distribution
       const initial_col_ids = await get_all_column_item_ids(page)
       const initial_assignments = new Map<number, number>()
-      initial_col_ids.forEach((ids, col_idx) => {
-        ids.forEach((id) => initial_assignments.set(id, col_idx))
-      })
+      for (const [col_idx, ids] of initial_col_ids.entries()) {
+        for (const id of ids) initial_assignments.set(id, col_idx)
+      }
 
       // Add several items
       for (let idx = 0; idx < 5; idx++) {
