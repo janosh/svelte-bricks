@@ -5,3 +5,5 @@
     events.push(item.id)
   })
 </script>
+
+<span>{item.id}</span>

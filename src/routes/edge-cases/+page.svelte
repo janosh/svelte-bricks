@@ -30,7 +30,6 @@
   let max_col_width = $state(400)
   let gap = $state(15)
   let animate = $state(true)
-  let duration = $state(200)
   let order = $state<MasonryOrder>(`balanced`)
   let container_width = $state(100)
   let constrained_width = $state(false)
@@ -66,27 +65,84 @@
   let next_id = $state(20)
   let items = $state(Array.from({ length: 20 }, (_, idx) => make_item(idx)))
 
+  function sync_item_count(): void {
+    n_items = items.length
+  }
+
+  function update_item_heights(): void {
+    items = items.map((item) => ({ ...item, height: rand_height() }))
+  }
+
+  function set_n_items(next_count: number): void {
+    n_items = next_count
+    if (next_count < items.length) {
+      items = items.slice(0, next_count)
+    } else {
+      add_items(next_count - items.length)
+    }
+  }
+
+  function set_min_height(next_height: number): void {
+    min_height = next_height
+    if (max_height < min_height) max_height = min_height
+    update_item_heights()
+  }
+
+  function set_max_height(next_height: number): void {
+    max_height = Math.max(next_height, min_height)
+    update_item_heights()
+  }
+
+  function set_fixed_height(next_fixed_height: boolean): void {
+    fixed_height = next_fixed_height
+    update_item_heights()
+  }
+
   function regenerate() {
     items = Array.from({ length: n_items }, (_, idx) => make_item(idx))
     next_id = n_items
   }
 
-  const add_item = () => {
-    items = [...items, make_item(next_id++)]
-  }
   const add_items = (count: number) => {
-    items = [...items, ...Array.from({ length: count }, () => make_item(next_id++))]
+    if (count <= 0) return
+    const start_id = next_id
+    next_id += count
+    items = [
+      ...items,
+      ...Array.from({ length: count }, (_, idx) => make_item(start_id + idx)),
+    ]
+    sync_item_count()
   }
-  const remove_last = () => (items = items.slice(0, -1))
+  const add_item = () => add_items(1)
+  const remove_last = () => {
+    items = items.slice(0, -1)
+    sync_item_count()
+  }
+  const reroll_items = () => {
+    items = items.map(({ id }) => make_item(id))
+  }
   const remove_random = () => {
     if (items.length > 0) {
       items = items.toSpliced(Math.floor(Math.random() * items.length), 1)
+      sync_item_count()
     }
   }
   const shuffle = () => (items = items.toSorted(() => Math.random() - 0.5))
   const clear_all = () => {
     items = []
     next_id = 0
+    sync_item_count()
+  }
+
+  function apply_item_count_preset(count: number): void {
+    n_items = count
+    regenerate()
+  }
+
+  function apply_height_preset(min_height_px: number, max_height_px: number): void {
+    min_height = min_height_px
+    max_height = max_height_px
+    regenerate()
   }
 
   // Stress test controls
@@ -112,86 +168,58 @@
     }, interval)
   }
 
-  const presets: { label: string; action: () => void }[] = [
+  type Preset = { label: string; description: string; action: () => void; link?: [string, string] }
+  let selected_preset = $state<Preset | null>(null)
+  const presets: Preset[] = [
     {
       label: `1 Item`,
-      action: () => {
-        n_items = 1
-        regenerate()
-      },
-    },
-    {
-      label: `3 Items`,
-      action: () => {
-        n_items = 3
-        regenerate()
-      },
+      description: `Checks that one item does not create empty extra columns.`,
+      action: () => apply_item_count_preset(1),
     },
     {
       label: `100 Items`,
-      action: () => {
-        n_items = 100
-        regenerate()
-      },
+      description: `Exercises a larger non-virtualized layout.`,
+      action: () => apply_item_count_preset(100),
     },
     {
       label: `Tall Items`,
-      action: () => {
-        min_height = 300
-        max_height = 500
-        regenerate()
-      },
+      description: `Stresses balancing with tall, uneven item heights.`,
+      action: () => apply_height_preset(300, 500),
     },
     {
       label: `Short Items`,
+      description: `Creates a dense layout for inspecting gaps and columns.`,
+      action: () => apply_height_preset(30, 60),
+    },
+    {
+      label: `Issue #60`,
+      description: `Recreates balanced-stable columns repopulating after resize.`,
+      link: [`https://github.com/janosh/svelte-bricks/issues/60`, `issue #60`],
       action: () => {
-        min_height = 30
-        max_height = 60
+        order = `balanced-stable`
+        n_items = 12
+        min_col_width = 180
+        max_col_width = 260
+        gap = 20
+        container_width = 100
+        constrained_width = false
+        virtualize = false
         regenerate()
-      },
-    },
-    {
-      label: `Uniform Height`,
-      action: () => {
-        fixed_height = true
-        regenerate()
-      },
-    },
-    {
-      label: `Varied Height`,
-      action: () => {
-        fixed_height = false
-        min_height = 50
-        max_height = 400
-        regenerate()
-      },
-    },
-    {
-      label: `Narrow Cols`,
-      action: () => {
-        min_col_width = 100
-        max_col_width = 150
-      },
-    },
-    {
-      label: `Wide Cols`,
-      action: () => {
-        min_col_width = 400
-        max_col_width = 600
       },
     },
     {
       label: `No Gap`,
+      description: `Removes item spacing to stress placement math.`,
       action: () => {
         gap = 0
       },
     },
     {
       label: `200 Items`,
+      description: `Combines many items with narrow columns.`,
       action: () => {
-        n_items = 200
         min_col_width = 80
-        regenerate()
+        apply_item_count_preset(200)
       },
     },
   ]
@@ -210,42 +238,59 @@
   <title>Edge Cases | svelte-bricks</title>
 </svelte:head>
 
-<h1>Edge Cases & Stress Tests</h1>
+<h1>Edge Cases</h1>
 
 <p class="description">
-  Interactive demo to test the masonry layout with various edge cases and automated stress
-  tests. Use the controls to adjust parameters and observe layout behavior.
+  Test the masonry layout with unusual item, column, and container
+  settings.
 </p>
 
-<div class="controls-grid">
-  <section class="control-group">
-    <h2>Item Settings</h2>
-    <label>
-      <span>Number of items: <code>{n_items}</code></span>
-      <input type="range" bind:value={n_items} min={0} max={200} />
-    </label>
-    <label>
-      <span>Min height: <code>{min_height}px</code></span>
-      <input type="range" bind:value={min_height} min={20} max={500} />
-    </label>
-    <label>
-      <span>Max height: <code>{max_height}px</code></span>
-      <input type="range" bind:value={max_height} min={min_height} max={600} />
-    </label>
-    <label class="checkbox">
-      <input type="checkbox" bind:checked={fixed_height} />
-      <span>Fixed height (use min only)</span>
-    </label>
-    <div class="button-row">
-      <button onclick={regenerate}>Regenerate</button>
-      <button onclick={add_item}>+ Add</button>
-      <button onclick={remove_last}>- Remove</button>
-      <button onclick={remove_random}>🎲 Random</button>
-      <button onclick={shuffle}>🔀 Shuffle</button>
-      <button onclick={clear_all}>🗑 Clear</button>
-    </div>
-  </section>
+<section class="control-group item-settings">
+  <h2>Item Settings</h2>
+  <label>
+    <span>Number of items: <code>{n_items}</code></span>
+    <input
+      type="range"
+      bind:value={() => n_items, set_n_items}
+      min={0}
+      max={200}
+    />
+  </label>
+  <label>
+    <span>Min height: <code>{min_height}px</code></span>
+    <input
+      type="range"
+      bind:value={() => min_height, set_min_height}
+      min={20}
+      max={500}
+    />
+  </label>
+  <label>
+    <span>Max height: <code>{max_height}px</code></span>
+    <input
+      type="range"
+      bind:value={() => max_height, set_max_height}
+      min={min_height}
+      max={600}
+    />
+  </label>
+  <label class="checkbox">
+    <input
+      type="checkbox"
+      bind:checked={() => fixed_height, set_fixed_height}
+    />
+    <span>Fixed height (use min only)</span>
+  </label>
+  <div class="button-row">
+    <button onclick={add_item}>+ Add</button>
+    <button onclick={remove_last}>- Remove</button>
+    <button onclick={reroll_items}>🎲 Reroll</button>
+    <button onclick={shuffle}>🔀 Shuffle</button>
+    <button onclick={clear_all}>🗑 Clear</button>
+  </div>
+</section>
 
+<div class="controls-grid">
   <section class="control-group">
     <h2>Column Settings</h2>
     <label>
@@ -263,11 +308,11 @@
   </section>
 
   <section class="control-group">
-    <h2>Layout & Animation</h2>
+    <h2>Layout</h2>
     <label>
       <span>Order mode: <code>{order}</code></span>
       <select bind:value={order}>
-        {#each order_options as opt}
+        {#each order_options as opt (opt)}
           <option value={opt}>{opt}</option>
         {/each}
       </select>
@@ -275,10 +320,6 @@
     <label class="checkbox">
       <input type="checkbox" bind:checked={animate} />
       <span>Animate transitions</span>
-    </label>
-    <label>
-      <span>Duration: <code>{duration}ms</code></span>
-      <input type="range" bind:value={duration} min={0} max={1000} disabled={!animate} />
     </label>
   </section>
 
@@ -315,7 +356,7 @@
       <input type="range" bind:value={overscan} min={1} max={20} disabled={!virtualize} />
     </label>
     <div class="button-row">
-      {#each [[`🚀`, 1000], [`🔥`, 5000]] as const as [icon, count]}
+      {#each [[`🚀`, 1000], [`🔥`, 5000]] as const as [icon, count] (count)}
         <button
           onclick={() => {
             virtualize = true
@@ -333,10 +374,22 @@
 <section class="presets">
   <h2>Quick Presets</h2>
   <div class="button-row">
-    {#each presets as { label, action }}
-      <button onclick={action}>{label}</button>
+    {#each presets as preset (preset.label)}
+      <button onclick={() => {
+        preset.action()
+        selected_preset = preset
+      }}>{preset.label}</button>
     {/each}
   </div>
+  {#if selected_preset}
+    <p class="preset-description">
+      {selected_preset.description}
+      {#if selected_preset.link}
+        {@const [href, title] = selected_preset.link}
+        (<a {href}>{title}</a>)
+      {/if}
+    </p>
+  {/if}
 </section>
 
 <section class="css-reset-test">
@@ -344,7 +397,7 @@
   <p>
     Test that Masonry resists CSS resets like
     <a href="https://tailwindcss.com/docs/preflight">Tailwind Preflight</a>. Toggle the
-    reset to inject <code>div {'{'} display: block {'}'}</code> into the page. Layout
+    reset to inject <code>div &#123; display: block &#125;</code> into the page. Layout
     should remain intact due to inline styles. (<a
       href="https://github.com/janosh/svelte-bricks/issues/48"
     >issue #48</a>)
@@ -359,8 +412,8 @@
   </div>
 </section>
 
-<section class="stress-tests">
-  <h2>🔥 Automated Stress Tests</h2>
+<details class="stress-tests">
+  <summary>🔥 Automated Stress Tests</summary>
   <div class="button-row">
     <button
       onclick={() => start_test(`rapid-add`, () => {}, () => add_items(1), 50)}
@@ -415,7 +468,7 @@
       Running: <strong>{test_mode}</strong> — Operations: <code>{operation_count}</code>
     </p>
   {/if}
-</section>
+</details>
 
 <div class="stats">
   <span>Width: <code>{masonry_width}px</code></span>
@@ -436,7 +489,6 @@
     maxColWidth={max_col_width}
     {gap}
     {animate}
-    {duration}
     {order}
     {virtualize}
     {overscan}
@@ -446,7 +498,11 @@
     bind:masonryHeight={masonry_height}
   >
     {#snippet children({ item })}
-      <div class="item" style:height="{item.height}px" style:background={item.color}>
+      <div
+        class="item"
+        style:height="{item.height}px"
+        style:background={item.color}
+      >
         <span class="item-id">#{item.id}</span>
         <span class="item-height">{item.height}px</span>
       </div>
@@ -480,6 +536,10 @@
     margin: 0 auto 1.2em;
     max-width: 1200px;
     padding: 0 0.75em;
+  }
+  .item-settings {
+    width: min(520px, calc(100% - 1.5em));
+    margin: 0 auto 1em;
   }
   .control-group {
     background: rgba(255, 255, 255, 0.05);
@@ -574,13 +634,21 @@
     color: #aaa;
     margin: 0.35em 0;
   }
+  .preset-description {
+    color: #aaa;
+    font-size: 0.8rem;
+    margin: 0.5em 0 0;
+  }
   .css-reset-test a {
     color: cornflowerblue;
   }
-  .presets h2, .stress-tests h2, .css-reset-test h2 {
+  .presets h2, .stress-tests summary, .css-reset-test h2 {
     margin: 0 0 0.4em;
     font-size: 0.85rem;
     color: #aaa;
+  }
+  .stress-tests summary {
+    cursor: pointer;
   }
   .test-status {
     margin-top: 0.5em;
