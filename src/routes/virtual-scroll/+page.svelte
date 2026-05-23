@@ -7,14 +7,31 @@
 
   type Item = { id: number; height: number; hue: number }
 
+  const make_item = (id: number): Item => ({
+    id,
+    height: height.min + Math.floor(Math.random() * (height.max - height.min)),
+    hue: Math.floor(Math.random() * 360),
+  })
+
   const generate_items = (count: number): Item[] =>
-    Array.from({ length: count }, (_, idx) => ({
-      id: idx,
-      height: height.min + Math.floor(Math.random() * (height.max - height.min)),
-      hue: Math.floor(Math.random() * 360),
-    }))
+    Array.from({ length: count }, (_, idx) => make_item(idx))
 
   let items = $state(generate_items(2000))
+
+  function set_item_count(next_count: number): void {
+    item_count = next_count
+    if (next_count < items.length) {
+      items = items.slice(0, next_count)
+    } else {
+      const start_id = items.length
+      items = [
+        ...items,
+        ...Array.from({ length: next_count - items.length }, (_, idx) =>
+          make_item(start_id + idx)
+        ),
+      ]
+    }
+  }
 
   // Masonry settings
   let virtualize = $state(true)
@@ -58,7 +75,7 @@
   <section class="control-group">
     <h2>Items</h2>
     <div class="preset-row">
-      {#each presets as { label, count }}
+      {#each presets as { label, count } (count)}
         <button
           onclick={() => {
             item_count = count
@@ -72,9 +89,18 @@
     </div>
     <label>
       <span>Count: <code>{item_count.toLocaleString()}</code></span>
-      <input type="range" bind:value={item_count} min={100} max={20000} step={100} />
+      <input
+        type="range"
+        bind:value={() => item_count, set_item_count}
+        min={100}
+        max={20000}
+        step={100}
+      />
     </label>
-    <button class="regenerate" onclick={() => items = generate_items(item_count)}>
+    <button
+      class="regenerate"
+      onclick={() => items = generate_items(item_count)}
+    >
       🔄 Regenerate Items
     </button>
   </section>
@@ -108,7 +134,7 @@
     <label>
       <span>Order: <code>{virtualize ? `row-first (forced)` : order}</code></span>
       <select bind:value={order} disabled={virtualize}>
-        {#each order_options as opt}
+        {#each order_options as opt (opt)}
           <option value={opt}>{opt}</option>
         {/each}
       </select>

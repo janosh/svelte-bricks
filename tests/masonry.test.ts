@@ -305,6 +305,52 @@ describe(`Masonry order modes`, () => {
     expect(columns[1].textContent).toMatch(/4.*5.*6/u)
   })
 
+  test(`order=balanced-stable repopulates columns after count increases`, async () => {
+    const harness = mount(MasonryAppendHarness, {
+      target: document.body,
+      props: { events: [] },
+    })
+    await tick()
+    const initial_cols = get_col_dist()
+    expect(initial_cols).toHaveLength(2)
+    expect(initial_cols[1].length).toBeGreaterThan(0)
+
+    harness.set_cols(1)
+    await tick()
+    const collapsed_cols = get_col_dist()
+    expect(collapsed_cols).toHaveLength(1)
+    expect(collapsed_cols[0].toSorted()).toEqual(initial_cols.flat().toSorted())
+
+    const removed_ids = initial_cols[1].map(Number)
+    harness.remove(...removed_ids)
+    await tick()
+
+    harness.set_cols(2)
+    await tick()
+    const expanded_cols = get_col_dist()
+    expect(expanded_cols).toHaveLength(2)
+    expect(expanded_cols.every((col) => col.length > 0)).toBe(true)
+    expect(expanded_cols.flat().toSorted()).toEqual(initial_cols[0].toSorted())
+  })
+
+  test(`order=balanced-stable ignores zero estimated heights`, async () => {
+    mock_height = 0
+    mount(Masonry, {
+      target: document.body,
+      props: {
+        items: make_items(3),
+        order: `balanced-stable`,
+        calcCols: () => 2,
+        gap: 0,
+        getEstimatedHeight: () => 0,
+        masonryWidth: 500,
+      },
+    })
+    await tick()
+
+    expect(get_col_dist()).toEqual([[`0`, `2`], [`1`]])
+  })
+
   test.each(ALL_ORDER_MODES)(
     `order=%s always attaches ResizeObservers for mode switching support`,
     async (order) => {

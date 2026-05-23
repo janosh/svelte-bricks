@@ -24,6 +24,9 @@
       .map((path) => `/${path.replace(`./`, ``).replace(`/+page.svelte`, ``)}`)
       .toSorted((a, b) => (labels[a] ?? a).localeCompare(labels[b] ?? b)),
   ]
+  for (const route of [`/edge-cases`, `/changelog`]) {
+    routes.push(...routes.splice(routes.indexOf(route), 1))
+  }
 </script>
 
 <GitHubCorner

@@ -13,12 +13,10 @@
   let {
     animate = true,
     order = `balanced-stable`,
-    calcCols = (masonryWidth: number, minColWidth: number, gap: number): number => {
-      return Math.min(
-        items.length,
-        Math.floor((masonryWidth + gap) / (minColWidth + gap)) || 1,
-      )
-    },
+    calcCols = (masonryWidth: number, minColWidth: number, gap: number): number => Math.min(
+      items.length,
+      Math.floor((masonryWidth + gap) / (minColWidth + gap)) || 1,
+    ),
     duration = 200,
     gap = 20,
     getId = (item: Item): ItemId => {
@@ -82,8 +80,9 @@
     measured_count > 0 ? measured_sum / measured_count : null,
   )
 
-  // Tracks which column each item was assigned to (for balanced-stable mode)
+  // Tracks each item's assigned column (for balanced-stable mode)
   const stable_assignments = new Map<ItemId, number>()
+  let prev_stable_num_cols = 0
   const item_records = new Map<ItemId, ItemRecord>()
 
   // Clean up stale heights and stable assignments when items change (prevents memory leak)
@@ -100,10 +99,9 @@
       measured_sum -= removed_sum
       measured_count = item_heights_cache.size
     }
-    // Clean up stable_assignments and item_records for removed items
-    for (const map of [stable_assignments, item_records]) {
-      for (const id of map.keys()) {
-        if (!current_ids.has(id)) map.delete(id)
+    for (const stale_map of [stable_assignments, item_records]) {
+      for (const id of stale_map.keys()) {
+        if (!current_ids.has(id)) stale_map.delete(id)
       }
     }
   })
@@ -118,19 +116,10 @@
     return record
   }
 
-  // Unified height getter with fallback chain
   // Reads from non-reactive cache, so won't trigger re-renders
   const get_height = (item: Item): number => {
     const id = getId(item)
-    // 1. Actual measured height (most accurate)
-    const measured = item_heights_cache.get(id)
-    if (measured !== undefined) return measured
-    // 2. User-provided estimate (if custom function provided)
-    if (getEstimatedHeight) return getEstimatedHeight(item)
-    // 3. Average of measured items
-    if (avg_measured_height) return avg_measured_height
-    // 4. Hard fallback
-    return 150
+    return item_heights_cache.get(id) || getEstimatedHeight?.(item) || avg_measured_height || 150
   }
 
   // Check if current order mode needs height measurements before distributing items
@@ -176,19 +165,22 @@
   }
 
   // Stable balancing: new items go to shortest column, existing items keep their column
-  // NOTE: This function intentionally mutates stable_assignments Map during $derived computation.
+  // NOTE: This function intentionally mutates stable_assignments during $derived computation.
   // This is safe because the Map is a non-reactive cache for persistence across renders,
   // not a reactive dependency. The derived recomputes based on items/nCols/order changes.
   function balanced_stable_to_cols(num_cols: number): ItemRecord[][] {
     const cols: ItemRecord[][] = Array.from({ length: num_cols }, () => [])
     const heights: number[] = Array.from({ length: num_cols }, () => 0)
 
+    if (num_cols > prev_stable_num_cols) stable_assignments.clear()
+    prev_stable_num_cols = num_cols
+
     for (const [idx, item] of items.entries()) {
       const id = getId(item)
       let col = stable_assignments.get(id)
 
       if (col === undefined || col >= num_cols) {
-        // New item or column count reduced - assign to shortest
+        // New or out-of-range item - assign to shortest
         col = heights.indexOf(Math.min(...heights))
         stable_assignments.set(id, col)
       }
@@ -217,8 +209,7 @@
     const total_height = items.reduce((sum, item) => sum + get_height(item) + gap, 0)
     const target_per_col = total_height / num_cols
 
-    let col = 0
-    let col_height = 0
+    let [col, col_height] = [0, 0]
 
     for (const [idx, item] of items.entries()) {
       cols[col].push(get_item_record(item, idx))
@@ -242,11 +233,11 @@
   })
   // CSS container queries hide excess columns for CLS-free SSR
   // When masonryWidth is 0 (SSR), calculate max cols for 1920px viewport
-  let nCols = $derived(calcCols(masonryWidth || 1920, minColWidth, gap))
+  let n_cols = $derived(calcCols(masonryWidth || 1920, minColWidth, gap))
 
   // Container query rules: breakpoint(n) = (minColWidth + gap) * n - gap
   let container_query_css = $derived(
-    Array.from({ length: nCols - 1 }, (_, idx) => {
+    Array.from({ length: n_cols - 1 }, (_, idx) => {
       const col = idx + 1
       const max_w = (minColWidth + gap) * (col + 1) - gap - 1
       const min_w = col === 1
@@ -271,19 +262,19 @@
   let itemsToCols = $derived.by(() => {
     // balanced-stable should NEVER fall back - it uses stable assignments + estimates for new items
     // This prevents existing items from jumping columns when new items are added
-    if (effective_order === `balanced-stable`) return balanced_stable_to_cols(nCols)
+    if (effective_order === `balanced-stable`) return balanced_stable_to_cols(n_cols)
 
     // For other height-dependent modes, fall back to round-robin until items are measured
     if (needs_measurement(effective_order) && measured_count < items.length) {
-      return round_robin(nCols)
+      return round_robin(n_cols)
     }
 
-    if (effective_order === `balanced`) return balance_to_cols(nCols)
+    if (effective_order === `balanced`) return balance_to_cols(n_cols)
     if (effective_order === `column-sequential`) {
-      return column_sequential_to_cols(nCols)
+      return column_sequential_to_cols(n_cols)
     }
-    if (effective_order === `column-balanced`) return column_balanced_to_cols(nCols)
-    return round_robin(nCols) // row-first (default)
+    if (effective_order === `column-balanced`) return column_balanced_to_cols(n_cols)
+    return round_robin(n_cols) // row-first (default)
   })
 
   // Virtualization logic
@@ -300,8 +291,7 @@
 
   // Binary search: find first index where arr[i] >= target
   function binary_search_ge(arr: number[], target: number): number {
-    let lo = 0
-    let hi = arr.length
+    let [lo, hi] = [0, arr.length]
     while (lo < hi) {
       const mid = (lo + hi) >>> 1
       if (arr[mid] < target) lo = mid + 1
@@ -326,7 +316,7 @@
 
   // Stable height for virtualization - ONLY estimates (no measured heights = no drift)
   const get_estimated_height = (item: Item): number =>
-    getEstimatedHeight ? getEstimatedHeight(item) : 150
+    getEstimatedHeight?.(item) ?? 150
 
   // Prefix height arrays per column: prefix_heights[col][i] = cumulative height of items 0..i
   // When virtualizing: use ONLY estimates (stable, no drift)
@@ -397,6 +387,12 @@
   <svelte:element this={`style`}>{container_query_css}</svelte:element>
 </svelte:head>
 
+{#snippet render_item(idx: number, item: Item)}
+  {#if children}{@render children({ idx, item })}{:else}
+    <span>{item}</span>
+  {/if}
+{/snippet}
+
 <div
   bind:clientWidth={masonryWidth}
   bind:clientHeight={masonryHeight}
@@ -411,7 +407,7 @@
   {...rest}
   class="masonry {rest.class ?? ``}"
 >
-  {#each itemsToCols as col, col_idx}
+  {#each itemsToCols as col, col_idx (col_idx)}
     {@const [start, end] = visible_ranges[col_idx]}
     {@const visible_items = col.slice(start, end)}
     <div
@@ -426,24 +422,20 @@
       style={columnStyle || undefined}
     >
       {#if effective_animate}
-        {#each visible_items as record (record.id)}
+        {#each visible_items as { id, idx, item } (id)}
           <div
-            use:measure_height={record.id}
+            use:measure_height={id}
             in:fade={{ delay: 100, duration }}
             out:fade={{ delay: 0, duration }}
             animate:flip={{ duration }}
           >
-            {#if children}{@render children({ idx: record.idx, item: record.item })}{:else}
-              <span>{record.item}</span>
-            {/if}
+            {@render render_item(idx, item)}
           </div>
         {/each}
       {:else}
-        {#each visible_items as record (record.id)}
-          <div use:measure_height={record.id}>
-            {#if children}{@render children({ idx: record.idx, item: record.item })}{:else}
-              <span>{record.item}</span>
-            {/if}
+        {#each visible_items as { id, idx, item } (id)}
+          <div use:measure_height={id}>
+            {@render render_item(idx, item)}
           </div>
         {/each}
       {/if}
