@@ -82,8 +82,9 @@
     measured_count > 0 ? measured_sum / measured_count : null,
   )
 
-  // Tracks which column each item was assigned to (for balanced-stable mode)
+  // Tracks each item's assigned column (for balanced-stable mode)
   const stable_assignments = new Map<ItemId, number>()
+  let prev_stable_num_cols = 0
   const item_records = new Map<ItemId, ItemRecord>()
 
   // Clean up stale heights and stable assignments when items change (prevents memory leak)
@@ -100,11 +101,12 @@
       measured_sum -= removed_sum
       measured_count = item_heights_cache.size
     }
-    // Clean up stable_assignments and item_records for removed items
-    for (const map of [stable_assignments, item_records]) {
-      for (const id of map.keys()) {
-        if (!current_ids.has(id)) map.delete(id)
-      }
+    // Clean up removed items from stable assignments and item records
+    for (const id of stable_assignments.keys()) {
+      if (!current_ids.has(id)) stable_assignments.delete(id)
+    }
+    for (const id of item_records.keys()) {
+      if (!current_ids.has(id)) item_records.delete(id)
     }
   })
 
@@ -176,19 +178,22 @@
   }
 
   // Stable balancing: new items go to shortest column, existing items keep their column
-  // NOTE: This function intentionally mutates stable_assignments Map during $derived computation.
+  // NOTE: This function intentionally mutates stable_assignments during $derived computation.
   // This is safe because the Map is a non-reactive cache for persistence across renders,
   // not a reactive dependency. The derived recomputes based on items/nCols/order changes.
   function balanced_stable_to_cols(num_cols: number): ItemRecord[][] {
     const cols: ItemRecord[][] = Array.from({ length: num_cols }, () => [])
     const heights: number[] = Array.from({ length: num_cols }, () => 0)
 
+    if (num_cols > prev_stable_num_cols) stable_assignments.clear()
+    prev_stable_num_cols = num_cols
+
     for (const [idx, item] of items.entries()) {
       const id = getId(item)
       let col = stable_assignments.get(id)
 
       if (col === undefined || col >= num_cols) {
-        // New item or column count reduced - assign to shortest
+        // New or out-of-range item - assign to shortest
         col = heights.indexOf(Math.min(...heights))
         stable_assignments.set(id, col)
       }
@@ -411,7 +416,7 @@
   {...rest}
   class="masonry {rest.class ?? ``}"
 >
-  {#each itemsToCols as col, col_idx}
+  {#each itemsToCols as col, col_idx (col_idx)}
     {@const [start, end] = visible_ranges[col_idx]}
     {@const visible_items = col.slice(start, end)}
     <div

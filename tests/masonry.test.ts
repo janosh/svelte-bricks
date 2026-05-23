@@ -305,6 +305,34 @@ describe(`Masonry order modes`, () => {
     expect(columns[1].textContent).toMatch(/4.*5.*6/u)
   })
 
+  test(`order=balanced-stable repopulates columns after count increases`, async () => {
+    const harness = mount(MasonryAppendHarness, {
+      target: document.body,
+      props: { events: [] },
+    })
+    await tick()
+    const initial_cols = get_col_dist()
+    expect(initial_cols).toHaveLength(2)
+    expect(initial_cols[1].length).toBeGreaterThan(0)
+
+    harness.set_cols(1)
+    await tick()
+    const collapsed_cols = get_col_dist()
+    expect(collapsed_cols).toHaveLength(1)
+    expect(collapsed_cols[0].toSorted()).toEqual(initial_cols.flat().toSorted())
+
+    const removed_ids = initial_cols[1].map(Number)
+    harness.remove(...removed_ids)
+    await tick()
+
+    harness.set_cols(2)
+    await tick()
+    const expanded_cols = get_col_dist()
+    expect(expanded_cols).toHaveLength(2)
+    expect(expanded_cols.every((col) => col.length > 0)).toBe(true)
+    expect(expanded_cols.flat().toSorted()).toEqual(initial_cols[0].toSorted())
+  })
+
   test.each(ALL_ORDER_MODES)(
     `order=%s always attaches ResizeObservers for mode switching support`,
     async (order) => {

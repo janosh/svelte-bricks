@@ -124,6 +124,21 @@ test.describe(`Masonry Order Modes`, () => {
       const items = get_items(page)
       await expect(items).toHaveCount(new_count)
     })
+
+    test(`repopulates columns after column count increases`, async ({ page }) => {
+      await set_order_mode(page, `balanced-stable`)
+      await wait_for_masonry_stable(page)
+
+      const filled_col_count = async (): Promise<number> =>
+        (await get_all_column_item_ids(page)).filter((ids) => ids.length > 0).length
+      const cols_input = page.locator(`[data-testid="cols-input"]`)
+
+      await cols_input.fill(`1`)
+      await expect.poll(filled_col_count).toBe(1)
+
+      await cols_input.fill(`3`)
+      await expect.poll(filled_col_count).toBe(3)
+    })
   })
 
   test.describe(`order=row-first`, () => {
@@ -375,9 +390,7 @@ test.describe(`Masonry Column Configuration`, () => {
     let columns = get_columns(page)
     await expect(columns).toHaveCount(3)
 
-    // Change to 4 columns
     await page.locator(`[data-testid="cols-input"]`).fill(`4`)
-    await page.locator(`[data-testid="cols-input"]`).blur()
     await wait_for_masonry_stable(page)
 
     columns = get_columns(page)
