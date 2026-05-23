@@ -30,7 +30,6 @@
   let max_col_width = $state(400)
   let gap = $state(15)
   let animate = $state(true)
-  let duration = $state(200)
   let order = $state<MasonryOrder>(`balanced`)
   let container_width = $state(100)
   let constrained_width = $state(false)
@@ -119,7 +118,7 @@
     items = items.slice(0, -1)
     sync_item_count()
   }
-  const randomize_items = () => {
+  const reroll_items = () => {
     items = items.map(({ id }) => make_item(id))
   }
   const remove_random = () => {
@@ -133,6 +132,17 @@
     items = []
     next_id = 0
     sync_item_count()
+  }
+
+  function apply_item_count_preset(count: number): void {
+    n_items = count
+    regenerate()
+  }
+
+  function apply_height_preset(min_height_px: number, max_height_px: number): void {
+    min_height = min_height_px
+    max_height = max_height_px
+    regenerate()
   }
 
   // Stress test controls
@@ -161,70 +171,19 @@
   const presets: { label: string; action: () => void }[] = [
     {
       label: `1 Item`,
-      action: () => {
-        n_items = 1
-        regenerate()
-      },
-    },
-    {
-      label: `3 Items`,
-      action: () => {
-        n_items = 3
-        regenerate()
-      },
+      action: () => apply_item_count_preset(1),
     },
     {
       label: `100 Items`,
-      action: () => {
-        n_items = 100
-        regenerate()
-      },
+      action: () => apply_item_count_preset(100),
     },
     {
       label: `Tall Items`,
-      action: () => {
-        min_height = 300
-        max_height = 500
-        regenerate()
-      },
+      action: () => apply_height_preset(300, 500),
     },
     {
       label: `Short Items`,
-      action: () => {
-        min_height = 30
-        max_height = 60
-        regenerate()
-      },
-    },
-    {
-      label: `Uniform Height`,
-      action: () => {
-        fixed_height = true
-        regenerate()
-      },
-    },
-    {
-      label: `Varied Height`,
-      action: () => {
-        fixed_height = false
-        min_height = 50
-        max_height = 400
-        regenerate()
-      },
-    },
-    {
-      label: `Narrow Cols`,
-      action: () => {
-        min_col_width = 100
-        max_col_width = 150
-      },
-    },
-    {
-      label: `Wide Cols`,
-      action: () => {
-        min_col_width = 400
-        max_col_width = 600
-      },
+      action: () => apply_height_preset(30, 60),
     },
     {
       label: `Issue #60`,
@@ -249,9 +208,8 @@
     {
       label: `200 Items`,
       action: () => {
-        n_items = 200
         min_col_width = 80
-        regenerate()
+        apply_item_count_preset(200)
       },
     },
   ]
@@ -270,11 +228,11 @@
   <title>Edge Cases | svelte-bricks</title>
 </svelte:head>
 
-<h1>Edge Cases & Stress Tests</h1>
+<h1>Edge Cases</h1>
 
 <p class="description">
-  Interactive demo to test the masonry layout with various edge cases and automated stress
-  tests. Use the controls to adjust parameters and observe layout behavior.
+  Interactive demo to test the masonry layout with unusual item, column, and container
+  settings.
 </p>
 
 <div class="controls-grid">
@@ -315,10 +273,9 @@
       <span>Fixed height (use min only)</span>
     </label>
     <div class="button-row">
-      <button onclick={regenerate}>Regenerate</button>
       <button onclick={add_item}>+ Add</button>
       <button onclick={remove_last}>- Remove</button>
-      <button onclick={randomize_items}>🎲 Random</button>
+      <button onclick={reroll_items}>🎲 Reroll</button>
       <button onclick={shuffle}>🔀 Shuffle</button>
       <button onclick={clear_all}>🗑 Clear</button>
     </div>
@@ -341,7 +298,7 @@
   </section>
 
   <section class="control-group">
-    <h2>Layout & Animation</h2>
+    <h2>Layout</h2>
     <label>
       <span>Order mode: <code>{order}</code></span>
       <select bind:value={order}>
@@ -353,10 +310,6 @@
     <label class="checkbox">
       <input type="checkbox" bind:checked={animate} />
       <span>Animate transitions</span>
-    </label>
-    <label>
-      <span>Duration: <code>{duration}ms</code></span>
-      <input type="range" bind:value={duration} min={0} max={1000} disabled={!animate} />
     </label>
   </section>
 
@@ -437,8 +390,54 @@
   </div>
 </section>
 
-<section class="stress-tests">
-  <h2>🔥 Automated Stress Tests</h2>
+<div class="stats">
+  <span>Width: <code>{masonry_width}px</code></span>
+  <span>Height: <code>{masonry_height}px</code></span>
+  <span>Columns: <code>{expected_cols}</code></span>
+  <span>Items: <code>{items.length}</code></span>
+  <span>Order: <code>{virtualize ? `row-first (forced)` : order}</code></span>
+</div>
+
+<div
+  class="masonry-container"
+  style:width="{container_width}%"
+  style:max-width={constrained_width ? `800px` : ``}
+>
+  <Masonry
+    {items}
+    minColWidth={min_col_width}
+    maxColWidth={max_col_width}
+    {gap}
+    {animate}
+    {order}
+    {virtualize}
+    {overscan}
+    height={virtualize ? virtual_height : undefined}
+    getEstimatedHeight={(item) => item.height}
+    bind:masonryWidth={masonry_width}
+    bind:masonryHeight={masonry_height}
+  >
+    {#snippet children({ item })}
+      <div
+        class="item"
+        style:height="{item.height}px"
+        style:background={item.color}
+      >
+        <span class="item-id">#{item.id}</span>
+        <span class="item-height">{item.height}px</span>
+      </div>
+    {/snippet}
+  </Masonry>
+</div>
+
+{#if items.length === 0}
+  <p class="empty-message">
+    No items to display. Add some items using the controls above.
+  </p>
+{/if}
+
+<details class="stress-tests">
+  <summary>🔥 Automated Stress Tests</summary>
   <div class="button-row">
     <button
       onclick={() => start_test(`rapid-add`, () => {}, () => add_items(1), 50)}
@@ -493,54 +492,7 @@
       Running: <strong>{test_mode}</strong> — Operations: <code>{operation_count}</code>
     </p>
   {/if}
-</section>
-
-<div class="stats">
-  <span>Width: <code>{masonry_width}px</code></span>
-  <span>Height: <code>{masonry_height}px</code></span>
-  <span>Columns: <code>{expected_cols}</code></span>
-  <span>Items: <code>{items.length}</code></span>
-  <span>Order: <code>{virtualize ? `row-first (forced)` : order}</code></span>
-</div>
-
-<div
-  class="masonry-container"
-  style:width="{container_width}%"
-  style:max-width={constrained_width ? `800px` : ``}
->
-  <Masonry
-    {items}
-    minColWidth={min_col_width}
-    maxColWidth={max_col_width}
-    {gap}
-    {animate}
-    {duration}
-    {order}
-    {virtualize}
-    {overscan}
-    height={virtualize ? virtual_height : undefined}
-    getEstimatedHeight={(item) => item.height}
-    bind:masonryWidth={masonry_width}
-    bind:masonryHeight={masonry_height}
-  >
-    {#snippet children({ item })}
-      <div
-        class="item"
-        style:height="{item.height}px"
-        style:background={item.color}
-      >
-        <span class="item-id">#{item.id}</span>
-        <span class="item-height">{item.height}px</span>
-      </div>
-    {/snippet}
-  </Masonry>
-</div>
-
-{#if items.length === 0}
-  <p class="empty-message">
-    No items to display. Add some items using the controls above.
-  </p>
-{/if}
+</details>
 
 <style>
   h1 {
@@ -659,10 +611,13 @@
   .css-reset-test a {
     color: cornflowerblue;
   }
-  .presets h2, .stress-tests h2, .css-reset-test h2 {
+  .presets h2, .stress-tests summary, .css-reset-test h2 {
     margin: 0 0 0.4em;
     font-size: 0.85rem;
     color: #aaa;
+  }
+  .stress-tests summary {
+    cursor: pointer;
   }
   .test-status {
     margin-top: 0.5em;

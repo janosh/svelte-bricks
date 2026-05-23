@@ -32,7 +32,7 @@ test.describe(`Demo controls`, () => {
     await expect(edge_items(page)).toHaveCount(7)
     await expect(count).toHaveValue(`7`)
 
-    await item_settings.getByRole(`button`, { name: /Random/ }).click()
+    await item_settings.getByRole(`button`, { name: /Reroll/ }).click()
     await expect(edge_items(page)).toHaveCount(7)
 
     await item_settings.getByRole(`button`, { name: /Shuffle/ }).click()
