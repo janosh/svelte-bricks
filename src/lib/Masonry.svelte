@@ -101,12 +101,10 @@
       measured_sum -= removed_sum
       measured_count = item_heights_cache.size
     }
-    // Clean up removed items from stable assignments and item records
-    for (const id of stable_assignments.keys()) {
-      if (!current_ids.has(id)) stable_assignments.delete(id)
-    }
-    for (const id of item_records.keys()) {
-      if (!current_ids.has(id)) item_records.delete(id)
+    for (const stale_map of [stable_assignments, item_records]) {
+      for (const id of stale_map.keys()) {
+        if (!current_ids.has(id)) stale_map.delete(id)
+      }
     }
   })
 
@@ -120,19 +118,15 @@
     return record
   }
 
-  // Unified height getter with fallback chain
   // Reads from non-reactive cache, so won't trigger re-renders
   const get_height = (item: Item): number => {
     const id = getId(item)
-    // 1. Actual measured height (most accurate)
-    const measured = item_heights_cache.get(id)
-    if (measured !== undefined) return measured
-    // 2. User-provided estimate (if custom function provided)
-    if (getEstimatedHeight) return getEstimatedHeight(item)
-    // 3. Average of measured items
-    if (avg_measured_height) return avg_measured_height
-    // 4. Hard fallback
-    return 150
+    return (
+      item_heights_cache.get(id) ??
+      getEstimatedHeight?.(item) ??
+      avg_measured_height ??
+      150
+    )
   }
 
   // Check if current order mode needs height measurements before distributing items
@@ -331,7 +325,7 @@
 
   // Stable height for virtualization - ONLY estimates (no measured heights = no drift)
   const get_estimated_height = (item: Item): number =>
-    getEstimatedHeight ? getEstimatedHeight(item) : 150
+    getEstimatedHeight?.(item) ?? 150
 
   // Prefix height arrays per column: prefix_heights[col][i] = cumulative height of items 0..i
   // When virtualizing: use ONLY estimates (stable, no drift)
@@ -402,6 +396,12 @@
   <svelte:element this={`style`}>{container_query_css}</svelte:element>
 </svelte:head>
 
+{#snippet render_item(idx: number, item: Item)}
+  {#if children}{@render children({ idx, item })}{:else}
+    <span>{item}</span>
+  {/if}
+{/snippet}
+
 <div
   bind:clientWidth={masonryWidth}
   bind:clientHeight={masonryHeight}
@@ -431,24 +431,20 @@
       style={columnStyle || undefined}
     >
       {#if effective_animate}
-        {#each visible_items as record (record.id)}
+        {#each visible_items as { id, idx, item } (id)}
           <div
-            use:measure_height={record.id}
+            use:measure_height={id}
             in:fade={{ delay: 100, duration }}
             out:fade={{ delay: 0, duration }}
             animate:flip={{ duration }}
           >
-            {#if children}{@render children({ idx: record.idx, item: record.item })}{:else}
-              <span>{record.item}</span>
-            {/if}
+            {@render render_item(idx, item)}
           </div>
         {/each}
       {:else}
-        {#each visible_items as record (record.id)}
-          <div use:measure_height={record.id}>
-            {#if children}{@render children({ idx: record.idx, item: record.item })}{:else}
-              <span>{record.item}</span>
-            {/if}
+        {#each visible_items as { id, idx, item } (id)}
+          <div use:measure_height={id}>
+            {@render render_item(idx, item)}
           </div>
         {/each}
       {/if}
