@@ -121,12 +121,7 @@
   // Reads from non-reactive cache, so won't trigger re-renders
   const get_height = (item: Item): number => {
     const id = getId(item)
-    return (
-      item_heights_cache.get(id) ??
-      getEstimatedHeight?.(item) ??
-      avg_measured_height ??
-      150
-    )
+    return item_heights_cache.get(id) || getEstimatedHeight?.(item) || avg_measured_height || 150
   }
 
   // Check if current order mode needs height measurements before distributing items

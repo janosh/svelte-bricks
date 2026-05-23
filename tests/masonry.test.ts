@@ -333,6 +333,24 @@ describe(`Masonry order modes`, () => {
     expect(expanded_cols.flat().toSorted()).toEqual(initial_cols[0].toSorted())
   })
 
+  test(`order=balanced-stable ignores zero estimated heights`, async () => {
+    mock_height = 0
+    mount(Masonry, {
+      target: document.body,
+      props: {
+        items: make_items(3),
+        order: `balanced-stable`,
+        calcCols: () => 2,
+        gap: 0,
+        getEstimatedHeight: () => 0,
+        masonryWidth: 500,
+      },
+    })
+    await tick()
+
+    expect(get_col_dist()).toEqual([[`0`, `2`], [`1`]])
+  })
+
   test.each(ALL_ORDER_MODES)(
     `order=%s always attaches ResizeObservers for mode switching support`,
     async (order) => {
