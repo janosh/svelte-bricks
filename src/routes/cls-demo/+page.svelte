@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import Masonry from '$lib'
 
   // Track hydration
@@ -18,6 +19,7 @@
   let simulate_slow_load = $state(true)
   let masonry_width = $state(0)
   let cls_events = $state<string[]>([])
+  const image_count = 15
 
   type Image = {
     id: number
@@ -30,9 +32,9 @@
   const get_load_delay = (idx: number, batch: number): number =>
     500 + ((idx * 397 + batch * 211) % 2000)
 
-  const generate_images = (count: number, batch = 0): Image[] =>
-    Array.from({ length: count }, (_, idx) => ({
-      id: batch * count + idx,
+  const generate_images = (batch = 0): Image[] =>
+    Array.from({ length: image_count }, (_, idx) => ({
+      id: batch * image_count + idx,
       width: 300,
       height: 150 + ((idx * 73 + batch * 41) % 250),
       loaded: !simulate_slow_load,
@@ -40,21 +42,39 @@
     }))
 
   function simulate_loading(): void {
-    images.forEach((img, idx) => {
-      if (!img.loaded) {
-        setTimeout(
-          () => (images[idx] = { ...images[idx], loaded: true }),
-          img.load_delay,
-        )
-      }
+    const batch = ++loading_batch
+    images.forEach(({ id, loaded, load_delay }, idx) => {
+      if (loaded) return
+      setTimeout(() => {
+        const current_image = images[idx]
+        if (batch === loading_batch && current_image?.id === id) {
+          images[idx] = { ...current_image, loaded: true }
+        }
+      }, load_delay)
     })
   }
 
   let image_batch = 0
-  let images = $state(generate_images(15))
+  let loading_batch = 0
+  let images = $state(generate_images())
+
+  function regenerate_images(): void {
+    image_batch += 1
+    images = generate_images(image_batch)
+    if (simulate_slow_load) simulate_loading()
+  }
+
+  function reset_loading_state(): void {
+    images = images.map((image, idx) => ({
+      ...image,
+      loaded: false,
+      load_delay: get_load_delay(idx, image_batch),
+    }))
+    simulate_loading()
+  }
 
   // Simulate image loading on mount if slow load is enabled
-  $effect(() => {
+  onMount(() => {
     if (simulate_slow_load) simulate_loading()
   })
 
@@ -91,9 +111,9 @@
 <p class="description">
   This page demonstrates how the masonry layout reduces Cumulative Layout Shift (CLS).
   It passes a deterministic <code>initialCols</code> value for SSR. When that value
-  matches the first measured client column count, SSR and hydration use the same
-  masonry column tree; otherwise CSS container queries still hide excess columns before
-  JavaScript runs.
+  matches the first measured client column count, stable order modes can hydrate with
+  the same masonry column tree; otherwise CSS container queries still hide excess
+  columns before JavaScript runs.
 </p>
 
 <section class="info-panel">
@@ -153,25 +173,8 @@
       <input type="checkbox" bind:checked={simulate_slow_load} />
       <span>Simulate slow image loading</span>
     </label>
-    <button
-      onclick={() => {
-        image_batch += 1
-        images = generate_images(15, image_batch)
-      }}
-    >
-      🔄 Regenerate Images
-    </button>
-    <button
-      onclick={() => {
-        images = images.map((img, idx) => ({
-          ...img,
-          loaded: false,
-          load_delay: get_load_delay(idx, image_batch),
-        }))
-        simulate_loading()
-      }}
-      disabled={!simulate_slow_load}
-    >
+    <button onclick={regenerate_images}>🔄 Regenerate Images</button>
+    <button onclick={reset_loading_state} disabled={!simulate_slow_load}>
       ⏳ Reset Loading State
     </button>
   </div>
@@ -180,6 +183,7 @@
 <div class="masonry-container">
   <Masonry
     items={images}
+    order="balanced-stable"
     minColWidth={min_col_width}
     initialCols={initial_cols}
     {gap}
@@ -246,8 +250,8 @@
         <p>
           After hydration, JavaScript measures the actual width and calculates the client
           column count. Once <code>masonryWidth</code> is greater than 0, the measured
-          <code>calcCols</code> result wins over <code>initialCols</code>; no item
-          redistribution occurs when both counts match.
+          <code>calcCols</code> result wins over <code>initialCols</code>; stable order
+          modes avoid item redistribution when both counts match.
         </p>
       </div>
     </div>

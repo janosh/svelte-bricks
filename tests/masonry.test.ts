@@ -203,7 +203,8 @@ describe(`Masonry`, () => {
   test.each([
     [{ initialCols: 4, masonryWidth: 0 }, 4],
     [{ initialCols: 99, masonryWidth: 0 }, n_items],
-    [{ initialCols: 4, masonryWidth: 500, calcCols: () => 2 }, 2],
+    [{ masonryWidth: 0, calcCols: (): number => 40 }, 40],
+    [{ initialCols: 4, masonryWidth: 500, calcCols: (): number => 2 }, 2],
   ])(`resolves column count from %o`, (props, expected) => {
     mount(Masonry, {
       target: document.body,
@@ -214,11 +215,11 @@ describe(`Masonry`, () => {
 
   test.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
     `throws for invalid initialCols=%s even after width is measured`,
-    (initialCols) => {
+    (initial_cols) => {
       expect(() =>
         mount(Masonry, {
           target: document.body,
-          props: { items: indices, initialCols, masonryWidth: 500 },
+          props: { items: indices, initialCols: initial_cols, masonryWidth: 500 },
         }),
       ).toThrow(`svelte-bricks: initialCols must be a positive integer when provided`)
     },

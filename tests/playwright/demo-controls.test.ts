@@ -12,6 +12,26 @@ const virtual_total_items = (page: Page) =>
   page.locator(`.stat`).filter({ hasText: `Total Items` }).locator(`.stat-value`)
 
 test.describe(`Demo controls`, () => {
+  test(`CLS demo reset ignores stale image loading timers`, async ({ page }) => {
+    await page.clock.install()
+    await page.goto(`/cls-demo`, { waitUntil: `domcontentloaded` })
+
+    const first_loading = page.getByText(`Loading #0...`)
+    await expect(first_loading).toBeVisible()
+
+    await page.clock.fastForward(499)
+    await page.getByRole(`button`, { name: /Reset Loading State/ }).click()
+
+    await page.clock.fastForward(1)
+    await expect(first_loading).toBeVisible()
+
+    await page.clock.fastForward(498)
+    await expect(first_loading).toBeVisible()
+
+    await page.clock.fastForward(1)
+    await expect(first_loading).toBeHidden()
+  })
+
   test(`edge cases item settings update rendered items immediately`, async ({ page }) => {
     await page.goto(`/edge-cases`, { waitUntil: `networkidle` })
     await expect(edge_items(page).first()).toBeVisible()

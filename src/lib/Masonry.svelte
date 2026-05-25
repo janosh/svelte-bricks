@@ -73,7 +73,6 @@
   } = $props()
 
   const masonry_id = ($props.id as () => string)()
-  const masonry_id_selector = `[data-masonry-id="${masonry_id}"]`
 
   // Height tracking for column balancing and virtualization
   // Use plain Map (not reactive) to avoid triggering re-renders on every measurement
@@ -247,7 +246,9 @@
     }
     return masonryWidth > 0
       ? calcCols(masonryWidth, minColWidth, gap)
-      : Math.min(items.length, initialCols ?? calcCols(1920, minColWidth, gap))
+      : initialCols === undefined
+        ? calcCols(1920, minColWidth, gap)
+        : Math.min(items.length, initialCols)
   })
 
   // Container query rules: breakpoint(n) = (minColWidth + gap) * n - gap
@@ -258,7 +259,7 @@
       const min_width = col === 1
         ? ``
         : `(min-width: ${(minColWidth + gap) * col - gap}px) and `
-      return `@container masonry ${min_width}(max-width: ${max_width}px) { ${masonry_id_selector} > .col:nth-child(n+${
+      return `@container masonry ${min_width}(max-width: ${max_width}px) { [data-masonry-id="${masonry_id}"] > .col:nth-child(n+${
         col + 1
       }) { display: none !important; } }`
     }).join(`\n`),
