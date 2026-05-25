@@ -36,6 +36,7 @@ The kitchen sink for this component looks something like this:
   let items = $derived([...Array(nItems).keys()])
 
   let [minColWidth, maxColWidth, gap] = [200, 800, 20]
+  let initialCols = 3 // optional SSR hint
   let width = $state(0), height = $state(0)
 </script>
 
@@ -46,6 +47,7 @@ Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; 
   {minColWidth}
   {maxColWidth}
   {gap}
+  {initialCols}
   style="padding: 20px;"
   columnStyle="background-color: rgba(0, 0, 0, 0.1);"
   bind:masonryWidth={width}
@@ -92,6 +94,12 @@ Additional optional props are:
    ```
 
    Function used to compute the number of columns based on the masonry width, minimum column width and gap.
+
+1. ```ts
+   initialCols?: number
+   ```
+
+   Initial column count to use while `masonryWidth` is `0` during SSR. Pass it only when the server can infer the first client layout, for example from a known page/container width. If it matches the first measured client column count, SSR and hydration use the same column tree. Once `masonryWidth` is non-zero, `calcCols` takes over. If omitted, `Masonry` keeps the 1920px fallback and can still redistribute items during hydration.
 
 1. ```ts
    class: string = ``

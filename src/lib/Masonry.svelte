@@ -29,6 +29,7 @@
       )
     },
     idKey = `id`,
+    initialCols,
     items,
     masonryHeight = $bindable(0),
     masonryWidth = $bindable(0),
@@ -52,6 +53,7 @@
     gap?: number
     getId?: (item: Item) => ItemId
     idKey?: string
+    initialCols?: number
     items: Item[]
     masonryHeight?: number
     masonryWidth?: number
@@ -69,6 +71,9 @@
     overscan?: number
     height?: number | string
   } = $props()
+
+  const masonry_id = ($props.id as () => string)()
+  const masonry_id_selector = `[data-masonry-id="${masonry_id}"]`
 
   // Height tracking for column balancing and virtualization
   // Use plain Map (not reactive) to avoid triggering re-renders on every measurement
@@ -231,21 +236,31 @@
       )
     }
   })
-  // CSS container queries hide excess columns for CLS-free SSR
-  // When masonryWidth is 0 (SSR), calculate max cols for 1920px viewport
-  let n_cols = $derived(calcCols(masonryWidth || 1920, minColWidth, gap))
+  // CSS container queries hide excess SSR columns before hydration
+  // When masonryWidth is 0 (SSR), prefer explicit initialCols before using the
+  // historical 1920px viewport fallback.
+  let n_cols = $derived.by(() => {
+    if (initialCols !== undefined && (!Number.isInteger(initialCols) || initialCols < 1)) {
+      throw new Error(
+        `svelte-bricks: initialCols must be a positive integer when provided, received ${initialCols}.`,
+      )
+    }
+    return masonryWidth > 0
+      ? calcCols(masonryWidth, minColWidth, gap)
+      : Math.min(items.length, initialCols ?? calcCols(1920, minColWidth, gap))
+  })
 
   // Container query rules: breakpoint(n) = (minColWidth + gap) * n - gap
   let container_query_css = $derived(
     Array.from({ length: n_cols - 1 }, (_, idx) => {
       const col = idx + 1
-      const max_w = (minColWidth + gap) * (col + 1) - gap - 1
-      const min_w = col === 1
+      const max_width = (minColWidth + gap) * (col + 1) - gap - 1
+      const min_width = col === 1
         ? ``
         : `(min-width: ${(minColWidth + gap) * col - gap}px) and `
-      return `@container masonry ${min_w}(max-width: ${max_w}px) { .masonry > .col:nth-child(n+${
+      return `@container masonry ${min_width}(max-width: ${max_width}px) { ${masonry_id_selector} > .col:nth-child(n+${
         col + 1
-      }) { display: none; } }`
+      }) { display: none !important; } }`
     }).join(`\n`),
   )
 
@@ -382,7 +397,7 @@
   let effective_animate = $derived(animate && !can_virtualize)
 </script>
 
-<!-- Dynamic container query styles in <head> for CLS-free SSR -->
+<!-- Dynamic container query styles in <head> hide excess SSR columns -->
 <svelte:head>
   <svelte:element this={`style`}>{container_query_css}</svelte:element>
 </svelte:head>
@@ -406,6 +421,7 @@
   : undefined}
   {...rest}
   class="masonry {rest.class ?? ``}"
+  data-masonry-id={masonry_id}
 >
   {#each itemsToCols as col, col_idx (col_idx)}
     {@const [start, end] = visible_ranges[col_idx]}

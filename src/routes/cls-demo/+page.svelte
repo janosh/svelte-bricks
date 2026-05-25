@@ -14,6 +14,7 @@
   // State
   let min_col_width = $state(200)
   let gap = $state(15)
+  let initial_cols = $state(4)
   let simulate_slow_load = $state(true)
   let masonry_width = $state(0)
   let cls_events = $state<string[]>([])
@@ -26,18 +27,19 @@
     load_delay: number
   }
 
-  const rand_delay = () => 500 + Math.floor(Math.random() * 2000)
+  const get_load_delay = (idx: number, batch: number): number =>
+    500 + ((idx * 397 + batch * 211) % 2000)
 
-  const generate_images = (count: number): Image[] =>
+  const generate_images = (count: number, batch = 0): Image[] =>
     Array.from({ length: count }, (_, idx) => ({
-      id: idx,
+      id: batch * count + idx,
       width: 300,
-      height: 150 + Math.floor(Math.random() * 250),
+      height: 150 + ((idx * 73 + batch * 41) % 250),
       loaded: !simulate_slow_load,
-      load_delay: simulate_slow_load ? rand_delay() : 0,
+      load_delay: simulate_slow_load ? get_load_delay(idx, batch) : 0,
     }))
 
-  function simulate_loading() {
+  function simulate_loading(): void {
     images.forEach((img, idx) => {
       if (!img.loaded) {
         setTimeout(
@@ -48,6 +50,7 @@
     })
   }
 
+  let image_batch = 0
   let images = $state(generate_images(15))
 
   // Simulate image loading on mount if slow load is enabled
@@ -73,11 +76,10 @@
     return () => observer?.disconnect()
   })
 
-  const calc_cols = (width: number) =>
+  const calc_cols = (width: number): number =>
     Math.min(images.length, Math.floor((width + gap) / (min_col_width + gap)) || 1)
 
-  let ssr_cols = $derived(calc_cols(1920))
-  let actual_cols = $derived(masonry_width > 0 ? calc_cols(masonry_width) : ssr_cols)
+  let actual_cols = $derived(masonry_width > 0 ? calc_cols(masonry_width) : initial_cols)
 </script>
 
 <svelte:head>
@@ -87,9 +89,11 @@
 <h1>📊 CLS Visualization</h1>
 
 <p class="description">
-  This page demonstrates how the masonry layout handles Cumulative Layout Shift (CLS). The
-  CSS container queries ensure the correct number of columns render immediately, even
-  before JavaScript measures the container width.
+  This page demonstrates how the masonry layout reduces Cumulative Layout Shift (CLS).
+  It passes a deterministic <code>initialCols</code> value for SSR. When that value
+  matches the first measured client column count, SSR and hydration use the same
+  masonry column tree; otherwise CSS container queries still hide excess columns before
+  JavaScript runs.
 </p>
 
 <section class="info-panel">
@@ -112,8 +116,8 @@
       }</span>
     </div>
     <div class="status-item">
-      <span class="label">SSR columns (max):</span>
-      <span class="value">{ssr_cols}</span>
+      <span class="label">SSR columns:</span>
+      <span class="value">{initial_cols}</span>
     </div>
     <div class="status-item">
       <span class="label">Actual columns:</span>
@@ -121,8 +125,8 @@
     </div>
     <div class="status-item">
       <span class="label">Column match:</span>
-      <span class="value" class:success={ssr_cols >= actual_cols}>{
-        ssr_cols >= actual_cols ? `✓ CSS covers` : `⚠ May shift`
+      <span class="value" class:success={initial_cols === actual_cols}>{
+        initial_cols === actual_cols ? `✓ Exact SSR` : `⚠ Hint mismatch`
       }</span>
     </div>
   </div>
@@ -139,19 +143,30 @@
       <span>gap: <code>{gap}px</code></span>
       <input type="range" bind:value={gap} min={0} max={40} />
     </label>
+    <label>
+      <span>initialCols: <code>{initial_cols}</code></span>
+      <input type="range" bind:value={initial_cols} min={1} max={8} />
+    </label>
   </div>
   <div class="button-row">
     <label class="checkbox">
       <input type="checkbox" bind:checked={simulate_slow_load} />
       <span>Simulate slow image loading</span>
     </label>
-    <button onclick={() => images = generate_images(15)}>🔄 Regenerate Images</button>
     <button
       onclick={() => {
-        images = images.map((img) => ({
+        image_batch += 1
+        images = generate_images(15, image_batch)
+      }}
+    >
+      🔄 Regenerate Images
+    </button>
+    <button
+      onclick={() => {
+        images = images.map((img, idx) => ({
           ...img,
           loaded: false,
-          load_delay: rand_delay(),
+          load_delay: get_load_delay(idx, image_batch),
         }))
         simulate_loading()
       }}
@@ -166,6 +181,7 @@
   <Masonry
     items={images}
     minColWidth={min_col_width}
+    initialCols={initial_cols}
     {gap}
     bind:masonryWidth={masonry_width}
   >
@@ -200,15 +216,16 @@
 {/if}
 
 <section class="explanation">
-  <h2>How CLS Prevention Works</h2>
+  <h2>How CLS Mitigation Works</h2>
   <div class="explanation-content">
     <div class="step">
       <span class="step-num">1</span>
       <div>
-        <strong>SSR renders maximum columns</strong>
+        <strong>SSR renders initial columns</strong>
         <p>
-          On the server, <code>masonryWidth</code> is 0. Instead of defaulting to 1
-          column, we calculate the maximum columns that could fit a 1920px viewport.
+          On the server, <code>masonryWidth</code> is 0. This demo passes
+          <code>initialCols</code> so SSR can render the same number of columns the
+          client will use after its first width measurement.
         </p>
       </div>
     </div>
@@ -217,18 +234,20 @@
       <div>
         <strong>CSS container queries hide excess</strong>
         <p>
-          Dynamic <code>@container</code> rules immediately hide columns that don't fit
-          the actual container width. This happens purely in CSS, before any JS runs.
+          Dynamic <code>@container</code> rules immediately hide SSR columns that don't
+          fit the actual container width. This happens purely in CSS, before any JS runs.
         </p>
       </div>
     </div>
     <div class="step">
       <span class="step-num">3</span>
       <div>
-        <strong>JS hydrates and confirms</strong>
+        <strong>JS hydrates and measures</strong>
         <p>
-          After hydration, JavaScript measures the actual width and calculates the correct
-          column count. Since CSS was already showing the right number, there's no shift.
+          After hydration, JavaScript measures the actual width and calculates the client
+          column count. Once <code>masonryWidth</code> is greater than 0, the measured
+          <code>calcCols</code> result wins over <code>initialCols</code>; no item
+          redistribution occurs when both counts match.
         </p>
       </div>
     </div>
