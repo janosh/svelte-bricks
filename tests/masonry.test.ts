@@ -200,17 +200,48 @@ describe(`Masonry`, () => {
     )
   })
 
+  test.each([
+    [{ initialCols: 4, masonryWidth: 0 }, 4],
+    [{ initialCols: 99, masonryWidth: 0 }, n_items],
+    [{ masonryWidth: 0, calcCols: (): number => 40 }, 40],
+    [{ initialCols: 4, masonryWidth: 500, calcCols: (): number => 2 }, 2],
+  ])(`resolves column count from %o`, (props, expected) => {
+    mount(Masonry, {
+      target: document.body,
+      props: { items: indices, ...props },
+    })
+    expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(expected)
+  })
+
+  test.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
+    `throws for invalid initialCols=%s even after width is measured`,
+    (initial_cols) => {
+      expect(() =>
+        mount(Masonry, {
+          target: document.body,
+          props: { items: indices, initialCols: initial_cols, masonryWidth: 500 },
+        }),
+      ).toThrow(`svelte-bricks: initialCols must be a positive integer when provided`)
+    },
+  )
+
   test(`injects named container query CSS into <head>`, () => {
     mount(Masonry, {
       target: document.body,
       props: { items: indices, minColWidth: 200, gap: 10 },
     })
+    const masonry_id = document
+      .querySelector(`div.masonry`)
+      ?.getAttribute(`data-masonry-id`)
+    if (!masonry_id) throw new Error(`data-masonry-id not found`)
     const head_styles = Array.from(document.head.querySelectorAll(`style`))
     const container_css = head_styles.find((style_el) =>
-      style_el.textContent.includes(`@container masonry`),
+      style_el.textContent.includes(`[data-masonry-id="${masonry_id}"]`),
     )?.textContent
     expect(container_css).toContain(`@container masonry`)
-    expect(container_css).toContain(`.masonry > .col:nth-child`)
+    expect(container_css).toContain(`[data-masonry-id="${masonry_id}"] > .col:nth-child`)
+    expect(container_css).not.toContain(`.masonry > .col:nth-child`)
+    expect(container_css).toContain(`display: none !important`)
     // no unnamed @container queries should remain (regression guard for #56)
     expect(container_css).not.toMatch(/@container\s*\(/u)
     // styles must be in <head> not <body> to avoid flash on SSR first paint
