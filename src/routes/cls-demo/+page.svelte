@@ -41,30 +41,39 @@
       load_delay: simulate_slow_load ? get_load_delay(idx, batch) : 0,
     }))
 
+  let loading_timeouts: ReturnType<typeof setTimeout>[] = []
+
+  function clear_loading_timeouts(): void {
+    loading_timeouts.forEach(clearTimeout)
+    loading_timeouts = []
+  }
+
   function simulate_loading(): void {
-    const batch = ++loading_batch
+    clear_loading_timeouts()
     images.forEach(({ id, loaded, load_delay }, idx) => {
       if (loaded) return
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         const current_image = images[idx]
-        if (batch === loading_batch && current_image?.id === id) {
+        if (current_image?.id === id) {
           images[idx] = { ...current_image, loaded: true }
         }
       }, load_delay)
+      loading_timeouts.push(timeout)
     })
   }
 
   let image_batch = 0
-  let loading_batch = 0
   let images = $state(generate_images())
 
   function regenerate_images(): void {
+    clear_loading_timeouts()
     image_batch += 1
     images = generate_images(image_batch)
     if (simulate_slow_load) simulate_loading()
   }
 
   function reset_loading_state(): void {
+    clear_loading_timeouts()
     images = images.map((image, idx) => ({
       ...image,
       loaded: false,
@@ -76,6 +85,7 @@
   // Simulate image loading on mount if slow load is enabled
   onMount(() => {
     if (simulate_slow_load) simulate_loading()
+    return clear_loading_timeouts
   })
 
   // Observe CLS
