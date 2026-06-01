@@ -3,22 +3,30 @@
   import Toc from 'svelte-toc'
 </script>
 
-<main>
-  <Changelog />
-</main>
+<div class="changelog">
+  <main>
+    <Changelog />
+  </main>
 
-<Toc headingSelector="main > :where(h3, h4)" breakpoint={1250} />
+  <Toc
+    breakpoint={1250}
+    --toc-mobile-bg="var(--page-bg)"
+    --toc-mobile-btn-color="white"
+    --toc-mobile-border="1px solid rgba(255, 255, 255, 0.15)"
+  />
+</div>
 
 <style>
-  main {
-    max-width: 50em;
-    margin-inline: auto;
-    padding-inline: 1em;
+  .changelog {
+    display: flex;
+    gap: 2em;
+    justify-content: center;
+    align-items: flex-start; /* keep TOC short so position: sticky works */
   }
-  :global(aside.toc.desktop) {
-    position: fixed;
-    top: 3em;
-    left: calc(50vw + 50em / 2);
-    max-width: 16em;
+  main {
+    flex: 1 1 0;
+    max-width: 50em;
+    min-width: 0;
+    padding-inline: 1em;
   }
 </style>

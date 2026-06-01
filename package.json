@@ -40,6 +40,7 @@
     "prepublishOnly": "npm run package"
   },
   "devDependencies": {
+    "@janosh/vite-config": "github:janosh/dotfiles",
     "@playwright/test": "^1.60.0",
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.61.1",
@@ -53,15 +54,16 @@
     "acorn": "^8.16.0",
     "happy-dom": "^20.9.0",
     "mdsvex": "^0.12.7",
-    "svelte": "^5.55.9",
+    "svelte": "^5.56.0",
     "svelte-check-rs": "^0.9.14",
     "svelte-multiselect": "^11.7.1",
-    "svelte-toc": "^0.6.3",
+    "svelte-toc": "^0.7.0",
     "vite": "^8.0.14",
     "vite-plus": "latest",
     "vitest": "^4.1.7"
   },
   "peerDependencies": {
     "svelte": ">=5"
-  }
+  },
+  "packageManager": "pnpm@11.5.0"
 }

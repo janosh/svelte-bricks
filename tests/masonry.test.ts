@@ -90,7 +90,7 @@ const mount_virtualized = (count: number, overrides = {}) => {
 describe(`Masonry`, () => {
   test.each([true, false])(`renders items with animate=%s`, (animate) => {
     mount(Masonry, { target: document.body, props: { items: indices, animate } })
-    expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(n_items)
+    expect(document.querySelectorAll(`div.masonry > div.col > *`)).toHaveLength(n_items)
   })
 
   test.each([
@@ -137,7 +137,7 @@ describe(`Masonry`, () => {
         target: document.body,
         props: { items: indices, masonryWidth: width, minColWidth: minCol, gap },
       })
-      expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(expected)
+      expect(document.querySelectorAll(`div.masonry > div.col`)).toHaveLength(expected)
     },
   )
 
@@ -159,7 +159,7 @@ describe(`Masonry`, () => {
       props: { items: [{ x: 1 }, { x: 2 }], getId: get_id },
     })
     expect(get_id).toHaveBeenCalled()
-    expect(document.querySelectorAll(`div.masonry > div.col > div`).length).toBe(2)
+    expect(document.querySelectorAll(`div.masonry > div.col > div`)).toHaveLength(2)
   })
 
   test(`uses custom calcCols and adds col-N classes`, () => {
@@ -170,7 +170,7 @@ describe(`Masonry`, () => {
     })
     expect(calc_cols).toHaveBeenCalled()
     const columns = document.querySelectorAll(`div.masonry > div.col`)
-    expect(columns.length).toBe(3)
+    expect(columns).toHaveLength(3)
     columns.forEach((col, idx) => expect(col.classList).toContain(`col-${idx}`))
   })
 
@@ -179,7 +179,7 @@ describe(`Masonry`, () => {
       target: document.body,
       props: { items: Array.from({ length: count }, (_, idx) => idx) },
     })
-    expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(count)
+    expect(document.querySelectorAll(`div.masonry > div.col > *`)).toHaveLength(count)
   })
 
   test.each([`id`, `key`, `uuid`])(`works with idKey=%s`, (idKey) => {
@@ -187,7 +187,7 @@ describe(`Masonry`, () => {
       target: document.body,
       props: { items: [{ [idKey]: 1 }, { [idKey]: 2 }], idKey },
     })
-    expect(document.querySelectorAll(`div.masonry > div.col > div`).length).toBe(2)
+    expect(document.querySelectorAll(`div.masonry > div.col > div`)).toHaveLength(2)
   })
 
   test(`renders max columns when masonryWidth=0 (SSR mode)`, () => {
@@ -195,7 +195,7 @@ describe(`Masonry`, () => {
       target: document.body,
       props: { items: indices, minColWidth: 200, gap: 10, masonryWidth: 0 },
     })
-    expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(
+    expect(document.querySelectorAll(`div.masonry > div.col`)).toHaveLength(
       Math.floor(1930 / 210),
     )
   })
@@ -210,7 +210,7 @@ describe(`Masonry`, () => {
       target: document.body,
       props: { items: indices, ...props },
     })
-    expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(expected)
+    expect(document.querySelectorAll(`div.masonry > div.col`)).toHaveLength(expected)
   })
 
   test.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
@@ -268,7 +268,7 @@ describe(`Masonry`, () => {
       target: document.body,
       props: { items: [1, 2, 3], minColWidth: 100, masonryWidth: 0 },
     })
-    expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(3)
+    expect(document.querySelectorAll(`div.masonry > div.col`)).toHaveLength(3)
   })
 })
 
@@ -310,7 +310,7 @@ describe(`Masonry order modes`, () => {
     await tick()
     await tick()
     const columns = document.querySelectorAll(`div.masonry > div.col`)
-    expect(columns.length).toBe(2)
+    expect(columns).toHaveLength(2)
     expect(columns[0].children.length).toBeGreaterThan(0)
     expect(columns[1].children.length).toBeGreaterThan(0)
     // Verify all items rendered via text content
@@ -473,7 +473,7 @@ describe(`Masonry default rendering`, () => {
       props: { items: [`apple`, `banana`, `cherry`] },
     })
     const spans = document.querySelectorAll(`div.masonry > div.col > div > span`)
-    expect(spans.length).toBe(3)
+    expect(spans).toHaveLength(3)
     expect(Array.from(spans).map((span) => span.textContent)).toEqual(
       expect.arrayContaining([`apple`, `banana`, `cherry`]),
     )
@@ -562,7 +562,7 @@ describe(`Masonry virtualization`, () => {
   ] as const)(`renders subset of items %s`, async (order, cols) => {
     mount_virtualized(100, { order, calcCols: () => cols })
     await tick()
-    expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(cols)
+    expect(document.querySelectorAll(`div.masonry > div.col`)).toHaveLength(cols)
     const rendered = document.querySelectorAll(`div.masonry > div.col > div`).length
     expect(rendered).toBeGreaterThan(0)
     expect(rendered).toBeLessThan(100)
@@ -608,7 +608,7 @@ describe(`Masonry virtualization`, () => {
     await tick()
 
     // With clientHeight=0 (unmeasured), all items render (virtualization deferred)
-    expect(document.querySelectorAll(`div.masonry > div.col > div`).length).toBe(100)
+    expect(document.querySelectorAll(`div.masonry > div.col > div`)).toHaveLength(100)
 
     if (original) Object.defineProperty(HTMLElement.prototype, `clientHeight`, original)
   })
@@ -666,7 +666,7 @@ describe(`Masonry item cleanup`, () => {
       },
     })
     await tick()
-    expect(document.querySelectorAll(`div.masonry > div.col > div`).length).toBe(initial)
+    expect(document.querySelectorAll(`div.masonry > div.col > div`)).toHaveLength(initial)
 
     document.body.innerHTML = ``
     mount(Masonry, {
@@ -679,7 +679,7 @@ describe(`Masonry item cleanup`, () => {
       },
     })
     await tick()
-    expect(document.querySelectorAll(`div.masonry > div.col > div`).length).toBe(final)
+    expect(document.querySelectorAll(`div.masonry > div.col > div`)).toHaveLength(final)
   })
 })
 
@@ -824,7 +824,7 @@ describe(`Masonry order mode edge cases`, () => {
       props: { items, order, calcCols: () => 3, masonryWidth: 500 },
     })
     await tick()
-    expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(expected)
+    expect(document.querySelectorAll(`div.masonry > div.col > *`)).toHaveLength(expected)
   })
 
   test(`order=column-sequential distributes correctly with uneven division`, async () => {
@@ -861,9 +861,9 @@ describe(`Masonry order mode edge cases`, () => {
     })
     await tick()
     const columns = document.querySelectorAll(`div.masonry > div.col`)
-    expect(columns[0].children.length).toBe(3) // items 0, 3, 6
-    expect(columns[1].children.length).toBe(2) // items 1, 4
-    expect(columns[2].children.length).toBe(2) // items 2, 5
+    expect(columns[0].children).toHaveLength(3) // items 0, 3, 6
+    expect(columns[1].children).toHaveLength(2) // items 1, 4
+    expect(columns[2].children).toHaveLength(2) // items 2, 5
   })
 
   test(`order=balanced-stable stable_assignments cache is cleaned on item removal`, async () => {
@@ -879,7 +879,7 @@ describe(`Masonry order mode edge cases`, () => {
       },
     })
     await tick()
-    expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(3)
+    expect(document.querySelectorAll(`div.masonry > div.col > *`)).toHaveLength(3)
 
     // Remount with fewer items (simulates item removal)
     document.body.innerHTML = ``
@@ -894,7 +894,7 @@ describe(`Masonry order mode edge cases`, () => {
       },
     })
     await tick()
-    expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(2)
+    expect(document.querySelectorAll(`div.masonry > div.col > *`)).toHaveLength(2)
   })
 
   test.each(ALL_ORDER_MODES)(
@@ -905,7 +905,7 @@ describe(`Masonry order mode edge cases`, () => {
         props: { items: [1, 2], order, calcCols: () => 5, masonryWidth: 500 },
       })
       await tick()
-      expect(document.querySelectorAll(`div.masonry > div.col > *`).length).toBe(2)
+      expect(document.querySelectorAll(`div.masonry > div.col > *`)).toHaveLength(2)
     },
   )
 
@@ -923,8 +923,8 @@ describe(`Masonry order mode edge cases`, () => {
     await tick()
     await tick()
 
-    expect(document.querySelectorAll(`div.masonry > div.col`).length).toBe(2)
-    expect(document.querySelectorAll(`div.masonry > div.col > div`).length).toBe(4)
+    expect(document.querySelectorAll(`div.masonry > div.col`)).toHaveLength(2)
+    expect(document.querySelectorAll(`div.masonry > div.col > div`)).toHaveLength(4)
   })
 
   test.each(ALL_ORDER_MODES)(`order=%s works with string items`, async (order) => {
