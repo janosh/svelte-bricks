@@ -6,8 +6,6 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  release:
-    types: [published]
 
 jobs:
   tests:
@@ -18,9 +16,20 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-      - run: pnpm install --no-frozen-lockfile
+      # no lockfile committed, so key caches on package.json
+      - uses: actions/cache@v5
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('package.json') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+      - run: pnpm install --no-frozen-lockfile --store-dir ~/.pnpm-store
       - name: Unit tests
         run: pnpm exec vp test --run
+      - uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package.json') }}
+          restore-keys: ${{ runner.os }}-playwright-
       - name: Install Playwright
         run: pnpm exec playwright install chromium
       - name: E2E tests

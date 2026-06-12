@@ -1,10 +1,34 @@
 name: Publish to NPM
 
+# releases are cut from main, which requires lint + tests to pass via branch
+# protection, so released commit is already validated - no need to re-check here
 on:
   release:
     types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # required for npm trusted publishing (OIDC)
 
 jobs:
   publish:
-    uses: janosh/workflows/.github/workflows/npm-publish.yml@main
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false # OIDC handles npm auth; no git writes needed
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: npm install
+
+      # prepublishOnly builds dist/ via `npm run package`; OIDC attaches provenance
+      - name: Publish to npm
+        run: npm publish --provenance

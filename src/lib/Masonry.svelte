@@ -35,8 +35,7 @@
     masonryWidth = $bindable(0),
     maxColWidth = 500,
     minColWidth = 330,
-    columnStyle = ``,
-    columnClass = ``,
+    columnProps = {},
     children,
     div = $bindable(),
     // Virtualization props
@@ -59,10 +58,7 @@
     masonryWidth?: number
     maxColWidth?: number
     minColWidth?: number
-    style?: string
-    class?: string
-    columnStyle?: string
-    columnClass?: string
+    columnProps?: Omit<HTMLAttributes<HTMLDivElement>, `children`>
     children?: Snippet<[{ idx: number; item: Item }]>
     div?: HTMLDivElement
     // Virtualization props
@@ -123,6 +119,8 @@
   // Reads from non-reactive cache, so won't trigger re-renders
   const get_height = (item: Item): number => {
     const id = getId(item)
+    // `||` (not `??`) is intentional: a 0 height is meaningless for balancing,
+    // so it falls through to the estimate/average/default chain.
     return item_heights_cache.get(id) || getEstimatedHeight?.(item) || avg_measured_height || 150
   }
 
@@ -143,8 +141,7 @@
         const old_height = item_heights_cache.get(item_id) ?? 0
         measured_sum += new_height - old_height
         item_heights_cache.set(item_id, new_height)
-        // Keep measured_count in sync with cache for accurate measurement checks
-        // Safe during virtualization: itemsToCols short-circuits for virtualize
+        // Keep measured_count in sync with cache so measurement checks stay accurate
         measured_count = item_heights_cache.size
       }
     })
@@ -414,13 +411,13 @@
   bind:clientHeight={masonryHeight}
   bind:this={div}
   onscroll={virtualize ? on_scroll : undefined}
-  style="display: flex; width: 100%; justify-content: center; box-sizing: border-box"
   style:gap="{gap}px"
   style:overflow-y={virtualize ? `auto` : undefined}
   style:height={virtualize
   ? (typeof height === `number` ? `${height}px` : height ?? `400px`)
   : undefined}
   {...rest}
+  style="display: flex; width: 100%; justify-content: center; box-sizing: border-box; {rest.style ?? ``}"
   class="masonry {rest.class ?? ``}"
   data-masonry-id={masonry_id}
 >
@@ -428,7 +425,8 @@
     {@const [start, end] = visible_ranges[col_idx]}
     {@const visible_items = col.slice(start, end)}
     <div
-      class="col col-{col_idx} {columnClass}"
+      {...columnProps}
+      class="col col-{col_idx} {columnProps.class ?? ``}"
       style:display="grid"
       style:flex="1 1 0"
       style:min-width="0"
@@ -436,7 +434,6 @@
       style:max-width="{maxColWidth}px"
       style:padding-top={can_virtualize ? `${col_padding_top[col_idx]}px` : undefined}
       style:padding-bottom={can_virtualize ? `${col_padding_bottom[col_idx]}px` : undefined}
-      style={columnStyle || undefined}
     >
       {#if effective_animate}
         {#each visible_items as { id, idx, item } (id)}

@@ -49,7 +49,7 @@ Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; 
   {gap}
   {initialCols}
   style="padding: 20px;"
-  columnStyle="background-color: rgba(0, 0, 0, 0.1);"
+  columnProps={{ style: `background-color: rgba(0, 0, 0, 0.1);` }}
   bind:masonryWidth={width}
   bind:masonryHeight={height}
 >
@@ -108,10 +108,10 @@ Additional optional props are:
    Applies to the outer `div` wrapping all masonry columns. For use with CSS frameworks like Tailwind.
 
 1. ```ts
-   columnClass: string = ``
+   columnProps: HTMLAttributes<HTMLDivElement> = {}
    ```
 
-   Applies to each column `div`.
+   Attributes spread onto each column `div` (e.g. `class`, `style`, `data-*`, ARIA roles). Replaces the former `columnClass`/`columnStyle` props: pass `columnProps={{ class: '...', style: '...' }}` instead.
 
 1. ```ts
    duration: number = 200

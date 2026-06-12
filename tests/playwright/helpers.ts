@@ -43,7 +43,17 @@ export async function get_all_column_item_ids(page: Page): Promise<number[][]> {
 // Set the order mode via dropdown
 export async function set_order_mode(page: Page, order: string): Promise<void> {
   await page.locator(`[data-testid="order-select"]`).selectOption(order)
-  await page.waitForTimeout(100) // Brief wait for reactivity
+  // wait deterministically until the new order has propagated to the page
+  await expect(page.locator(`[data-testid="stat-order"]`)).toHaveText(`Order: ${order}`)
+}
+
+// Click "Add Item" `count` times, waiting for each add to register before the next
+export async function add_items_individually(page: Page, count: number): Promise<void> {
+  const start = await get_item_count(page)
+  for (let idx = 0; idx < count; idx++) {
+    await click_button(page, `add-item-btn`)
+    await expect.poll(() => get_item_count(page)).toBe(start + idx + 1)
+  }
 }
 
 // Click a button by test ID

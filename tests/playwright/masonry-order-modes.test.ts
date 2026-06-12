@@ -1,6 +1,7 @@
 // eslint-disable no-await-in-loop
 import { expect, test } from '@playwright/test'
 import {
+  add_items_individually,
   assert_row_first_order,
   click_button,
   get_all_column_item_ids,
@@ -40,10 +41,7 @@ test.describe(`Masonry Order Modes`, () => {
       const initial_col_ids = await get_all_column_item_ids(page)
 
       // Add several items
-      for (let idx = 0; idx < 5; idx++) {
-        await click_button(page, `add-item-btn`)
-        await page.waitForTimeout(100)
-      }
+      await add_items_individually(page, 5)
       await wait_for_masonry_stable(page)
 
       // Get new distribution
@@ -87,10 +85,7 @@ test.describe(`Masonry Order Modes`, () => {
       }
 
       // Add several items
-      for (let idx = 0; idx < 5; idx++) {
-        await click_button(page, `add-item-btn`)
-        await page.waitForTimeout(100)
-      }
+      await add_items_individually(page, 5)
       await wait_for_masonry_stable(page)
 
       // Get new distribution
@@ -160,19 +155,6 @@ test.describe(`Masonry Order Modes`, () => {
 
       // Verify row-first order is maintained
       await assert_row_first_order(page, 3)
-    })
-
-    test(`each column has items with same modulo pattern`, async ({ page }) => {
-      await set_order_mode(page, `row-first`)
-      await wait_for_masonry_stable(page)
-
-      const col_ids = await get_all_column_item_ids(page)
-      // In row-first with 3 cols: col 0 has ids 0,3,6,9... col 1 has 1,4,7,10...
-      for (let col_idx = 0; col_idx < col_ids.length; col_idx++) {
-        for (const id of col_ids[col_idx]) {
-          expect(id % 3).toBe(col_idx)
-        }
-      }
     })
   })
 
@@ -320,39 +302,25 @@ test.describe(`Masonry Item Operations`, () => {
     await wait_for_masonry_stable(page)
   })
 
-  test(`add item button adds one item`, async ({ page }) => {
-    const initial_count = await get_item_count(page)
+  for (const [button, delta] of [
+    [`add-item-btn`, 1],
+    [`add-5-items-btn`, 5],
+    [`remove-last-btn`, -1],
+  ] as const) {
+    test(`${button} changes item count by ${delta}`, async ({ page }) => {
+      const initial_count = await get_item_count(page)
 
-    await click_button(page, `add-item-btn`)
-    await wait_for_masonry_stable(page)
+      await click_button(page, button)
+      await wait_for_masonry_stable(page)
 
-    const new_count = await get_item_count(page)
-    expect(new_count).toBe(initial_count + 1)
-  })
-
-  test(`add 5 items button adds five items`, async ({ page }) => {
-    const initial_count = await get_item_count(page)
-
-    await click_button(page, `add-5-items-btn`)
-    await wait_for_masonry_stable(page)
-
-    const new_count = await get_item_count(page)
-    expect(new_count).toBe(initial_count + 5)
-  })
-
-  test(`remove last button removes one item`, async ({ page }) => {
-    const initial_count = await get_item_count(page)
-
-    await click_button(page, `remove-last-btn`)
-    await wait_for_masonry_stable(page)
-
-    const new_count = await get_item_count(page)
-    expect(new_count).toBe(initial_count - 1)
-  })
+      expect(await get_item_count(page)).toBe(initial_count + delta)
+    })
+  }
 
   test(`clear all button removes all items`, async ({ page }) => {
     await click_button(page, `clear-all-btn`)
-    await page.waitForTimeout(100)
+    // wait deterministically until the clear has taken effect
+    await expect(page.locator(`[data-testid="stat-items"]`)).toHaveText(`Items: 0`)
 
     const count = await get_item_count(page)
     expect(count).toBe(0)
