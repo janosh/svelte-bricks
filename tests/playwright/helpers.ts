@@ -70,8 +70,8 @@ export async function get_current_order(page: Page): Promise<string> {
 // Get the current item count from stats
 export async function get_item_count(page: Page): Promise<number> {
   const text = await page.locator(`[data-testid="stat-items"]`).textContent()
-  const match = text?.match(/Items: (\d+)/u)
-  return match ? parseInt(match[1], 10) : 0
+  const match = text?.match(/Items: (?<count>\d+)/u)
+  return match?.groups ? parseInt(match.groups.count, 10) : 0
 }
 
 // Wait for masonry to stabilize (items are measured and distributed)

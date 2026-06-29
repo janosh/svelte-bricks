@@ -12,8 +12,7 @@
   }
 
   async function fetch_gh_files(): Promise<File[]> {
-    const icons_url =
-      `https://api.github.com/repos/vscode-icons/vscode-icons/contents/icons?ref=master`
+    const icons_url = `https://api.github.com/repos/vscode-icons/vscode-icons/contents/icons?ref=master`
     const response = await fetch(icons_url)
 
     if (response.ok) {
@@ -22,8 +21,7 @@
     throw new Error(`failed to fetch GitHub data`)
   }
 
-  const example_code_url =
-    `${repository}/blob/-/src/routes/fetch-images-example/+page.svelte`
+  const example_code_url = `${repository}/blob/-/src/routes/fetch-images-example/+page.svelte`
 </script>
 
 <p>

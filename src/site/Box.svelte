@@ -1,6 +1,5 @@
 <script lang="ts">
-  let { index, slide_flip = false }: { index: number; slide_flip?: boolean } =
-    $props()
+  let { index, slide_flip = false }: { index: number; slide_flip?: boolean } = $props()
   let flipped = $state(false)
   const height = 100 + 200 * Math.random()
 

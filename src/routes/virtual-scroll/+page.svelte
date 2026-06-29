@@ -27,7 +27,7 @@
       items = [
         ...items,
         ...Array.from({ length: next_count - items.length }, (_, idx) =>
-          make_item(start_id + idx)
+          make_item(start_id + idx),
         ),
       ]
     }
@@ -97,10 +97,7 @@
         step={100}
       />
     </label>
-    <button
-      class="regenerate"
-      onclick={() => items = generate_items(item_count)}
-    >
+    <button class="regenerate" onclick={() => (items = generate_items(item_count))}>
       🔄 Regenerate Items
     </button>
   </section>
@@ -178,7 +175,9 @@
       <div
         class="card"
         style:height="{item.height}px"
-        style:background="linear-gradient(135deg, hsl({item.hue}, 70%, 55%), hsl({(item.hue + 30) % 360}, 70%, 45%))"
+        style:background="linear-gradient(135deg, hsl({item.hue}, 70%, 55%), hsl({(item.hue +
+          30) %
+          360}, 70%, 45%))"
       >
         <span class="card-id">#{item.id}</span>
         <span class="card-height">{item.height}px</span>
@@ -191,24 +190,22 @@
   <h2>How it works</h2>
   <ul>
     <li>
-      <strong>Per-column virtualization</strong> — Each column independently tracks
-      visible items
+      <strong>Per-column virtualization</strong> — Each column independently tracks visible
+      items
     </li>
     <li>
-      <strong>Binary search</strong> — O(log n) lookup for visible range using cumulative
-      heights
+      <strong>Binary search</strong> — O(log n) lookup for visible range using cumulative heights
     </li>
     <li>
-      <strong>Padding spacers</strong> — Culled items replaced with padding to maintain
-      scroll position
+      <strong>Padding spacers</strong> — Culled items replaced with padding to maintain scroll
+      position
     </li>
     <li>
-      <strong>ResizeObserver</strong> — Visible items measured; heights cached for
-      accurate positioning
+      <strong>ResizeObserver</strong> — Visible items measured; heights cached for accurate
+      positioning
     </li>
     <li>
-      <strong>Height estimation</strong> — Uses <code>getEstimatedHeight</code> before
-      measurement
+      <strong>Height estimation</strong> — Uses <code>getEstimatedHeight</code> before measurement
     </li>
   </ul>
 </section>

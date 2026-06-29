@@ -32,9 +32,7 @@
   }
 
   const add_items = (count: number) => {
-    const start_id = items.length > 0
-      ? Math.max(...items.map((itm) => itm.id)) + 1
-      : 0
+    const start_id = items.length > 0 ? Math.max(...items.map((itm) => itm.id)) + 1 : 0
     items = [
       ...items,
       ...Array.from({ length: count }, (_, idx) => make_item(start_id + idx)),

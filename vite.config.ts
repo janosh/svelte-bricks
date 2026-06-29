@@ -1,14 +1,10 @@
 import { config } from '@janosh/vite-config'
 import { sveltekit } from '@sveltejs/kit/vite'
 import { vite_plugin as live_examples } from 'svelte-multiselect/live-examples'
-import { defineConfig } from 'vite-plus'
 
-export default defineConfig({
+export default {
   ...config, // shared lint/fmt/build from @janosh/vite-config (dotfiles)
-  staged: {
-    '*.{js,ts,svelte,html,css,md,json,yaml}': `vp check --fix`,
-    '*.{ts,svelte}': `sh -c 'npx svelte-kit sync && npx svelte-check-rs --threshold error'`,
-  },
+
   plugins: [sveltekit(), live_examples()],
 
   test: {
@@ -16,7 +12,6 @@ export default defineConfig({
     css: true,
     coverage: {
       provider: `v8`,
-      reporter: [`text`, `json-summary`],
       include: [`src/lib/*`],
     },
     include: [`tests/**/*.test.ts`],
@@ -36,4 +31,4 @@ export default defineConfig({
   preview: {
     port: 3000,
   },
-})
+}

@@ -102,7 +102,9 @@
         }
       })
       observer.observe({ type: `layout-shift`, buffered: true })
-    } catch { /* Layout shift API not supported */ }
+    } catch {
+      /* Layout shift API not supported */
+    }
     return () => observer?.disconnect()
   })
 
@@ -119,11 +121,10 @@
 <h1>📊 CLS Visualization</h1>
 
 <p class="description">
-  This page demonstrates how the masonry layout reduces Cumulative Layout Shift (CLS).
-  It passes a deterministic <code>initialCols</code> value for SSR. When that value
-  matches the first measured client column count, stable order modes can hydrate with
-  the same masonry column tree; otherwise CSS container queries still hide excess
-  columns before JavaScript runs.
+  This page demonstrates how the masonry layout reduces Cumulative Layout Shift (CLS). It
+  passes a deterministic <code>initialCols</code> value for SSR. When that value matches the
+  first measured client column count, stable order modes can hydrate with the same masonry column
+  tree; otherwise CSS container queries still hide excess columns before JavaScript runs.
 </p>
 
 <section class="info-panel">
@@ -131,9 +132,9 @@
   <div class="status-grid">
     <div class="status-item">
       <span class="label">Hydrated:</span>
-      <span class="value" class:success={is_hydrated}>{
-        is_hydrated ? `✓ Yes` : `⏳ Pending`
-      }</span>
+      <span class="value" class:success={is_hydrated}>
+        {is_hydrated ? `✓ Yes` : `⏳ Pending`}
+      </span>
     </div>
     <div class="status-item">
       <span class="label">Hydration time:</span>
@@ -141,9 +142,9 @@
     </div>
     <div class="status-item">
       <span class="label">Container width:</span>
-      <span class="value">{
-        masonry_width > 0 ? `${masonry_width}px` : `measuring...`
-      }</span>
+      <span class="value">
+        {masonry_width > 0 ? `${masonry_width}px` : `measuring...`}
+      </span>
     </div>
     <div class="status-item">
       <span class="label">SSR columns:</span>
@@ -155,9 +156,9 @@
     </div>
     <div class="status-item">
       <span class="label">Column match:</span>
-      <span class="value" class:success={initial_cols === actual_cols}>{
-        initial_cols === actual_cols ? `✓ Exact SSR` : `⚠ Hint mismatch`
-      }</span>
+      <span class="value" class:success={initial_cols === actual_cols}>
+        {initial_cols === actual_cols ? `✓ Exact SSR` : `⚠ Hint mismatch`}
+      </span>
     </div>
   </div>
 </section>
@@ -225,7 +226,11 @@
 {#if cls_events.length > 0}
   <section class="cls-log">
     <h2>Layout Shift Events</h2>
-    <ul>{#each cls_events as event, event_idx (`${event_idx}:${event}`)}<li>{event}</li>{/each}</ul>
+    <ul>
+      {#each cls_events as event, event_idx (`${event_idx}:${event}`)}
+        <li>{event}</li>
+      {/each}
+    </ul>
   </section>
 {/if}
 
@@ -238,8 +243,8 @@
         <strong>SSR renders initial columns</strong>
         <p>
           On the server, <code>masonryWidth</code> is 0. This demo passes
-          <code>initialCols</code> so SSR can render the same number of columns the
-          client will use after its first width measurement.
+          <code>initialCols</code> so SSR can render the same number of columns the client will
+          use after its first width measurement.
         </p>
       </div>
     </div>
@@ -248,8 +253,8 @@
       <div>
         <strong>CSS container queries hide excess</strong>
         <p>
-          Dynamic <code>@container</code> rules immediately hide SSR columns that don't
-          fit the actual container width. This happens purely in CSS, before any JS runs.
+          Dynamic <code>@container</code> rules immediately hide SSR columns that don't fit
+          the actual container width. This happens purely in CSS, before any JS runs.
         </p>
       </div>
     </div>

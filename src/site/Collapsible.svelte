@@ -3,12 +3,10 @@
   import { tweened } from 'svelte/motion'
   import { slide } from 'svelte/transition'
 
-  let { title, children }: { title: string | string[]; children?: Snippet<[]> } =
-    $props()
+  let { title, children }: { title: string | string[]; children?: Snippet<[]> } = $props()
 
   const duration = 200
   const angle = tweened(180, { duration })
-
   let isOpen = $state(false)
 
   function toggle() {

@@ -13,10 +13,8 @@
   let {
     animate = true,
     order = `balanced-stable`,
-    calcCols = (masonryWidth: number, minColWidth: number, gap: number): number => Math.min(
-      items.length,
-      Math.floor((masonryWidth + gap) / (minColWidth + gap)) || 1,
-    ),
+    calcCols = (masonryWidth: number, minColWidth: number, gap: number): number =>
+      Math.min(items.length, Math.floor((masonryWidth + gap) / (minColWidth + gap)) || 1),
     duration = 200,
     gap = 20,
     getId = (item: Item): ItemId => {
@@ -121,7 +119,8 @@
     const id = getId(item)
     // `||` (not `??`) is intentional: a 0 height is meaningless for balancing,
     // so it falls through to the estimate/average/default chain.
-    return item_heights_cache.get(id) || getEstimatedHeight?.(item) || avg_measured_height || 150
+    const cached = item_heights_cache.get(id)
+    return cached || getEstimatedHeight?.(item) || avg_measured_height || 150
   }
 
   // Check if current order mode needs height measurements before distributing items
@@ -236,7 +235,10 @@
   // When masonryWidth is 0 (SSR), prefer explicit initialCols before using the
   // historical 1920px viewport fallback.
   let n_cols = $derived.by(() => {
-    if (initialCols !== undefined && (!Number.isInteger(initialCols) || initialCols < 1)) {
+    if (
+      initialCols !== undefined &&
+      (!Number.isInteger(initialCols) || initialCols < 1)
+    ) {
       throw new Error(
         `svelte-bricks: initialCols must be a positive integer when provided, received ${initialCols}.`,
       )
@@ -253,9 +255,8 @@
     Array.from({ length: n_cols - 1 }, (_, idx) => {
       const col = idx + 1
       const max_width = (minColWidth + gap) * (col + 1) - gap - 1
-      const min_width = col === 1
-        ? ``
-        : `(min-width: ${(minColWidth + gap) * col - gap}px) and `
+      const min_width =
+        col === 1 ? `` : `(min-width: ${(minColWidth + gap) * col - gap}px) and `
       return `@container masonry ${min_width}(max-width: ${max_width}px) { [data-masonry-id="${masonry_id}"] > .col:nth-child(n+${
         col + 1
       }) { display: none !important; } }`
@@ -328,8 +329,7 @@
   }
 
   // Stable height for virtualization - ONLY estimates (no measured heights = no drift)
-  const get_estimated_height = (item: Item): number =>
-    getEstimatedHeight?.(item) ?? 150
+  const get_estimated_height = (item: Item): number => getEstimatedHeight?.(item) ?? 150
 
   // Prefix height arrays per column: prefix_heights[col][i] = cumulative height of items 0..i
   // When virtualizing: use ONLY estimates (stable, no drift)
@@ -338,7 +338,8 @@
     itemsToCols.map((col) => {
       let sum = 0
       return col.map((record) => {
-        sum += (virtualize ? get_estimated_height(record.item) : get_height(record.item)) + gap
+        sum +=
+          (virtualize ? get_estimated_height(record.item) : get_height(record.item)) + gap
         return sum
       })
     }),
@@ -363,31 +364,30 @@
   let visible_ranges = $derived(
     can_virtualize
       ? prefix_heights.map((ph) => {
-        const start = Math.max(0, binary_search_ge(ph, scroll_top) - 1 - overscan)
-        const end = Math.min(
-          ph.length,
-          binary_search_ge(ph, scroll_top + container_height) + overscan,
-        )
-        return [start, end] as [number, number]
-      })
+          const start = Math.max(0, binary_search_ge(ph, scroll_top) - 1 - overscan)
+          const end = Math.min(
+            ph.length,
+            binary_search_ge(ph, scroll_top + container_height) + overscan,
+          )
+          return [start, end] as [number, number]
+        })
       : itemsToCols.map((col) => [0, col.length] as [number, number]),
   )
 
   // Padding to replace culled items (only when actively virtualizing)
   let col_padding_top = $derived(
     can_virtualize
-      ? visible_ranges.map((
-        [start],
-        idx,
-      ) => (start > 0 ? prefix_heights[idx][start - 1] : 0))
+      ? visible_ranges.map(([start], idx) =>
+          start > 0 ? prefix_heights[idx][start - 1] : 0,
+        )
       : itemsToCols.map(() => 0),
   )
   let col_padding_bottom = $derived(
     can_virtualize
       ? visible_ranges.map(([, end], idx) => {
-        const visible_end = end > 0 ? (prefix_heights[idx][end - 1] ?? 0) : 0
-        return Math.max(0, col_total_heights[idx] - visible_end)
-      })
+          const visible_end = end > 0 ? (prefix_heights[idx][end - 1] ?? 0) : 0
+          return Math.max(0, col_total_heights[idx] - visible_end)
+        })
       : itemsToCols.map(() => 0),
   )
 
@@ -414,10 +414,13 @@
   style:gap="{gap}px"
   style:overflow-y={virtualize ? `auto` : undefined}
   style:height={virtualize
-  ? (typeof height === `number` ? `${height}px` : height ?? `400px`)
-  : undefined}
+    ? typeof height === `number`
+      ? `${height}px`
+      : (height ?? `400px`)
+    : undefined}
   {...rest}
-  style="display: flex; width: 100%; justify-content: center; box-sizing: border-box; {rest.style ?? ``}"
+  style="display: flex; width: 100%; justify-content: center; box-sizing: border-box; {rest.style ??
+    ``}"
   class="masonry {rest.class ?? ``}"
   data-masonry-id={masonry_id}
 >
@@ -433,7 +436,9 @@
       style:gap="{gap}px"
       style:max-width="{maxColWidth}px"
       style:padding-top={can_virtualize ? `${col_padding_top[col_idx]}px` : undefined}
-      style:padding-bottom={can_virtualize ? `${col_padding_bottom[col_idx]}px` : undefined}
+      style:padding-bottom={can_virtualize
+        ? `${col_padding_bottom[col_idx]}px`
+        : undefined}
     >
       {#if effective_animate}
         {#each visible_items as { id, idx, item } (id)}

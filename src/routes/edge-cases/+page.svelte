@@ -41,12 +41,15 @@
   let overscan = $state(5)
 
   // Stress test state
-  type TestMode =
-    | 'rapid-add'
-    | 'rapid-remove'
-    | 'resize-spam'
-    | 'shuffle-chaos'
-    | 'idle'
+  type StressMode = `rapid-add` | `rapid-remove` | `resize-spam` | `shuffle-chaos`
+  type TestMode = StressMode | `idle`
+  type StressTest = {
+    mode: StressMode
+    label: string
+    interval: number
+    setup?: () => void
+    tick: () => void
+  }
   let test_mode = $state<TestMode>(`idle`)
   let interval_id = $state<ReturnType<typeof setInterval> | null>(null)
   let operation_count = $state(0)
@@ -61,11 +64,14 @@
     height: rand_height(),
     color: rand_color(),
   })
+  const make_items = (count: number, start_id = 0) =>
+    Array.from({ length: count }, (_, idx) => make_item(start_id + idx))
 
   let next_id = $state(20)
-  let items = $state(Array.from({ length: 20 }, (_, idx) => make_item(idx)))
+  let items = $state(make_items(20))
 
-  function sync_item_count(): void {
+  function set_items(next_items: typeof items): void {
+    items = next_items
     n_items = items.length
   }
 
@@ -74,12 +80,8 @@
   }
 
   function set_n_items(next_count: number): void {
-    n_items = next_count
-    if (next_count < items.length) {
-      items = items.slice(0, next_count)
-    } else {
-      add_items(next_count - items.length)
-    }
+    if (next_count <= items.length) set_items(items.slice(0, next_count))
+    else add_items(next_count - items.length)
   }
 
   function set_min_height(next_height: number): void {
@@ -98,45 +100,34 @@
     update_item_heights()
   }
 
-  function regenerate() {
-    items = Array.from({ length: n_items }, (_, idx) => make_item(idx))
-    next_id = n_items
+  function regenerate(count = n_items): void {
+    set_items(make_items(count))
+    next_id = count
   }
 
   const add_items = (count: number) => {
     if (count <= 0) return
-    const start_id = next_id
+    const new_items = make_items(count, next_id)
     next_id += count
-    items = [
-      ...items,
-      ...Array.from({ length: count }, (_, idx) => make_item(start_id + idx)),
-    ]
-    sync_item_count()
+    set_items([...items, ...new_items])
   }
   const add_item = () => add_items(1)
-  const remove_last = () => {
-    items = items.slice(0, -1)
-    sync_item_count()
-  }
+  const remove_last = () => set_items(items.slice(0, -1))
   const reroll_items = () => {
     items = items.map(({ id }) => make_item(id))
   }
   const remove_random = () => {
-    if (items.length > 0) {
-      items = items.toSpliced(Math.floor(Math.random() * items.length), 1)
-      sync_item_count()
-    }
+    if (items.length > 0)
+      set_items(items.toSpliced(Math.floor(Math.random() * items.length), 1))
   }
   const shuffle = () => (items = items.toSorted(() => Math.random() - 0.5))
   const clear_all = () => {
-    items = []
     next_id = 0
-    sync_item_count()
+    set_items([])
   }
 
   function apply_item_count_preset(count: number): void {
-    n_items = count
-    regenerate()
+    regenerate(count)
   }
 
   function apply_height_preset(min_height_px: number, max_height_px: number): void {
@@ -146,20 +137,20 @@
   }
 
   // Stress test controls
-  function stop_test() {
+  function regenerate_virtual_items(count: number): void {
+    virtualize = true
+    regenerate(count)
+  }
+
+  function stop_test(): void {
     if (interval_id) clearInterval(interval_id)
     interval_id = null
     test_mode = `idle`
   }
 
-  function start_test(
-    mode: TestMode,
-    setup: () => void,
-    tick: () => void,
-    interval: number,
-  ) {
+  function start_test({ mode, setup, tick, interval }: StressTest): void {
     stop_test()
-    setup()
+    setup?.()
     test_mode = mode
     operation_count = 0
     interval_id = setInterval(() => {
@@ -168,7 +159,49 @@
     }, interval)
   }
 
-  type Preset = { label: string; description: string; action: () => void; link?: [string, string] }
+  const stress_tests: StressTest[] = [
+    { mode: `rapid-add`, label: `⚡ Rapid Add`, interval: 50, tick: () => add_items(1) },
+    {
+      mode: `rapid-remove`,
+      label: `💥 Rapid Remove`,
+      interval: 50,
+      setup: () => {
+        if (items.length < 50) add_items(100)
+      },
+      tick: () => {
+        if (items.length > 0) remove_random()
+        else stop_test()
+      },
+    },
+    {
+      mode: `resize-spam`,
+      label: `📐 Resize Spam`,
+      interval: 100,
+      tick: () => {
+        container_width = 30 + Math.floor(Math.random() * 70)
+      },
+    },
+    {
+      mode: `shuffle-chaos`,
+      label: `🌀 Shuffle Chaos`,
+      interval: 150,
+      setup: () => {
+        if (items.length < 30) add_items(50)
+      },
+      tick: () => {
+        shuffle()
+        if (Math.random() > 0.7) add_items(1)
+        if (Math.random() > 0.7 && items.length > 5) remove_random()
+      },
+    },
+  ]
+
+  type Preset = {
+    label: string
+    description: string
+    action: () => void
+    link?: [string, string]
+  }
   let selected_preset = $state<Preset | null>(null)
   const presets: Preset[] = [
     {
@@ -197,14 +230,13 @@
       link: [`https://github.com/janosh/svelte-bricks/issues/60`, `issue #60`],
       action: () => {
         order = `balanced-stable`
-        n_items = 12
         min_col_width = 180
         max_col_width = 260
         gap = 20
         container_width = 100
         constrained_width = false
         virtualize = false
-        regenerate()
+        regenerate(12)
       },
     },
     {
@@ -227,9 +259,9 @@
   let expected_cols = $derived(
     masonry_width > 0
       ? Math.min(
-        items.length,
-        Math.floor((masonry_width + gap) / (min_col_width + gap)) || 1,
-      )
+          items.length,
+          Math.floor((masonry_width + gap) / (min_col_width + gap)) || 1,
+        )
       : `calculating...`,
   )
 </script>
@@ -241,20 +273,14 @@
 <h1>Edge Cases</h1>
 
 <p class="description">
-  Test the masonry layout with unusual item, column, and container
-  settings.
+  Test the masonry layout with unusual item, column, and container settings.
 </p>
 
 <section class="control-group item-settings">
   <h2>Item Settings</h2>
   <label>
     <span>Number of items: <code>{n_items}</code></span>
-    <input
-      type="range"
-      bind:value={() => n_items, set_n_items}
-      min={0}
-      max={200}
-    />
+    <input type="range" bind:value={() => n_items, set_n_items} min={0} max={200} />
   </label>
   <label>
     <span>Min height: <code>{min_height}px</code></span>
@@ -275,10 +301,7 @@
     />
   </label>
   <label class="checkbox">
-    <input
-      type="checkbox"
-      bind:checked={() => fixed_height, set_fixed_height}
-    />
+    <input type="checkbox" bind:checked={() => fixed_height, set_fixed_height} />
     <span>Fixed height (use min only)</span>
   </label>
   <div class="button-row">
@@ -312,8 +335,8 @@
     <label>
       <span>Order mode: <code>{order}</code></span>
       <select bind:value={order}>
-        {#each order_options as opt (opt)}
-          <option value={opt}>{opt}</option>
+        {#each order_options as order_option (order_option)}
+          <option value={order_option}>{order_option}</option>
         {/each}
       </select>
     </label>
@@ -357,14 +380,9 @@
     </label>
     <div class="button-row">
       {#each [[`🚀`, 1000], [`🔥`, 5000]] as const as [icon, count] (count)}
-        <button
-          onclick={() => {
-            virtualize = true
-            n_items = count
-            regenerate()
-          }}
-        >
-          {icon} {count.toLocaleString()} Items
+        <button onclick={() => regenerate_virtual_items(count)}>
+          {icon}
+          {count.toLocaleString()} Items
         </button>
       {/each}
     </div>
@@ -375,10 +393,12 @@
   <h2>Quick Presets</h2>
   <div class="button-row">
     {#each presets as preset (preset.label)}
-      <button onclick={() => {
-        preset.action()
-        selected_preset = preset
-      }}>{preset.label}</button>
+      <button
+        onclick={() => {
+          preset.action()
+          selected_preset = preset
+        }}>{preset.label}</button
+      >
     {/each}
   </div>
   {#if selected_preset}
@@ -399,8 +419,8 @@
     <a href="https://tailwindcss.com/docs/preflight">Tailwind Preflight</a>. Toggle the
     reset to inject <code>div &#123; display: block &#125;</code> into the page. Layout
     should remain intact due to inline styles. (<a
-      href="https://github.com/janosh/svelte-bricks/issues/48"
-    >issue #48</a>)
+      href="https://github.com/janosh/svelte-bricks/issues/48">issue #48</a
+    >)
   </p>
   <div class="button-row">
     <button
@@ -415,50 +435,15 @@
 <details class="stress-tests">
   <summary>🔥 Automated Stress Tests</summary>
   <div class="button-row">
-    <button
-      onclick={() => start_test(`rapid-add`, () => {}, () => add_items(1), 50)}
-      class:active={test_mode === `rapid-add`}
-      disabled={test_mode !== `idle` && test_mode !== `rapid-add`}
-    >
-      ⚡ Rapid Add
-    </button>
-    <button
-      onclick={() =>
-      start_test(`rapid-remove`, () => {
-        if (items.length < 50) add_items(100)
-      }, () => {
-        if (items.length > 0) remove_random()
-        else stop_test()
-      }, 50)}
-      class:active={test_mode === `rapid-remove`}
-      disabled={test_mode !== `idle` && test_mode !== `rapid-remove`}
-    >
-      💥 Rapid Remove
-    </button>
-    <button
-      onclick={() =>
-      start_test(`resize-spam`, () => {}, () => {
-        container_width = 30 + Math.floor(Math.random() * 70)
-      }, 100)}
-      class:active={test_mode === `resize-spam`}
-      disabled={test_mode !== `idle` && test_mode !== `resize-spam`}
-    >
-      📐 Resize Spam
-    </button>
-    <button
-      onclick={() =>
-      start_test(`shuffle-chaos`, () => {
-        if (items.length < 30) add_items(50)
-      }, () => {
-        shuffle()
-        if (Math.random() > 0.7) add_items(1)
-        if (Math.random() > 0.7 && items.length > 5) remove_random()
-      }, 150)}
-      class:active={test_mode === `shuffle-chaos`}
-      disabled={test_mode !== `idle` && test_mode !== `shuffle-chaos`}
-    >
-      🌀 Shuffle Chaos
-    </button>
+    {#each stress_tests as stress_test (stress_test.mode)}
+      <button
+        onclick={() => start_test(stress_test)}
+        class:active={test_mode === stress_test.mode}
+        disabled={test_mode !== `idle` && test_mode !== stress_test.mode}
+      >
+        {stress_test.label}
+      </button>
+    {/each}
     {#if test_mode !== `idle`}
       <button onclick={stop_test} class="stop">⏹ Stop</button>
     {/if}
@@ -498,11 +483,7 @@
     bind:masonryHeight={masonry_height}
   >
     {#snippet children({ item })}
-      <div
-        class="item"
-        style:height="{item.height}px"
-        style:background={item.color}
-      >
+      <div class="item" style:height="{item.height}px" style:background={item.color}>
         <span class="item-id">#{item.id}</span>
         <span class="item-height">{item.height}px</span>
       </div>
@@ -624,7 +605,9 @@
   button.stop:hover {
     background: rgba(255, 50, 50, 0.5);
   }
-  .presets, .stress-tests, .css-reset-test {
+  .presets,
+  .stress-tests,
+  .css-reset-test {
     max-width: 1200px;
     margin: 0 auto 1em;
     padding: 0 0.75em;
@@ -642,7 +625,9 @@
   .css-reset-test a {
     color: cornflowerblue;
   }
-  .presets h2, .stress-tests summary, .css-reset-test h2 {
+  .presets h2,
+  .stress-tests summary,
+  .css-reset-test h2 {
     margin: 0 0 0.4em;
     font-size: 0.85rem;
     color: #aaa;

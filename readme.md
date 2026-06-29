@@ -32,12 +32,12 @@ The kitchen sink for this component looks something like this:
 <script>
   import Masonry from 'svelte-bricks'
 
-  let nItems = $state(30);
+  let nItems = $state(30)
   let items = $derived([...Array(nItems).keys()])
 
   let [minColWidth, maxColWidth, gap] = [200, 800, 20]
   let initialCols = 3 // optional SSR hint
-  let width = $state(0), height = $state(0)
+  let [width, height] = $state([0, 0])
 </script>
 
 Masonry size: <span>{width}px</span> &times; <span>{height}px</span> (w &times; h)
