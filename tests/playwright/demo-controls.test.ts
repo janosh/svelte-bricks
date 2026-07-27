@@ -4,7 +4,7 @@ const edge_items = (page: Page) => page.locator(`.masonry-container .item`)
 
 function edge_item_heights(page: Page): Promise<number[]> {
   return edge_items(page).evaluateAll((elements) =>
-    elements.map((element) => Number.parseFloat(getComputedStyle(element).height)),
+    elements.map((element) => Number(getComputedStyle(element).height.replace(`px`, ``))),
   )
 }
 
@@ -12,6 +12,18 @@ const virtual_total_items = (page: Page) =>
   page.locator(`.stat`).filter({ hasText: `Total Items` }).locator(`.stat-value`)
 
 test.describe(`Demo controls`, () => {
+  test(`home page renders the example and toggles the docs collapsible`, async ({
+    page,
+  }) => {
+    await page.goto(`/`, { waitUntil: `networkidle` })
+    await expect(page.locator(`div.masonry > div.col > div`).first()).toBeVisible()
+
+    const toggle = page.getByRole(`button`, { name: /Click for docs/ })
+    await toggle.click()
+    await expect(page.getByRole(`button`, { name: /Close docs/ })).toBeVisible()
+    await expect(page.getByRole(`heading`, { name: `Installation` })).toBeVisible()
+  })
+
   test(`CLS demo reset ignores stale image loading timers`, async ({ page }) => {
     await page.clock.install()
     await page.goto(`/cls-demo`, { waitUntil: `domcontentloaded` })

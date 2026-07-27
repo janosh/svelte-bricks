@@ -11,7 +11,6 @@ export default {
     environment: `happy-dom`,
     css: true,
     coverage: {
-      provider: `v8`,
       include: [`src/lib/*`],
     },
     include: [`tests/**/*.test.ts`],
@@ -25,10 +24,6 @@ export default {
 
   server: {
     fs: { allow: [`..`] }, // needed to import from $root
-    port: 3000,
-  },
-
-  preview: {
     port: 3000,
   },
 }

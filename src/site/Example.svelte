@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Masonry, type MasonryOrder } from '$lib'
+  import { Masonry, type MasonryOrder, order_options } from '$lib'
   import { Toggle } from 'svelte-multiselect'
   import { Box } from '.'
 
@@ -19,11 +19,9 @@
   <label>
     <code>order</code>
     <select bind:value={order}>
-      <option value="balanced">balanced</option>
-      <option value="balanced-stable">balanced-stable</option>
-      <option value="row-first">row-first</option>
-      <option value="column-sequential">column-sequential</option>
-      <option value="column-balanced">column-balanced</option>
+      {#each order_options as order_option (order_option)}
+        <option value={order_option}>{order_option}</option>
+      {/each}
     </select>
   </label>
   <label>

@@ -1,4 +1,3 @@
-// eslint-disable no-await-in-loop
 import { expect, type Locator, type Page } from '@playwright/test'
 
 // Navigate to masonry test page and wait for it to load
@@ -14,37 +13,32 @@ export const get_columns = (page: Page): Locator => page.locator(`#test-masonry 
 export const get_items = (page: Page): Locator =>
   page.locator(`#test-masonry [data-item-id]`)
 
-// Get item IDs in a specific column (in DOM order)
-export async function get_column_item_ids(
-  page: Page,
-  col_idx: number,
-): Promise<number[]> {
-  const items = page.locator(`#test-masonry .col-${col_idx} [data-item-id]`)
-  const ids: number[] = []
-  const count = await items.count()
-  for (let idx = 0; idx < count; idx++) {
-    const id_str = await items.nth(idx).getAttribute(`data-item-id`)
-    if (id_str) ids.push(parseInt(id_str, 10))
+// Get item IDs per column, in DOM order (one round trip for the whole grid)
+export const get_all_column_item_ids = (page: Page): Promise<number[][]> =>
+  get_columns(page).evaluateAll((columns) =>
+    columns.map((column) =>
+      Array.from(column.querySelectorAll(`[data-item-id]`)).map((item) =>
+        Number(item.getAttribute(`data-item-id`)),
+      ),
+    ),
+  )
+
+// Map each item ID to the column index it currently sits in
+export async function get_column_assignments(page: Page): Promise<Map<number, number>> {
+  const assignments = new Map<number, number>()
+  for (const [col_idx, ids] of (await get_all_column_item_ids(page)).entries()) {
+    for (const id of ids) assignments.set(id, col_idx)
   }
-  return ids
+  return assignments
 }
 
-// Get all item IDs across all columns (returns array of arrays by column)
-export async function get_all_column_item_ids(page: Page): Promise<number[][]> {
-  const columns = get_columns(page)
-  const col_count = await columns.count()
-  const result: number[][] = []
-  for (let col_idx = 0; col_idx < col_count; col_idx++) {
-    result.push(await get_column_item_ids(page, col_idx))
-  }
-  return result
-}
-
-// Set the order mode via dropdown
+// Set the order mode via dropdown and wait for the new layout to settle.
+// The wait is folded in because every caller needs it and forgetting it means flakiness.
 export async function set_order_mode(page: Page, order: string): Promise<void> {
   await page.locator(`[data-testid="order-select"]`).selectOption(order)
   // wait deterministically until the new order has propagated to the page
   await expect(page.locator(`[data-testid="stat-order"]`)).toHaveText(`Order: ${order}`)
+  await wait_for_masonry_stable(page)
 }
 
 // Click "Add Item" `count` times, waiting for each add to register before the next
@@ -71,7 +65,7 @@ export async function get_current_order(page: Page): Promise<string> {
 export async function get_item_count(page: Page): Promise<number> {
   const text = await page.locator(`[data-testid="stat-items"]`).textContent()
   const match = text?.match(/Items: (?<count>\d+)/u)
-  return match?.groups ? parseInt(match.groups.count, 10) : 0
+  return match?.groups ? Math.trunc(Number(match.groups.count)) : 0
 }
 
 // Wait for masonry to stabilize (items are measured and distributed)
@@ -93,6 +87,21 @@ export async function wait_for_masonry_stable(page: Page, timeout = 2000): Promi
     .toBe(true)
 }
 
+// Assert every item is still in the column it was assigned to
+export async function verify_stability(
+  page: Page,
+  expected: Map<number, number>,
+  context: string,
+): Promise<void> {
+  const actual = await get_column_assignments(page)
+  for (const [id, expected_col] of expected.entries()) {
+    expect(
+      actual.get(id),
+      `${context}: Item ${id} jumped from column ${expected_col}`,
+    ).toBe(expected_col)
+  }
+}
+
 // Assert that items across columns follow row-first order (round-robin)
 export async function assert_row_first_order(page: Page, n_cols: number): Promise<void> {
   const col_ids = await get_all_column_item_ids(page)
@@ -103,14 +112,6 @@ export async function assert_row_first_order(page: Page, n_cols: number): Promis
   }
 }
 
-// Get all item IDs as a flat array
-export async function get_all_item_ids(page: Page): Promise<number[]> {
-  const items = get_items(page)
-  const ids: number[] = []
-  const count = await items.count()
-  for (let idx = 0; idx < count; idx++) {
-    const id_str = await items.nth(idx).getAttribute(`data-item-id`)
-    if (id_str) ids.push(parseInt(id_str, 10))
-  }
-  return ids.toSorted((a, b) => a - b)
-}
+// Get all item IDs across the whole masonry, sorted ascending
+export const get_all_item_ids = async (page: Page): Promise<number[]> =>
+  (await get_all_column_item_ids(page)).flat().toSorted((a, b) => a - b)
