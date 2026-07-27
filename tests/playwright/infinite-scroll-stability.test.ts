@@ -102,6 +102,8 @@ test.describe(`Infinite Scroll Stability (Issue #53)`, () => {
 
     // survivors keep their columns; the two removed ids are simply gone
     const remaining = await get_column_assignments(page)
+    // guards against the clicks silently no-oping, which would make the check below vacuous
+    expect(remaining.size).toBe(before.size - 2)
     const survivors = new Map([...before].filter(([id]) => remaining.has(id)))
     await verify_stability(page, survivors, `After removal`)
   })

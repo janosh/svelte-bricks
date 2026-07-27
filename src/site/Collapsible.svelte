@@ -15,7 +15,7 @@
   }
 </script>
 
-<button onclick={toggle}>
+<button onclick={toggle} aria-expanded={is_open}>
   {#if Array.isArray(title)}{is_open ? title[1] : title[0]}{:else}{title}{/if}
   <span style="display: inline-block; transform: rotate({angle.current}deg)">👆</span>
 </button>
