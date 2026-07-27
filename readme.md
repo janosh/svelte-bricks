@@ -18,6 +18,22 @@ Svelte masonry component with SSR support (via CSS container queries) and automa
 
 </div>
 
+> [!IMPORTANT]
+> **This package has moved.** `Masonry` now ships as part of
+> [`svelte-widgets`](https://github.com/janosh/svelte-widgets), together with
+> `MultiSelect`, `CommandMenu`, `Toc` and a dozen other components.
+>
+> ```sh
+> npm install --save-dev svelte-widgets
+> ```
+>
+> ```diff
+> - import Masonry from 'svelte-bricks'
+> + import { Masonry } from 'svelte-widgets'
+> ```
+>
+> This repo is archived and `svelte-bricks` will receive no further updates.
+
 ## Installation
 
 ```sh
