@@ -116,10 +116,9 @@
 
   // Reads from non-reactive cache, so won't trigger re-renders
   const get_height = (item: Item): number => {
-    const id = getId(item)
     // `||` (not `??`) is intentional: a 0 height is meaningless for balancing,
     // so it falls through to the estimate/average/default chain.
-    const cached = item_heights_cache.get(id)
+    const cached = item_heights_cache.get(getId(item))
     return cached || getEstimatedHeight?.(item) || avg_measured_height || 150
   }
 
@@ -131,8 +130,8 @@
     if (virtualize) return {}
     const observer = new ResizeObserver(() => {
       const new_height = node.offsetHeight
-      if (new_height > 0 && item_heights_cache.get(item_id) !== new_height) {
-        const old_height = item_heights_cache.get(item_id) ?? 0
+      const old_height = item_heights_cache.get(item_id) ?? 0
+      if (new_height > 0 && old_height !== new_height) {
         measured_sum += new_height - old_height
         item_heights_cache.set(item_id, new_height)
         // Keep measured_count in sync with cache so measurement checks stay accurate
@@ -249,7 +248,7 @@
   )
 
   // Distribute items based on order mode
-  let itemsToCols = $derived.by(() => {
+  let items_to_cols = $derived.by(() => {
     // balanced-stable should NEVER fall back - it uses stable assignments + estimates for new items
     // This prevents existing items from jumping columns when new items are added
     if (effective_order === `balanced-stable`) return balanced_stable_to_cols(n_cols)
@@ -314,7 +313,7 @@
   // When virtualizing: use ONLY estimates, never measured heights, so they can't drift
   // When not virtualizing: use measured heights (accurate balancing)
   let prefix_heights = $derived(
-    itemsToCols.map((col) => {
+    items_to_cols.map((col) => {
       let sum = 0
       return col.map(({ item }) => {
         sum += (virtualize ? (getEstimatedHeight?.(item) ?? 150) : get_height(item)) + gap
@@ -327,6 +326,11 @@
   // For numeric height, use directly; for string (CSS units like "80vh"), use measured clientHeight
   let container_height = $derived(
     typeof height === `number` ? height : masonryHeight || 400,
+  )
+
+  // Same height as a CSS value for the scroll container; strings like `80vh` pass through
+  let css_height = $derived(
+    typeof height === `number` ? `${height}px` : (height ?? `400px`),
   )
 
   // Only enable virtualization once we have a valid container height measurement
@@ -377,18 +381,14 @@
   onscroll={virtualize ? on_scroll : undefined}
   style:gap="{gap}px"
   style:overflow-y={virtualize ? `auto` : undefined}
-  style:height={virtualize
-    ? typeof height === `number`
-      ? `${height}px`
-      : (height ?? `400px`)
-    : undefined}
+  style:height={virtualize ? css_height : undefined}
   {...rest}
   style="display: flex; width: 100%; justify-content: center; box-sizing: border-box; {rest.style ??
     ``}"
   class="masonry {rest.class ?? ``}"
   data-masonry-id={masonry_id}
 >
-  {#each itemsToCols as col, col_idx (col_idx)}
+  {#each items_to_cols as col, col_idx (col_idx)}
     {@const { start, end, pad_top, pad_bottom } = col_windows[col_idx]}
     {@const visible_items = can_virtualize ? col.slice(start, end) : col}
     <div
