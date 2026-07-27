@@ -1,4 +1,4 @@
-import Masonry from '$lib'
+import Masonry, { order_options as ALL_ORDER_MODES } from '$lib'
 import { mount, tick } from 'svelte'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import MasonryAppendHarness from './fixtures/MasonryAppendHarness.svelte'
@@ -15,14 +15,6 @@ const as_columns = () =>
   get_col_dist()
     .map((col) => col.join(`,`))
     .join(` | `)
-const ALL_ORDER_MODES = [
-  `balanced`,
-  `balanced-stable`,
-  `row-first`,
-  `column-sequential`,
-  `column-balanced`,
-] as const
-
 // Track ResizeObserver registrations
 const resize_observers = new Map<Element, ResizeObserverCallback>()
 // number for a uniform height, or a function to give each item its own measured height
@@ -674,6 +666,28 @@ describe(`Masonry virtualization`, () => {
 })
 
 describe(`Masonry item cleanup`, () => {
+  // Regression: a removed id must be purged from stable_assignments, or re-adding it
+  // pins it back to its old column instead of the shortest one.
+  test(`re-adding a removed id places it fresh, not in its old column`, async () => {
+    // item 3 is tall, so the column holding it stays clearly the longest
+    mock_height = (el) => (el.textContent === `3` ? 500 : 100)
+    const harness = mount(MasonryAppendHarness, {
+      target: document.body,
+      props: { events: [] },
+    })
+    await tick()
+    expect(as_columns()).toBe(`1,3 | 2,4`)
+
+    harness.remove(1)
+    await tick()
+    expect(as_columns()).toBe(`3 | 2,4`)
+
+    harness.append(1)
+    await tick()
+    // id 1 lands in the shorter column, not back on top of the tall item
+    expect(as_columns()).toBe(`3 | 2,4,1`)
+  })
+
   test(`swapping out every item on a live instance renders only the new ones`, async () => {
     const harness = mount(MasonryAppendHarness, {
       target: document.body,
