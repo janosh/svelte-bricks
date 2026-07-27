@@ -7,6 +7,7 @@ import {
 } from 'svelte-multiselect/live-examples'
 import pkg from './package.json' with { type: 'json' }
 
+// mdsvex_transform turns pkg.repository into source links on live examples
 if (!pkg.repository) throw new Error(`package.json is missing a "repository" field`)
 
 const defaults = { repo: pkg.repository, hideStyle: true }
@@ -30,9 +31,5 @@ export default {
       $root: `.`,
       $site: `src/site`,
     },
-  },
-
-  vitePlugin: {
-    inspector: true,
   },
 } satisfies Config

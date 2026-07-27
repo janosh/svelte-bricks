@@ -19,4 +19,4 @@ jobs:
       - name: Lint and format check
         run: pnpm exec vp check
       - name: Svelte type check
-        run: pnpm exec svelte-kit sync && pnpm exec svelte-check-rs --threshold error
+        run: pnpm exec svelte-kit sync && pnpm exec svelte-check --threshold error
