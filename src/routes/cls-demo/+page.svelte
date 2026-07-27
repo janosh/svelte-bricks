@@ -2,13 +2,14 @@
   import { onMount } from 'svelte'
   import Masonry from '$lib'
 
-  // Track hydration: time from navigation start until this effect runs
   let is_hydrated = $state(false)
-  let hydration_time = $state<number | null>(null)
+  // performance.now() is measured from navigation start, so this is how long the page
+  // took to hydrate, not how long hydration itself ran
+  let hydrated_after = $state<number | null>(null)
 
   $effect(() => {
     is_hydrated = true
-    hydration_time = Math.round(performance.now())
+    hydrated_after = Math.round(performance.now())
   })
 
   // State
@@ -136,8 +137,8 @@
       </span>
     </div>
     <div class="status-item">
-      <span class="label">Hydration time:</span>
-      <span class="value">{hydration_time !== null ? `${hydration_time}ms` : `...`}</span>
+      <span class="label">Hydrated after:</span>
+      <span class="value">{hydrated_after !== null ? `${hydrated_after}ms` : `...`}</span>
     </div>
     <div class="status-item">
       <span class="label">Container width:</span>
