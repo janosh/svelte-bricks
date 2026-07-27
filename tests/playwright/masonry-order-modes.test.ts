@@ -23,115 +23,101 @@ const ALL_ORDER_MODES = [
   `column-balanced`,
 ] as const
 
-test.describe(`Masonry Order Modes`, () => {
-  test.beforeEach(async ({ page }) => {
-    await goto_masonry_test(page)
-    await wait_for_masonry_stable(page)
-  })
+// every test in this file starts from a freshly loaded, settled masonry page
+test.beforeEach(async ({ page }) => {
+  await goto_masonry_test(page)
+  await wait_for_masonry_stable(page)
+})
 
+test.describe(`Masonry Order Modes`, () => {
   // Both height-balancing modes even out column item counts for uniform items
   for (const mode of [`balanced`, `balanced-stable`] as const) {
     test(`order=${mode} keeps column item counts within 1`, async ({ page }) => {
       await set_order_mode(page, mode)
-      await wait_for_masonry_stable(page)
 
       const counts = (await get_all_column_item_ids(page)).map((ids) => ids.length)
       expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1)
     })
   }
 
-  test.describe(`order=balanced`, () => {
-    test(`items may reorder when new items are added`, async ({ page }) => {
-      await set_order_mode(page, `balanced`)
-      await wait_for_masonry_stable(page)
+  test(`order=balanced lets items reorder when new items are added`, async ({ page }) => {
+    await set_order_mode(page, `balanced`)
 
-      const initial_total = (await get_all_column_item_ids(page)).flat().length
+    const initial_total = (await get_all_column_item_ids(page)).flat().length
 
-      await add_items_individually(page, 5)
-      await wait_for_masonry_stable(page)
+    await add_items_individually(page, 5)
+    await wait_for_masonry_stable(page)
 
-      const new_col_ids = await get_all_column_item_ids(page)
-      expect(new_col_ids.flat()).toHaveLength(initial_total + 5)
+    const new_col_ids = await get_all_column_item_ids(page)
+    expect(new_col_ids.flat()).toHaveLength(initial_total + 5)
 
-      // In balanced mode existing items CAN move, so only check the result stays balanced
-      const counts = new_col_ids.map((ids) => ids.length)
-      expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(2)
-    })
+    // In balanced mode existing items CAN move, so only check the result stays balanced
+    const counts = new_col_ids.map((ids) => ids.length)
+    expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(2)
   })
 
-  test.describe(`order=balanced-stable`, () => {
-    test(`repopulates columns after column count increases`, async ({ page }) => {
-      await set_order_mode(page, `balanced-stable`)
-      await wait_for_masonry_stable(page)
+  test(`order=balanced-stable repopulates columns after count increases`, async ({
+    page,
+  }) => {
+    await set_order_mode(page, `balanced-stable`)
 
-      const filled_col_count = async (): Promise<number> =>
-        (await get_all_column_item_ids(page)).filter((ids) => ids.length > 0).length
-      const cols_input = page.locator(`[data-testid="cols-input"]`)
+    const filled_col_count = async (): Promise<number> =>
+      (await get_all_column_item_ids(page)).filter((ids) => ids.length > 0).length
+    const cols_input = page.locator(`[data-testid="cols-input"]`)
 
-      await cols_input.fill(`1`)
-      await expect.poll(filled_col_count).toBe(1)
+    await cols_input.fill(`1`)
+    await expect.poll(filled_col_count).toBe(1)
 
-      await cols_input.fill(`3`)
-      await expect.poll(filled_col_count).toBe(3)
-    })
+    await cols_input.fill(`3`)
+    await expect.poll(filled_col_count).toBe(3)
   })
 
   test(`order=row-first distributes items in round-robin order`, async ({ page }) => {
     await set_order_mode(page, `row-first`)
-    await wait_for_masonry_stable(page)
 
     await assert_row_first_order(page, 3) // page defaults to 3 columns
   })
 
-  test.describe(`order=column-sequential`, () => {
-    test(`fills columns sequentially (first N in col 1, next N in col 2)`, async ({
-      page,
-    }) => {
-      await set_order_mode(page, `column-sequential`)
-      await wait_for_masonry_stable(page)
+  test(`order=column-sequential fills columns in reading order`, async ({ page }) => {
+    await set_order_mode(page, `column-sequential`)
 
-      const col_ids = await get_all_column_item_ids(page)
-      const total = col_ids.flat().length
-      const items_per_col = Math.ceil(total / 3)
+    const col_ids = await get_all_column_item_ids(page)
+    const total = col_ids.flat().length
+    const items_per_col = Math.ceil(total / 3)
 
-      let expected_start = 0
-      for (const ids of col_ids) {
-        if (ids.length > 0) {
-          expect(ids[0]).toBeGreaterThanOrEqual(expected_start)
-          expect(ids[0]).toBeLessThan(expected_start + items_per_col + 1)
-          expected_start += items_per_col
-        }
+    let expected_start = 0
+    for (const ids of col_ids) {
+      if (ids.length > 0) {
+        expect(ids[0]).toBeGreaterThanOrEqual(expected_start)
+        expect(ids[0]).toBeLessThan(expected_start + items_per_col + 1)
+        expected_start += items_per_col
       }
-    })
+    }
   })
 
-  test.describe(`order=column-balanced`, () => {
-    test(`fills columns by target height while maintaining reading order`, async ({
-      page,
-    }) => {
-      await set_order_mode(page, `column-balanced`)
-      await wait_for_masonry_stable(page)
+  test(`order=column-balanced fills by target height in reading order`, async ({
+    page,
+  }) => {
+    await set_order_mode(page, `column-balanced`)
 
-      const col_ids = await get_all_column_item_ids(page)
-      expect(col_ids[0]).toContain(0)
+    const col_ids = await get_all_column_item_ids(page)
+    expect(col_ids[0]).toContain(0)
 
-      // Items flow left to right - first item of col N > last item of col N-1
-      for (let col_idx = 1; col_idx < col_ids.length; col_idx++) {
-        const prev = col_ids[col_idx - 1]
-        const curr = col_ids[col_idx]
-        if (curr.length > 0 && prev.length > 0) {
-          const prev_last = prev.at(-1)
-          if (prev_last !== undefined) expect(curr[0]).toBeGreaterThan(prev_last)
-        }
+    // Items flow left to right - first item of col N > last item of col N-1
+    for (let col_idx = 1; col_idx < col_ids.length; col_idx++) {
+      const prev = col_ids[col_idx - 1]
+      const curr = col_ids[col_idx]
+      if (curr.length > 0 && prev.length > 0) {
+        const prev_last = prev.at(-1)
+        if (prev_last !== undefined) expect(curr[0]).toBeGreaterThan(prev_last)
       }
-    })
+    }
   })
 
   // Both column-first modes maintain ascending ID order within columns
   for (const mode of [`column-sequential`, `column-balanced`]) {
     test(`${mode}: maintains ascending ID order within each column`, async ({ page }) => {
       await set_order_mode(page, mode)
-      await wait_for_masonry_stable(page)
 
       const col_ids = await get_all_column_item_ids(page)
       for (const ids of col_ids) {
@@ -148,7 +134,6 @@ test.describe(`Masonry Order Modes`, () => {
 
     for (const mode of ALL_ORDER_MODES) {
       await set_order_mode(page, mode)
-      await wait_for_masonry_stable(page)
 
       expect(await get_current_order(page)).toBe(mode)
       expect(await get_all_item_ids(page)).toEqual(initial_ids)
@@ -157,11 +142,6 @@ test.describe(`Masonry Order Modes`, () => {
 })
 
 test.describe(`Masonry Item Operations`, () => {
-  test.beforeEach(async ({ page }) => {
-    await goto_masonry_test(page)
-    await wait_for_masonry_stable(page)
-  })
-
   for (const [button, delta] of [
     [`add-item-btn`, 1],
     [`add-5-items-btn`, 5],
@@ -208,11 +188,6 @@ test.describe(`Masonry Item Operations`, () => {
 })
 
 test.describe(`Masonry Column Configuration`, () => {
-  test.beforeEach(async ({ page }) => {
-    await goto_masonry_test(page)
-    await wait_for_masonry_stable(page)
-  })
-
   test(`changing column count redistributes items`, async ({ page }) => {
     // Start with 3 columns (default)
     let columns = get_columns(page)

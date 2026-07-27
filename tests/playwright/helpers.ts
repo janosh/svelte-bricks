@@ -32,11 +32,13 @@ export async function get_column_assignments(page: Page): Promise<Map<number, nu
   return assignments
 }
 
-// Set the order mode via dropdown
+// Set the order mode via dropdown and wait for the new layout to settle.
+// The wait is folded in because every caller needs it and forgetting it means flakiness.
 export async function set_order_mode(page: Page, order: string): Promise<void> {
   await page.locator(`[data-testid="order-select"]`).selectOption(order)
   // wait deterministically until the new order has propagated to the page
   await expect(page.locator(`[data-testid="stat-order"]`)).toHaveText(`Order: ${order}`)
+  await wait_for_masonry_stable(page)
 }
 
 // Click "Add Item" `count` times, waiting for each add to register before the next

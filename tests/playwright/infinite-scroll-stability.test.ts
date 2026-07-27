@@ -23,7 +23,6 @@ test.describe(`Infinite Scroll Stability (Issue #53)`, () => {
     page,
   }) => {
     await set_order_mode(page, `balanced-stable`)
-    await wait_for_masonry_stable(page)
 
     const assignments = await get_column_assignments(page)
 
@@ -43,7 +42,6 @@ test.describe(`Infinite Scroll Stability (Issue #53)`, () => {
 
   test(`row-first mode: items maintain predictable positions`, async ({ page }) => {
     await set_order_mode(page, `row-first`)
-    await wait_for_masonry_stable(page)
 
     const n_cols = 3
     for (let idx = 0; idx < 5; idx++) {
@@ -59,7 +57,6 @@ test.describe(`Infinite Scroll Stability (Issue #53)`, () => {
 
   test(`column-sequential mode: items maintain sequential order`, async ({ page }) => {
     await set_order_mode(page, `column-sequential`)
-    await wait_for_masonry_stable(page)
 
     for (let idx = 0; idx < 5; idx++) {
       await click_button(page, `add-item-btn`)
@@ -75,7 +72,6 @@ test.describe(`Infinite Scroll Stability (Issue #53)`, () => {
 
   test(`balanced-stable mode handles rapid item additions`, async ({ page }) => {
     await set_order_mode(page, `balanced-stable`)
-    await wait_for_masonry_stable(page)
 
     const initial = await get_column_assignments(page)
 
@@ -89,7 +85,6 @@ test.describe(`Infinite Scroll Stability (Issue #53)`, () => {
     page,
   }) => {
     await set_order_mode(page, `balanced-stable`)
-    await wait_for_masonry_stable(page)
 
     await click_button(page, `add-5-items-btn`)
     await wait_for_masonry_stable(page)
