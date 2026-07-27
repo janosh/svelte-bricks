@@ -1,4 +1,3 @@
-// eslint-disable no-await-in-loop
 import { expect, test } from '@playwright/test'
 import {
   add_items_individually,
@@ -15,111 +14,52 @@ import {
   wait_for_masonry_stable,
 } from './helpers'
 
+// mirrors order_options in src/lib/index.ts ($lib can't be imported from node)
+const ALL_ORDER_MODES = [
+  `balanced`,
+  `balanced-stable`,
+  `row-first`,
+  `column-sequential`,
+  `column-balanced`,
+] as const
+
 test.describe(`Masonry Order Modes`, () => {
   test.beforeEach(async ({ page }) => {
     await goto_masonry_test(page)
     await wait_for_masonry_stable(page)
   })
 
-  test.describe(`order=balanced (default)`, () => {
-    test(`distributes items to shortest columns`, async ({ page }) => {
-      await set_order_mode(page, `balanced`)
+  // Both height-balancing modes even out column item counts for uniform items
+  for (const mode of [`balanced`, `balanced-stable`] as const) {
+    test(`order=${mode} keeps column item counts within 1`, async ({ page }) => {
+      await set_order_mode(page, mode)
       await wait_for_masonry_stable(page)
 
-      const col_ids = await get_all_column_item_ids(page)
-      // With uniform items and balanced mode, columns should have roughly equal items
-      const counts = col_ids.map((ids) => ids.length)
-      const max_diff = Math.max(...counts) - Math.min(...counts)
-      expect(max_diff).toBeLessThanOrEqual(1)
+      const counts = (await get_all_column_item_ids(page)).map((ids) => ids.length)
+      expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1)
     })
+  }
 
+  test.describe(`order=balanced`, () => {
     test(`items may reorder when new items are added`, async ({ page }) => {
       await set_order_mode(page, `balanced`)
       await wait_for_masonry_stable(page)
 
-      // Get initial distribution
-      const initial_col_ids = await get_all_column_item_ids(page)
+      const initial_total = (await get_all_column_item_ids(page)).flat().length
 
-      // Add several items
       await add_items_individually(page, 5)
       await wait_for_masonry_stable(page)
 
-      // Get new distribution
       const new_col_ids = await get_all_column_item_ids(page)
+      expect(new_col_ids.flat()).toHaveLength(initial_total + 5)
 
-      // Total items should increase
-      const initial_total = initial_col_ids.flat().length
-      const new_total = new_col_ids.flat().length
-      expect(new_total).toBe(initial_total + 5)
-
-      // In balanced mode, existing items CAN move (items may jump)
-      // We verify the new distribution is reasonably balanced
+      // In balanced mode existing items CAN move, so only check the result stays balanced
       const counts = new_col_ids.map((ids) => ids.length)
-      const max_diff = Math.max(...counts) - Math.min(...counts)
-      expect(max_diff).toBeLessThanOrEqual(2)
+      expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(2)
     })
   })
 
   test.describe(`order=balanced-stable`, () => {
-    test(`new items go to shortest column`, async ({ page }) => {
-      await set_order_mode(page, `balanced-stable`)
-      await wait_for_masonry_stable(page)
-
-      const col_ids = await get_all_column_item_ids(page)
-      const counts = col_ids.map((ids) => ids.length)
-      const max_diff = Math.max(...counts) - Math.min(...counts)
-      expect(max_diff).toBeLessThanOrEqual(1)
-    })
-
-    test(`existing items stay in their columns when new items are added`, async ({
-      page,
-    }) => {
-      await set_order_mode(page, `balanced-stable`)
-      await wait_for_masonry_stable(page)
-
-      // Get initial distribution
-      const initial_col_ids = await get_all_column_item_ids(page)
-      const initial_assignments = new Map<number, number>()
-      for (const [col_idx, ids] of initial_col_ids.entries()) {
-        for (const id of ids) initial_assignments.set(id, col_idx)
-      }
-
-      // Add several items
-      await add_items_individually(page, 5)
-      await wait_for_masonry_stable(page)
-
-      // Get new distribution
-      const new_col_ids = await get_all_column_item_ids(page)
-
-      // Verify original items stayed in their columns
-      for (const [id, original_col] of initial_assignments.entries()) {
-        const new_col = new_col_ids.findIndex((ids) => ids.includes(id))
-        expect(
-          new_col,
-          `Item ${id} should stay in column ${original_col} but moved to ${new_col}`,
-        ).toBe(original_col)
-      }
-    })
-
-    test(`removed items do not leave gaps`, async ({ page }) => {
-      await set_order_mode(page, `balanced-stable`)
-      await wait_for_masonry_stable(page)
-
-      const initial_count = await get_item_count(page)
-
-      // Remove some items
-      await click_button(page, `remove-last-btn`)
-      await click_button(page, `remove-last-btn`)
-      await wait_for_masonry_stable(page)
-
-      const new_count = await get_item_count(page)
-      expect(new_count).toBe(initial_count - 2)
-
-      // Verify items are still rendered
-      const items = get_items(page)
-      await expect(items).toHaveCount(new_count)
-    })
-
     test(`repopulates columns after column count increases`, async ({ page }) => {
       await set_order_mode(page, `balanced-stable`)
       await wait_for_masonry_stable(page)
@@ -136,26 +76,11 @@ test.describe(`Masonry Order Modes`, () => {
     })
   })
 
-  test.describe(`order=row-first`, () => {
-    test(`distributes items in round-robin order`, async ({ page }) => {
-      await set_order_mode(page, `row-first`)
-      await wait_for_masonry_stable(page)
+  test(`order=row-first distributes items in round-robin order`, async ({ page }) => {
+    await set_order_mode(page, `row-first`)
+    await wait_for_masonry_stable(page)
 
-      // Verify row-first (round-robin) distribution
-      await assert_row_first_order(page, 3) // Default is 3 columns
-    })
-
-    test(`maintains predictable order when items are added`, async ({ page }) => {
-      await set_order_mode(page, `row-first`)
-      await wait_for_masonry_stable(page)
-
-      // Add items
-      await click_button(page, `add-5-items-btn`)
-      await wait_for_masonry_stable(page)
-
-      // Verify row-first order is maintained
-      await assert_row_first_order(page, 3)
-    })
+    await assert_row_first_order(page, 3) // page defaults to 3 columns
   })
 
   test.describe(`order=column-sequential`, () => {
@@ -217,82 +142,17 @@ test.describe(`Masonry Order Modes`, () => {
     })
   }
 
-  test.describe(`mode switching`, () => {
-    test(`can switch between all order modes`, async ({ page }) => {
-      for (const mode of [
-        `balanced`,
-        `balanced-stable`,
-        `row-first`,
-        `column-sequential`,
-        `column-balanced`,
-      ]) {
-        await set_order_mode(page, mode)
-        await wait_for_masonry_stable(page)
+  test(`switching modes applies each mode and preserves every item`, async ({ page }) => {
+    const initial_ids = await get_all_item_ids(page)
+    expect(initial_ids.length).toBeGreaterThan(0)
 
-        const current = await get_current_order(page)
-        expect(current).toBe(mode)
-
-        // Verify items are still rendered
-        const items = get_items(page)
-        const count = await items.count()
-        expect(count).toBeGreaterThan(0)
-      }
-    })
-
-    test(`preserves all items when switching modes`, async ({ page }) => {
-      const initial_ids = await get_all_item_ids(page)
-
-      for (const mode of [
-        `row-first`,
-        `column-sequential`,
-        `balanced`,
-        `column-balanced`,
-        `balanced-stable`,
-      ]) {
-        await set_order_mode(page, mode)
-        await wait_for_masonry_stable(page)
-
-        const current_ids = await get_all_item_ids(page)
-        expect(current_ids.toSorted((a, b) => a - b)).toEqual(
-          initial_ids.toSorted((a, b) => a - b),
-        )
-      }
-    })
-
-    test(`switching from row-first to balanced actually balances columns`, async ({
-      page,
-    }) => {
-      // Start with row-first mode
-      await set_order_mode(page, `row-first`)
+    for (const mode of ALL_ORDER_MODES) {
+      await set_order_mode(page, mode)
       await wait_for_masonry_stable(page)
 
-      // Get row-first distribution (should follow round-robin pattern)
-      const row_first_cols = await get_all_column_item_ids(page)
-      // Verify it's actually row-first (item N in column N % 3)
-      for (let col_idx = 0; col_idx < row_first_cols.length; col_idx++) {
-        for (const id of row_first_cols[col_idx]) {
-          expect(id % 3).toBe(col_idx)
-        }
-      }
-
-      // Switch to balanced mode
-      await set_order_mode(page, `balanced`)
-      await wait_for_masonry_stable(page)
-
-      // Balanced mode should distribute to shortest columns
-      // With varying heights, distribution may differ from row-first
-      const balanced_cols = await get_all_column_item_ids(page)
-
-      // Verify columns are reasonably balanced (no huge discrepancy)
-      const counts = balanced_cols.map((ids) => ids.length)
-      const max_diff = Math.max(...counts) - Math.min(...counts)
-      expect(max_diff).toBeLessThanOrEqual(2)
-
-      // Verify all items still present
-      const all_ids = balanced_cols.flat().toSorted((a, b) => a - b)
-      const expected_ids = row_first_cols.flat().toSorted((a, b) => a - b)
-      expect(all_ids).toEqual(expected_ids)
-    })
+      expect(await get_current_order(page)).toBe(mode)
+      expect(await get_all_item_ids(page)).toEqual(initial_ids)
+    }
   })
 })
 

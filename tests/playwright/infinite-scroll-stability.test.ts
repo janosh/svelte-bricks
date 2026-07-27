@@ -1,43 +1,13 @@
-// eslint-disable no-await-in-loop
 import { expect, test } from '@playwright/test'
 import {
   click_button,
   get_all_column_item_ids,
+  get_column_assignments,
   goto_masonry_test,
   set_order_mode,
+  verify_stability,
   wait_for_masonry_stable,
 } from './helpers'
-
-// Build a Map of item ID -> column index from column ID arrays
-const build_assignments = (col_ids: number[][]): Map<number, number> => {
-  const assignments = new Map<number, number>()
-  for (const [col_idx, ids] of col_ids.entries()) {
-    for (const id of ids) assignments.set(id, col_idx)
-  }
-  return assignments
-}
-
-const find_col_idx = (col_ids: number[][], id: number): number => {
-  for (const [col_idx, ids] of col_ids.entries()) {
-    if (ids.includes(id)) return col_idx
-  }
-  return -1
-}
-
-// Verify items stayed in their assigned columns
-const verify_stability = (
-  col_ids: number[][],
-  expected: Map<number, number>,
-  context: string,
-) => {
-  for (const [id, expected_col] of expected.entries()) {
-    const actual_col = find_col_idx(col_ids, id)
-    expect(
-      actual_col,
-      `${context}: Item ${id} jumped from column ${expected_col} to ${actual_col}`,
-    ).toBe(expected_col)
-  }
-}
 
 // These tests specifically address GitHub issue #53:
 // "Adding items to the list with column balancing on makes items boxes jump places"
@@ -55,38 +25,19 @@ test.describe(`Infinite Scroll Stability (Issue #53)`, () => {
     await set_order_mode(page, `balanced-stable`)
     await wait_for_masonry_stable(page)
 
-    const assignments = build_assignments(await get_all_column_item_ids(page))
+    const assignments = await get_column_assignments(page)
 
     // Simulate infinite scroll: add items one at a time, checking stability each time
     for (let round = 0; round < 10; round++) {
       await click_button(page, `add-item-btn`)
       await wait_for_masonry_stable(page)
 
-      const current_col_ids = await get_all_column_item_ids(page)
-      verify_stability(current_col_ids, assignments, `Round ${round + 1}`)
+      await verify_stability(page, assignments, `Round ${round + 1}`)
 
-      // Track new items
-      for (const [col_idx, ids] of current_col_ids.entries()) {
-        for (const id of ids) {
-          if (!assignments.has(id)) assignments.set(id, col_idx)
-        }
+      // Track new items so later rounds hold them to their first column too
+      for (const [id, col_idx] of await get_column_assignments(page)) {
+        if (!assignments.has(id)) assignments.set(id, col_idx)
       }
-    }
-  })
-
-  test(`balanced mode: items may jump (expected behavior)`, async ({ page }) => {
-    await set_order_mode(page, `balanced`)
-    await wait_for_masonry_stable(page)
-
-    const initial_ids = build_assignments(await get_all_column_item_ids(page))
-
-    for (let idx = 0; idx < 5; idx++) await click_button(page, `add-item-btn`)
-    await wait_for_masonry_stable(page)
-
-    // In balanced mode, items CAN move - just verify all items are still present
-    const all_new_ids = (await get_all_column_item_ids(page)).flat()
-    for (const id of initial_ids.keys()) {
-      expect(all_new_ids).toContain(id)
     }
   })
 
@@ -126,16 +77,12 @@ test.describe(`Infinite Scroll Stability (Issue #53)`, () => {
     await set_order_mode(page, `balanced-stable`)
     await wait_for_masonry_stable(page)
 
-    const initial = build_assignments(await get_all_column_item_ids(page))
+    const initial = await get_column_assignments(page)
 
     for (let idx = 0; idx < 3; idx++) await click_button(page, `add-5-items-btn`)
     await wait_for_masonry_stable(page)
 
-    verify_stability(
-      await get_all_column_item_ids(page),
-      initial,
-      `After rapid additions`,
-    )
+    await verify_stability(page, initial, `After rapid additions`)
   })
 
   test(`balanced-stable mode handles item removal without affecting other items`, async ({
@@ -147,19 +94,15 @@ test.describe(`Infinite Scroll Stability (Issue #53)`, () => {
     await click_button(page, `add-5-items-btn`)
     await wait_for_masonry_stable(page)
 
-    const before = build_assignments(await get_all_column_item_ids(page))
+    const before = await get_column_assignments(page)
 
     await click_button(page, `remove-last-btn`)
     await click_button(page, `remove-last-btn`)
     await wait_for_masonry_stable(page)
 
-    const after_col_ids = await get_all_column_item_ids(page)
-    for (const id of after_col_ids.flat()) {
-      const expected_col = before.get(id)
-      if (expected_col !== undefined) {
-        const actual_col = find_col_idx(after_col_ids, id)
-        expect(actual_col).toBe(expected_col)
-      }
-    }
+    // survivors keep their columns; the two removed ids are simply gone
+    const remaining = await get_column_assignments(page)
+    const survivors = new Map([...before].filter(([id]) => remaining.has(id)))
+    await verify_stability(page, survivors, `After removal`)
   })
 })

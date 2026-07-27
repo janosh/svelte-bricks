@@ -2,7 +2,10 @@
   import Masonry from '$lib'
   import AppendRenderProbe from './AppendRenderProbe.svelte'
 
-  let { events }: { events: number[] } = $props()
+  import type { MasonryOrder } from '$lib'
+
+  let { events, order = `balanced-stable` }: { events: number[]; order?: MasonryOrder } =
+    $props()
 
   let items = $state([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }])
   let n_cols = $state(2)
@@ -26,7 +29,7 @@
   calcCols={() => n_cols}
   idKey="id"
   masonryWidth={500}
-  order="balanced-stable"
+  {order}
 >
   {#snippet children({ item })}
     <AppendRenderProbe {events} {item} />
