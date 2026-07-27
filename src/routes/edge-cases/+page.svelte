@@ -51,7 +51,7 @@
     tick: () => void
   }
   let test_mode = $state<TestMode>(`idle`)
-  let interval_id = $state<ReturnType<typeof setInterval> | null>(null)
+  let interval_id: ReturnType<typeof setInterval> | null = null
   let operation_count = $state(0)
 
   const rand_height = () =>
@@ -117,17 +117,15 @@
     items = items.map(({ id }) => make_item(id))
   }
   const remove_random = () => {
-    if (items.length > 0)
-      set_items(items.toSpliced(Math.floor(Math.random() * items.length), 1))
+    if (items.length > 0) {
+      const random_idx = Math.floor(Math.random() * items.length)
+      set_items(items.toSpliced(random_idx, 1))
+    }
   }
   const shuffle = () => (items = items.toSorted(() => Math.random() - 0.5))
   const clear_all = () => {
     next_id = 0
     set_items([])
-  }
-
-  function apply_item_count_preset(count: number): void {
-    regenerate(count)
   }
 
   function apply_height_preset(min_height_px: number, max_height_px: number): void {
@@ -207,12 +205,12 @@
     {
       label: `1 Item`,
       description: `Checks that one item does not create empty extra columns.`,
-      action: () => apply_item_count_preset(1),
+      action: () => regenerate(1),
     },
     {
       label: `100 Items`,
       description: `Exercises a larger non-virtualized layout.`,
-      action: () => apply_item_count_preset(100),
+      action: () => regenerate(100),
     },
     {
       label: `Tall Items`,
@@ -251,7 +249,7 @@
       description: `Combines many items with narrow columns.`,
       action: () => {
         min_col_width = 80
-        apply_item_count_preset(200)
+        regenerate(200)
       },
     },
   ]

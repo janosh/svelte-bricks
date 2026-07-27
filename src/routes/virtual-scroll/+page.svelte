@@ -2,7 +2,8 @@
   import Masonry, { type MasonryOrder, order_options } from '$lib'
 
   // Item generation
-  let item_count = $state(2000)
+  const initial_item_count = 2000
+  let item_count = $state(initial_item_count)
   let height = $state({ min: 80, max: 300 })
 
   type Item = { id: number; height: number; hue: number }
@@ -16,7 +17,7 @@
   const generate_items = (count: number): Item[] =>
     Array.from({ length: count }, (_, idx) => make_item(idx))
 
-  let items = $state(generate_items(2000))
+  let items = $state(generate_items(initial_item_count))
 
   function set_item_count(next_count: number): void {
     item_count = next_count
@@ -52,12 +53,7 @@
     return Math.min(items.length, cols * items_per_col)
   })
 
-  const presets: { label: string; count: number }[] = [
-    { label: `500`, count: 500 },
-    { label: `2,000`, count: 2000 },
-    { label: `5,000`, count: 5000 },
-    { label: `10,000`, count: 10000 },
-  ]
+  const presets = [500, 2000, 5000, 10000]
 </script>
 
 <svelte:head>
@@ -75,7 +71,7 @@
   <section class="control-group">
     <h2>Items</h2>
     <div class="preset-row">
-      {#each presets as { label, count } (count)}
+      {#each presets as count (count)}
         <button
           onclick={() => {
             item_count = count
@@ -83,7 +79,7 @@
           }}
           class:active={item_count === count}
         >
-          {label}
+          {count.toLocaleString()}
         </button>
       {/each}
     </div>

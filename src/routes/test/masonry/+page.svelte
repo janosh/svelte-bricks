@@ -26,11 +26,6 @@
   )
 
   // Actions for E2E tests
-  const add_item = () => {
-    const next_id = items.length > 0 ? Math.max(...items.map((itm) => itm.id)) + 1 : 0
-    items = [...items, make_item(next_id)]
-  }
-
   const add_items = (count: number) => {
     const start_id = items.length > 0 ? Math.max(...items.map((itm) => itm.id)) + 1 : 0
     items = [
@@ -38,18 +33,10 @@
       ...Array.from({ length: count }, (_, idx) => make_item(start_id + idx)),
     ]
   }
-
-  const remove_last = () => {
-    items = items.slice(0, -1)
-  }
-
-  const clear_all = () => {
-    items = []
-  }
-
-  const reset_items = () => {
-    items = Array.from({ length: item_count }, (_, idx) => make_item(idx))
-  }
+  const remove_last = () => (items = items.slice(0, -1))
+  const clear_all = () => (items = [])
+  const reset_items = () =>
+    (items = Array.from({ length: item_count }, (_, idx) => make_item(idx)))
 </script>
 
 <svelte:head>
@@ -99,7 +86,7 @@
     </div>
 
     <div class="button-row">
-      <button onclick={add_item} data-testid="add-item-btn">Add Item</button>
+      <button onclick={() => add_items(1)} data-testid="add-item-btn">Add Item</button>
       <button onclick={() => add_items(5)} data-testid="add-5-items-btn">
         Add 5 Items
       </button>

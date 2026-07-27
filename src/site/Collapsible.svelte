@@ -1,25 +1,25 @@
 <script lang="ts">
   import type { Snippet } from 'svelte'
-  import { tweened } from 'svelte/motion'
+  import { Tween } from 'svelte/motion'
   import { slide } from 'svelte/transition'
 
   let { title, children }: { title: string | string[]; children?: Snippet<[]> } = $props()
 
   const duration = 200
-  const angle = tweened(180, { duration })
-  let isOpen = $state(false)
+  const angle = new Tween(180, { duration })
+  let is_open = $state(false)
 
   function toggle() {
-    isOpen = !isOpen
-    angle.set(isOpen ? 0 : 180)
+    is_open = !is_open
+    angle.set(is_open ? 0 : 180)
   }
 </script>
 
 <button onclick={toggle}>
-  {#if Array.isArray(title)}{isOpen ? title[1] : title[0]}{:else}{title}{/if}
-  <span style="display: inline-block; transform: rotate({$angle}deg)">👆</span>
+  {#if Array.isArray(title)}{is_open ? title[1] : title[0]}{:else}{title}{/if}
+  <span style="display: inline-block; transform: rotate({angle.current}deg)">👆</span>
 </button>
-{#if isOpen}
+{#if is_open}
   <div transition:slide={{ duration }}>
     {@render children?.()}
   </div>
